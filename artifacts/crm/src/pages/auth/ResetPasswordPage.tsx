@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Loader2, CheckCircle2, ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { useAuthPalette } from "@/hooks/useAuthPalette";
 
 const schema = z
   .object({
@@ -23,6 +24,7 @@ type FormValues = z.infer<typeof schema>;
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function ResetPasswordPage() {
+  const p = useAuthPalette();
   const search = useSearch();
   const params = new URLSearchParams(search);
   const token = params.get("token") ?? "";
@@ -52,21 +54,15 @@ export function ResetPasswordPage() {
     return (
       <AuthShell maxWidth={400}>
         <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#E4EBF5", marginBottom: "12px" }}>
+          <h2 style={{ fontSize: "22px", fontWeight: 700, color: p.heading, marginBottom: "12px", transition: "color 0.3s" }}>
             Invalid link
           </h2>
-          <p style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}>
+          <p style={{ fontSize: "14px", color: p.body, lineHeight: 1.7, marginBottom: "32px", transition: "color 0.3s" }}>
             This password reset link is missing or invalid.
           </p>
           <Link
             href="/forgot-password"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: "8px",
-              border: "1px solid #c8a84b", borderRadius: "4px",
-              padding: "11px 20px", color: "#c8a84b",
-              textDecoration: "none", fontSize: "12px", fontWeight: 600,
-              letterSpacing: "0.1em", textTransform: "uppercase",
-            }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid #c8a84b", borderRadius: "4px", padding: "11px 20px", color: "#c8a84b", textDecoration: "none", fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}
           >
             Request a new link
             <ArrowRight style={{ width: 14, height: 14 }} />
@@ -84,32 +80,19 @@ export function ResetPasswordPage() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.4, ease }}
-            style={{
-              width: 56, height: 56,
-              background: "rgba(74,222,128,0.1)",
-              border: "1px solid rgba(74,222,128,0.25)",
-              borderRadius: "50%",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 24px",
-            }}
+            style={{ width: 56, height: 56, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}
           >
             <CheckCircle2 style={{ width: 24, height: 24, color: "#4ADE80" }} />
           </motion.div>
-          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#E4EBF5", marginBottom: "12px" }}>
+          <h2 style={{ fontSize: "22px", fontWeight: 700, color: p.heading, marginBottom: "12px", transition: "color 0.3s" }}>
             Password updated
           </h2>
-          <p style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}>
+          <p style={{ fontSize: "14px", color: p.body, lineHeight: 1.7, marginBottom: "32px", transition: "color 0.3s" }}>
             Your password has been changed successfully.
           </p>
           <Link
             href="/login"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: "8px",
-              border: "1px solid #c8a84b", borderRadius: "4px",
-              padding: "11px 20px", color: "#c8a84b",
-              textDecoration: "none", fontSize: "12px", fontWeight: 600,
-              letterSpacing: "0.1em", textTransform: "uppercase",
-            }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "8px", border: "1px solid #c8a84b", borderRadius: "4px", padding: "11px 20px", color: "#c8a84b", textDecoration: "none", fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" }}
           >
             Sign in <ArrowRight style={{ width: 14, height: 14 }} />
           </Link>
@@ -136,7 +119,7 @@ export function ResetPasswordPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.1, ease }}
-        style={{ fontSize: "28px", fontWeight: 800, color: "#E4EBF5", letterSpacing: "-0.03em", marginBottom: "8px" }}
+        style={{ fontSize: "28px", fontWeight: 800, color: p.heading, letterSpacing: "-0.03em", marginBottom: "8px", transition: "color 0.3s" }}
       >
         New password
       </motion.h2>
@@ -144,7 +127,7 @@ export function ResetPasswordPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.15, ease }}
-        style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "36px" }}
+        style={{ fontSize: "14px", color: p.body, lineHeight: 1.7, marginBottom: "36px", transition: "color 0.3s" }}
       >
         Enter and confirm your new password below.
       </motion.p>
@@ -154,12 +137,7 @@ export function ResetPasswordPage() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{
-              marginBottom: "20px", padding: "10px 14px",
-              background: "rgba(248,113,113,0.1)",
-              border: "1px solid rgba(248,113,113,0.25)",
-              borderRadius: "8px", fontSize: "13px", color: "#F87171",
-            }}
+            style={{ marginBottom: "20px", padding: "10px 14px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: "8px", fontSize: "13px", color: "#F87171" }}
           >
             {error}
           </motion.div>
@@ -174,7 +152,7 @@ export function ResetPasswordPage() {
         >
           <label style={{
             display: "block", fontSize: "10px", fontWeight: 600,
-            color: focusedField === "password" ? "#c8a84b" : "#3D5878",
+            color: focusedField === "password" ? "#c8a84b" : p.muted,
             textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px",
             transition: "color 0.2s",
           }}>
@@ -190,12 +168,12 @@ export function ResetPasswordPage() {
               style={{
                 width: "100%", boxSizing: "border-box",
                 background: "transparent", border: "none",
-                borderBottom: `1px solid ${focusedField === "password" ? "#c8a84b" : form.formState.errors.password ? "#F87171" : "rgba(255,255,255,0.1)"}`,
-                padding: "10px 32px 10px 0", color: "#C8D8E8", fontSize: "15px",
-                outline: "none", transition: "border-color 0.2s",
+                borderBottom: `1px solid ${focusedField === "password" ? "#c8a84b" : form.formState.errors.password ? "#F87171" : p.inputBorder}`,
+                padding: "10px 32px 10px 0", color: p.inputText, fontSize: "15px",
+                outline: "none", transition: "border-color 0.2s, color 0.3s",
               }}
             />
-            <button type="button" onClick={() => setShowPwd(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", display: "flex", alignItems: "center", padding: 0 }}>
+            <button type="button" onClick={() => setShowPwd(v => !v)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: p.eyeIcon, display: "flex", alignItems: "center", padding: 0, transition: "color 0.3s" }}>
               {showPwd ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
             </button>
           </div>
@@ -215,7 +193,7 @@ export function ResetPasswordPage() {
         >
           <label style={{
             display: "block", fontSize: "10px", fontWeight: 600,
-            color: focusedField === "confirm" ? "#c8a84b" : "#3D5878",
+            color: focusedField === "confirm" ? "#c8a84b" : p.muted,
             textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px",
             transition: "color 0.2s",
           }}>
@@ -231,12 +209,12 @@ export function ResetPasswordPage() {
               style={{
                 width: "100%", boxSizing: "border-box",
                 background: "transparent", border: "none",
-                borderBottom: `1px solid ${focusedField === "confirm" ? "#c8a84b" : form.formState.errors.confirmPassword ? "#F87171" : "rgba(255,255,255,0.1)"}`,
-                padding: "10px 32px 10px 0", color: "#C8D8E8", fontSize: "15px",
-                outline: "none", transition: "border-color 0.2s",
+                borderBottom: `1px solid ${focusedField === "confirm" ? "#c8a84b" : form.formState.errors.confirmPassword ? "#F87171" : p.inputBorder}`,
+                padding: "10px 32px 10px 0", color: p.inputText, fontSize: "15px",
+                outline: "none", transition: "border-color 0.2s, color 0.3s",
               }}
             />
-            <button type="button" onClick={() => setShowConfirm(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", display: "flex", alignItems: "center", padding: 0 }}>
+            <button type="button" onClick={() => setShowConfirm(v => !v)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: p.eyeIcon, display: "flex", alignItems: "center", padding: 0, transition: "color 0.3s" }}>
               {showConfirm ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
             </button>
           </div>
@@ -270,13 +248,12 @@ export function ResetPasswordPage() {
         </motion.button>
       </form>
 
-      <Link href="/login" style={{
-        display: "flex", alignItems: "center", gap: "6px",
-        fontSize: "12.5px", color: "#2d4459", textDecoration: "none",
-      }}>
+      <Link href="/login" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", color: p.backLink, textDecoration: "none", transition: "color 0.3s" }}>
         <ArrowLeft style={{ width: 13, height: 13 }} />
         Back to sign in
       </Link>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </AuthShell>
   );
 }

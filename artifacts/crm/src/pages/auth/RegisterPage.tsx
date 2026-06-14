@@ -19,6 +19,7 @@ import {
 import { Loader2, CheckCircle2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { useAuthPalette } from "@/hooks/useAuthPalette";
 
 const BASE_URL = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 const RESEND_COOLDOWN = 60;
@@ -70,39 +71,14 @@ const ROLE_LABELS: Record<string, string> = {
   sales: "Sales Agent",
 };
 
-/* ── Shared input style helper ── */
-function fieldInput(focused: boolean, hasError: boolean): React.CSSProperties {
-  return {
-    width: "100%", boxSizing: "border-box" as const,
-    background: "transparent", border: "none",
-    borderBottom: `1px solid ${focused ? "#c8a84b" : hasError ? "#F87171" : "rgba(255,255,255,0.1)"}`,
-    padding: "10px 0", color: "#C8D8E8", fontSize: "15px",
-    outline: "none", transition: "border-color 0.2s",
-  };
-}
-
-function fieldLabel(focused: boolean): React.CSSProperties {
-  return {
-    display: "block", fontSize: "10px", fontWeight: 600 as const,
-    color: focused ? "#c8a84b" : "#3D5878",
-    textTransform: "uppercase" as const, letterSpacing: "0.1em",
-    marginBottom: "10px", transition: "color 0.2s",
-  };
-}
-
 function ErrorMsg({ msg }: { msg?: string }) {
   if (!msg) return null;
   return <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>{msg}</p>;
 }
 
 /* ── Verify stage ── */
-function VerifyStage({
-  registeredEmail,
-  onBack,
-}: {
-  registeredEmail: string;
-  onBack: () => void;
-}) {
+function VerifyStage({ registeredEmail, onBack }: { registeredEmail: string; onBack: () => void }) {
+  const p = useAuthPalette();
   const verifyEmail = useVerifyEmail();
   const [error, setError] = useState<string | null>(null);
   const [resendMsg, setResendMsg] = useState<string | null>(null);
@@ -120,7 +96,7 @@ function VerifyStage({
     verifyEmail.mutate(
       { data: { email: registeredEmail, code: data.code } },
       {
-        onSuccess: () => { /* parent transitions to "pending" */ },
+        onSuccess: () => {},
         onError: (err) => setError((err as any)?.message || "Invalid or expired code."),
       }
     );
@@ -151,12 +127,12 @@ function VerifyStage({
           Email verification
         </span>
       </motion.div>
-      <h2 style={{ fontSize: "26px", fontWeight: 800, color: "#E4EBF5", letterSpacing: "-0.03em", marginBottom: "8px" }}>
+      <h2 style={{ fontSize: "26px", fontWeight: 800, color: p.heading, letterSpacing: "-0.03em", marginBottom: "8px", transition: "color 0.3s" }}>
         Check your inbox
       </h2>
-      <p style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}>
+      <p style={{ fontSize: "14px", color: p.body, lineHeight: 1.7, marginBottom: "32px", transition: "color 0.3s" }}>
         We sent a 6-digit code to{" "}
-        <span style={{ color: "#8BAFC7", fontWeight: 500 }}>{registeredEmail}</span>.
+        <span style={{ color: p.emailHighlight, fontWeight: 500 }}>{registeredEmail}</span>.
         It expires in 15 minutes.
       </p>
 
@@ -173,19 +149,21 @@ function VerifyStage({
         )}
 
         <div style={{ marginBottom: "32px" }}>
-          <label style={fieldLabel(focused)}>Verification code</label>
+          <label style={{ display: "block", fontSize: "10px", fontWeight: 600, color: focused ? "#c8a84b" : p.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px", transition: "color 0.2s" }}>
+            Verification code
+          </label>
           <input
             inputMode="numeric" maxLength={6} placeholder="0 0 0 0 0 0"
             {...form.register("code")}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
             style={{
               width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.03)",
-              border: `1px solid ${focused ? "#c8a84b" : "rgba(255,255,255,0.1)"}`,
+              background: p.inputBg,
+              border: `1px solid ${focused ? "#c8a84b" : p.inputBorder}`,
               borderRadius: "8px", padding: "16px",
-              color: "#C8D8E8", fontSize: "28px", fontWeight: 700,
+              color: p.inputText, fontSize: "28px", fontWeight: 700,
               letterSpacing: "0.4em", textAlign: "center",
-              outline: "none", transition: "border-color 0.2s",
+              outline: "none", transition: "border-color 0.2s, color 0.3s",
               fontFamily: "ui-monospace, monospace",
             }}
           />
@@ -215,7 +193,7 @@ function VerifyStage({
       </form>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <button type="button" onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12.5px", color: "#2d4459", padding: 0 }}>
+        <button type="button" onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12.5px", color: p.backLink, padding: 0, transition: "color 0.3s" }}>
           Back to registration
         </button>
         {canResend ? (
@@ -224,27 +202,29 @@ function VerifyStage({
             Resend code
           </button>
         ) : (
-          <span style={{ fontSize: "12px", color: "#2d4459" }}>
-            Resend in <span style={{ color: "#8BAFC7", fontVariantNumeric: "tabular-nums" }}>{seconds}s</span>
+          <span style={{ fontSize: "12px", color: p.muted, transition: "color 0.3s" }}>
+            Resend in <span style={{ color: p.emailHighlight, fontVariantNumeric: "tabular-nums" }}>{seconds}s</span>
           </span>
         )}
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </AuthShell>
   );
 }
 
 /* ── Pending stage ── */
 function PendingStage() {
+  const p = useAuthPalette();
   return (
     <AuthShell maxWidth={400}>
       <div style={{ textAlign: "center" }}>
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4, ease }}
+        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4 }}
           style={{ width: 56, height: 56, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}
         >
           <CheckCircle2 style={{ width: 24, height: 24, color: "#4ADE80" }} />
         </motion.div>
-        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#E4EBF5", marginBottom: "12px" }}>Email verified!</h2>
-        <p style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}>
+        <h2 style={{ fontSize: "22px", fontWeight: 700, color: p.heading, marginBottom: "12px", transition: "color 0.3s" }}>Email verified!</h2>
+        <p style={{ fontSize: "14px", color: p.body, lineHeight: 1.7, marginBottom: "32px", transition: "color 0.3s" }}>
           Your account is now pending administrator approval. You'll receive an email once approved.
         </p>
         <Link
@@ -265,6 +245,7 @@ function PendingStage() {
 
 /* ── Main register page ── */
 export function RegisterPage() {
+  const p = useAuthPalette();
   const register = useRegister();
   const { data: teamLeaders = [] } = useListTeamLeaders();
 
@@ -299,9 +280,27 @@ export function RegisterPage() {
   const f = (name: string) => focused === name;
   const err = (name: keyof RegisterFormValues) => !!form.formState.errors[name];
 
+  function fieldInput(isFocused: boolean, hasError: boolean): React.CSSProperties {
+    return {
+      width: "100%", boxSizing: "border-box" as const,
+      background: "transparent", border: "none",
+      borderBottom: `1px solid ${isFocused ? "#c8a84b" : hasError ? "#F87171" : p.inputBorder}`,
+      padding: "10px 0", color: p.inputText, fontSize: "15px",
+      outline: "none", transition: "border-color 0.2s, color 0.3s",
+    };
+  }
+
+  function fieldLabel(isFocused: boolean): React.CSSProperties {
+    return {
+      display: "block", fontSize: "10px", fontWeight: 600 as const,
+      color: isFocused ? "#c8a84b" : p.muted,
+      textTransform: "uppercase" as const, letterSpacing: "0.1em",
+      marginBottom: "10px", transition: "color 0.2s",
+    };
+  }
+
   return (
     <AuthShell maxWidth={480}>
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease }}
         style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}
       >
@@ -312,12 +311,12 @@ export function RegisterPage() {
       </motion.div>
 
       <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.08, ease }}
-        style={{ fontSize: "28px", fontWeight: 800, color: "#E4EBF5", letterSpacing: "-0.03em", marginBottom: "6px" }}
+        style={{ fontSize: "28px", fontWeight: 800, color: p.heading, letterSpacing: "-0.03em", marginBottom: "6px", transition: "color 0.3s" }}
       >
         Create account
       </motion.h2>
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.12, ease }}
-        style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}
+        style={{ fontSize: "14px", color: p.body, lineHeight: 1.7, marginBottom: "32px", transition: "color 0.3s" }}
       >
         Enter your details below to request platform access.
       </motion.p>
@@ -329,7 +328,6 @@ export function RegisterPage() {
           </div>
         )}
 
-        {/* 2-col grid for name + email */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
           <div style={{ marginBottom: "24px" }}>
             <label style={fieldLabel(f("name"))}>Full name</label>
@@ -352,7 +350,7 @@ export function RegisterPage() {
         <div style={{ marginBottom: "24px" }}>
           <label style={fieldLabel(false)}>Role</label>
           <Select value={form.watch("role")} onValueChange={(val) => form.setValue("role", val as RegisterFormValues["role"], { shouldValidate: true })}>
-            <SelectTrigger style={{ background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.1)", borderRadius: 0, padding: "10px 0", color: "#C8D8E8", fontSize: "15px", outline: "none", boxShadow: "none" }}>
+            <SelectTrigger style={{ background: "transparent", border: "none", borderBottom: `1px solid ${p.selectBorder}`, borderRadius: 0, padding: "10px 0", color: p.selectText, fontSize: "15px", outline: "none", boxShadow: "none", transition: "color 0.3s, border-color 0.3s" }}>
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
             <SelectContent>
@@ -367,7 +365,7 @@ export function RegisterPage() {
           <div style={{ marginBottom: "24px" }}>
             <label style={fieldLabel(false)}>Team Leader (optional)</label>
             <Select value={form.watch("teamLeaderId") ?? ""} onValueChange={(val) => form.setValue("teamLeaderId", val || undefined, { shouldValidate: true })}>
-              <SelectTrigger style={{ background: "transparent", border: "none", borderBottom: "1px solid rgba(255,255,255,0.1)", borderRadius: 0, padding: "10px 0", color: "#C8D8E8", fontSize: "15px", outline: "none", boxShadow: "none" }}>
+              <SelectTrigger style={{ background: "transparent", border: "none", borderBottom: `1px solid ${p.selectBorder}`, borderRadius: 0, padding: "10px 0", color: p.selectText, fontSize: "15px", outline: "none", boxShadow: "none", transition: "color 0.3s, border-color 0.3s" }}>
                 <SelectValue placeholder="Select your team leader" />
               </SelectTrigger>
               <SelectContent>
@@ -384,7 +382,7 @@ export function RegisterPage() {
             <label style={fieldLabel(f("password"))}>Password</label>
             <div style={{ position: "relative" }}>
               <input type={showPwd ? "text" : "password"} {...form.register("password")} onFocus={() => setFocused("password")} onBlur={() => setFocused(null)} style={{ ...fieldInput(f("password"), err("password")), paddingRight: "32px" }} />
-              <button type="button" onClick={() => setShowPwd(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", padding: 0 }}>
+              <button type="button" onClick={() => setShowPwd(v => !v)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: p.eyeIcon, padding: 0, transition: "color 0.3s" }}>
                 {showPwd ? <EyeOff style={{ width: 14, height: 14 }} /> : <Eye style={{ width: 14, height: 14 }} />}
               </button>
             </div>
@@ -394,7 +392,7 @@ export function RegisterPage() {
             <label style={fieldLabel(f("confirm"))}>Confirm</label>
             <div style={{ position: "relative" }}>
               <input type={showConfirm ? "text" : "password"} {...form.register("confirmPassword")} onFocus={() => setFocused("confirm")} onBlur={() => setFocused(null)} style={{ ...fieldInput(f("confirm"), err("confirmPassword")), paddingRight: "32px" }} />
-              <button type="button" onClick={() => setShowConfirm(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", padding: 0 }}>
+              <button type="button" onClick={() => setShowConfirm(v => !v)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: p.eyeIcon, padding: 0, transition: "color 0.3s" }}>
                 {showConfirm ? <EyeOff style={{ width: 14, height: 14 }} /> : <Eye style={{ width: 14, height: 14 }} />}
               </button>
             </div>
@@ -426,7 +424,7 @@ export function RegisterPage() {
 
       {/* OAuth */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "24px" }}>
-        <a href={`${BASE_URL}/api/auth/google`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "10px", fontSize: "13px", color: "#4e6b82", textDecoration: "none" }}>
+        <a href={`${BASE_URL}/api/auth/google`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: `1px solid ${p.oauthBorder}`, borderRadius: "4px", padding: "10px", fontSize: "13px", color: p.oauthText, textDecoration: "none", transition: "border-color 0.3s, color 0.3s" }}>
           <svg width="14" height="14" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -435,7 +433,7 @@ export function RegisterPage() {
           </svg>
           Google
         </a>
-        <a href={`${BASE_URL}/api/auth/facebook`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "10px", fontSize: "13px", color: "#4e6b82", textDecoration: "none" }}>
+        <a href={`${BASE_URL}/api/auth/facebook`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: `1px solid ${p.oauthBorder}`, borderRadius: "4px", padding: "10px", fontSize: "13px", color: p.oauthText, textDecoration: "none", transition: "border-color 0.3s, color 0.3s" }}>
           <svg width="14" height="14" fill="#1877F2" viewBox="0 0 24 24">
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
@@ -443,7 +441,7 @@ export function RegisterPage() {
         </a>
       </div>
 
-      <p style={{ fontSize: "12.5px", color: "#2d4459" }}>
+      <p style={{ fontSize: "12.5px", color: p.backLink, transition: "color 0.3s" }}>
         Already have an account?{" "}
         <Link href="/login" style={{ color: "#c8a84b", textDecoration: "none", fontWeight: 500 }}>
           Sign in

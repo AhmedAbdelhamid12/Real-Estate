@@ -7,6 +7,7 @@ import { ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
 import { apiFetch } from "@workspace/api-client-react";
 import { motion } from "framer-motion";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { useAuthPalette } from "@/hooks/useAuthPalette";
 
 const RESEND_COOLDOWN = 60;
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -35,6 +36,7 @@ function useResendCountdown() {
 }
 
 export function VerifyEmailPage() {
+  const p = useAuthPalette();
   const { t } = useI18n();
   const [, setLocation] = useLocation();
   const [code, setCode] = useState("");
@@ -97,14 +99,7 @@ export function VerifyEmailPage() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease }}
-        style={{
-          width: 52, height: 52,
-          background: "rgba(200,168,75,0.1)",
-          border: "1px solid rgba(200,168,75,0.2)",
-          borderRadius: "50%",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: "20px",
-        }}
+        style={{ width: 52, height: 52, background: "rgba(200,168,75,0.1)", border: "1px solid rgba(200,168,75,0.2)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}
       >
         <ShieldCheck style={{ width: 22, height: 22, color: "#c8a84b" }} />
       </motion.div>
@@ -125,7 +120,7 @@ export function VerifyEmailPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.12, ease }}
-        style={{ fontSize: "26px", fontWeight: 800, color: "#E4EBF5", letterSpacing: "-0.03em", marginBottom: "8px" }}
+        style={{ fontSize: "26px", fontWeight: 800, color: p.heading, letterSpacing: "-0.03em", marginBottom: "8px", transition: "color 0.3s" }}
       >
         {t("auth.verify_email")}
       </motion.h2>
@@ -133,11 +128,11 @@ export function VerifyEmailPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.18, ease }}
-        style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}
+        style={{ fontSize: "14px", color: p.body, lineHeight: 1.7, marginBottom: "32px", transition: "color 0.3s" }}
       >
         {t("auth.verify_code")}
         {email && (
-          <span style={{ display: "block", color: "#8BAFC7", fontWeight: 500, marginTop: "4px" }}>
+          <span style={{ display: "block", color: p.emailHighlight, fontWeight: 500, marginTop: "4px", transition: "color 0.3s" }}>
             {email}
           </span>
         )}
@@ -158,7 +153,7 @@ export function VerifyEmailPage() {
         >
           <label style={{
             display: "block", fontSize: "10px", fontWeight: 600,
-            color: focusedField ? "#c8a84b" : "#3D5878",
+            color: focusedField ? "#c8a84b" : p.muted,
             textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px",
             transition: "color 0.2s",
           }}>
@@ -176,13 +171,12 @@ export function VerifyEmailPage() {
             autoFocus
             style={{
               width: "100%", boxSizing: "border-box",
-              background: "rgba(255,255,255,0.03)",
-              border: `1px solid ${focusedField ? "#c8a84b" : "rgba(255,255,255,0.1)"}`,
-              borderRadius: "8px",
-              padding: "16px",
-              color: "#C8D8E8", fontSize: "28px", fontWeight: 700,
+              background: p.inputBg,
+              border: `1px solid ${focusedField ? "#c8a84b" : p.inputBorder}`,
+              borderRadius: "8px", padding: "16px",
+              color: p.inputText, fontSize: "28px", fontWeight: 700,
               letterSpacing: "0.4em", textAlign: "center",
-              outline: "none", transition: "border-color 0.2s",
+              outline: "none", transition: "border-color 0.2s, color 0.3s",
               fontFamily: "ui-monospace, monospace",
             }}
           />
@@ -197,9 +191,9 @@ export function VerifyEmailPage() {
           style={{
             display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
             width: "100%", background: "transparent",
-            border: `1px solid ${code.length === 6 ? "#c8a84b" : "rgba(255,255,255,0.1)"}`,
+            border: `1px solid ${code.length === 6 ? "#c8a84b" : p.inputBorder}`,
             borderRadius: "4px", padding: "13px 20px",
-            color: code.length === 6 ? "#c8a84b" : "#3D5878",
+            color: code.length === 6 ? "#c8a84b" : p.muted,
             fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
             cursor: (isLoading || code.length !== 6) ? "not-allowed" : "pointer",
             marginBottom: "20px", transition: "border-color 0.2s, color 0.2s",
@@ -214,11 +208,7 @@ export function VerifyEmailPage() {
         <button
           type="button"
           onClick={() => setLocation("/login")}
-          style={{
-            display: "flex", alignItems: "center", gap: "5px",
-            background: "none", border: "none", cursor: "pointer",
-            fontSize: "12.5px", color: "#2d4459", padding: 0,
-          }}
+          style={{ display: "flex", alignItems: "center", gap: "5px", background: "none", border: "none", cursor: "pointer", fontSize: "12.5px", color: p.backLink, padding: 0, transition: "color 0.3s" }}
         >
           <ArrowLeft style={{ width: 13, height: 13 }} />
           {t("auth.login")}
@@ -229,21 +219,19 @@ export function VerifyEmailPage() {
             type="button"
             onClick={handleResend}
             disabled={isResending}
-            style={{
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: "12.5px", color: "#c8a84b", display: "flex",
-              alignItems: "center", gap: "5px", padding: 0,
-            }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12.5px", color: "#c8a84b", display: "flex", alignItems: "center", gap: "5px", padding: 0 }}
           >
             {isResending && <Loader2 style={{ width: 12, height: 12, animation: "spin 1s linear infinite" }} />}
             Resend code
           </button>
         ) : (
-          <span style={{ fontSize: "12px", color: "#2d4459" }}>
-            Resend in <span style={{ color: "#8BAFC7", fontVariantNumeric: "tabular-nums" }}>{seconds}s</span>
+          <span style={{ fontSize: "12px", color: p.muted, transition: "color 0.3s" }}>
+            Resend in <span style={{ color: p.emailHighlight, fontVariantNumeric: "tabular-nums" }}>{seconds}s</span>
           </span>
         )}
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </AuthShell>
   );
 }
