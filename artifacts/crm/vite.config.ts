@@ -26,6 +26,8 @@ if (!basePath) {
   );
 }
 
+const designTokensRoot = path.resolve(import.meta.dirname, "../../lib/design-tokens/src");
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -50,6 +52,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      "@workspace/design-tokens/web":     path.join(designTokensRoot, "web.ts"),
+      "@workspace/design-tokens/native":  path.join(designTokensRoot, "native.ts"),
+      "@workspace/design-tokens/tokens":  path.join(designTokensRoot, "tokens.ts"),
+      "@workspace/design-tokens":         path.join(designTokensRoot, "index.ts"),
     },
     dedupe: ["react", "react-dom"],
   },
@@ -64,7 +70,11 @@ export default defineConfig({
     host: "0.0.0.0",
     allowedHosts: true,
     fs: {
-      strict: true,
+      strict: false,
+      allow: [
+        path.resolve(import.meta.dirname),
+        path.resolve(import.meta.dirname, "../../lib/design-tokens"),
+      ],
     },
   },
   preview: {
