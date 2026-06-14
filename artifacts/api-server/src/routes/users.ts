@@ -1,10 +1,17 @@
 import { Router } from "express";
-import { db, usersTable } from "@workspace/db";
-import { eq, and, ne } from "drizzle-orm";
+import { db, usersTable, notificationsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 import { sanitizeUser } from "../lib/sanitize";
+import { sendAccountApprovedEmail, sendAccountRejectedEmail } from "../lib/email";
 
 const router = Router();
+
+function getAppUrl(req: { headers: { host?: string } }): string {
+  if (process.env["APP_URL"]) return process.env["APP_URL"];
+  const protocol = process.env["NODE_ENV"] === "production" ? "https" : "http";
+  return `${protocol}://${req.headers.host ?? "localhost"}`;
+}
 
 // GET /users
 router.get("/users", requireAuth, async (req, res): Promise<void> => {
@@ -81,7 +88,6 @@ router.patch("/users/:userId", requireAuth, async (req, res): Promise<void> => {
 // DELETE /users/:userId
 router.delete("/users/:userId", requireAuth, async (req, res): Promise<void> => {
   const { userId } = req.params as { userId: string };
-
   await db.delete(usersTable).where(eq(usersTable.id, userId));
   res.sendStatus(204);
 });
@@ -90,6 +96,7 @@ router.delete("/users/:userId", requireAuth, async (req, res): Promise<void> => 
 router.post("/users/:userId/approve", requireAuth, async (req, res): Promise<void> => {
   const { userId } = req.params as { userId: string };
   const currentUser = req.currentUser!;
+  const appUrl = getAppUrl(req);
 
   const [updated] = await db
     .update(usersTable)
@@ -105,6 +112,16 @@ router.post("/users/:userId/approve", requireAuth, async (req, res): Promise<voi
     res.status(404).json({ error: "User not found" });
     return;
   }
+
+  // Send approval email + in-app notification
+  sendAccountApprovedEmail(updated.email, updated.name, appUrl).catch(() => {});
+  db.insert(notificationsTable).values({
+    userId: updated.id,
+    type: "account_approved",
+    titleEn: "Account Approved ✅",
+    bodyEn: "Your account has been approved. Welcome to PropOS CRM!",
+    link: "/home",
+  }).catch(() => {});
 
   res.json(sanitizeUser(updated));
 });
@@ -128,6 +145,9 @@ router.post("/users/:userId/reject", requireAuth, async (req, res): Promise<void
     res.status(404).json({ error: "User not found" });
     return;
   }
+
+  // Send rejection email
+  sendAccountRejectedEmail(updated.email, updated.name, reason ?? null).catch(() => {});
 
   res.json(sanitizeUser(updated));
 });

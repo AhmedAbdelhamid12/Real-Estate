@@ -37,3 +37,8 @@ externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+APP_URL = "https://c860bb54-add6-49b8-aa65-808908863fe3-00-gn8ftuy9aokc.riker.replit.dev"

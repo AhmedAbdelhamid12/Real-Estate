@@ -1,15 +1,22 @@
 import { Router } from "express";
-import { db, leadsTable, leadActivitiesTable, usersTable, projectsTable } from "@workspace/db";
+import { db, leadsTable, leadActivitiesTable, usersTable, projectsTable, notificationsTable } from "@workspace/db";
 import { eq, ilike, and, isNull } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 import multer from "multer";
 import XLSX from "xlsx";
+import { sendLeadAssignedEmail, sendLeadStatusChangedEmail } from "../lib/email";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const router = Router();
 
 const STATUSES = ["new", "called", "qualified", "proposal", "negotiation", "won", "lost"] as const;
+
+function getAppUrl(req: { headers: { host?: string } }): string {
+  if (process.env["APP_URL"]) return process.env["APP_URL"];
+  const protocol = process.env["NODE_ENV"] === "production" ? "https" : "http";
+  return `${protocol}://${req.headers.host ?? "localhost"}`;
+}
 
 // GET /leads
 router.get("/leads", requireAuth, async (req, res): Promise<void> => {
@@ -73,7 +80,7 @@ router.get("/leads/kanban", requireAuth, async (req, res): Promise<void> => {
 
 // POST /leads
 router.post("/leads", requireAuth, async (req, res): Promise<void> => {
-  const { name, phone, email, source, status, projectId, notes, deadline } = req.body as Record<string, string | null>;
+  const { name, phone, email, source, status, projectId, notes, deadline, primarySalesId } = req.body as Record<string, string | null>;
   const currentUser = req.currentUser!;
 
   if (!name) {
@@ -92,9 +99,40 @@ router.post("/leads", requireAuth, async (req, res): Promise<void> => {
       projectId: projectId ?? null,
       notes: notes ?? null,
       deadline: deadline ? new Date(deadline) : null,
+      primarySalesId: primarySalesId ?? null,
       createdBy: currentUser.id,
     })
     .returning();
+
+  // Notify assigned sales rep
+  if (primarySalesId) {
+    const appUrl = getAppUrl(req);
+    const [salesUser, project] = await Promise.all([
+      db.select().from(usersTable).where(eq(usersTable.id, primarySalesId)).limit(1).then(r => r[0]),
+      projectId ? db.select().from(projectsTable).where(eq(projectsTable.id, projectId)).limit(1).then(r => r[0]) : Promise.resolve(null),
+    ]);
+
+    if (salesUser) {
+      // In-app notification
+      db.insert(notificationsTable).values({
+        userId: salesUser.id,
+        type: "lead_assigned",
+        titleEn: "New Lead Assigned",
+        bodyEn: `You have been assigned a new lead: ${name}.`,
+        link: `/leads/${lead.id}`,
+      }).catch(() => {});
+
+      // Email notification
+      sendLeadAssignedEmail(
+        salesUser.email,
+        salesUser.name,
+        name,
+        phone ?? "N/A",
+        project?.name ?? null,
+        appUrl
+      ).catch(() => {});
+    }
+  }
 
   res.status(201).json({ ...lead, projectName: null, primarySalesName: null });
 });
@@ -127,9 +165,17 @@ router.get("/leads/:leadId", requireAuth, async (req, res): Promise<void> => {
 router.patch("/leads/:leadId", requireAuth, async (req, res): Promise<void> => {
   const { leadId } = req.params as { leadId: string };
   const body = req.body as Record<string, unknown>;
+  const appUrl = getAppUrl(req);
+
+  // Get old lead to detect assignment/status changes
+  const [oldLead] = await db.select().from(leadsTable).where(eq(leadsTable.id, leadId)).limit(1);
+  if (!oldLead) {
+    res.status(404).json({ error: "Lead not found" });
+    return;
+  }
 
   const updateData: Record<string, unknown> = {};
-  const fields = ["name", "phone", "email", "source", "status", "projectId", "notes", "nextAction", "nextActionAt", "deadline"];
+  const fields = ["name", "phone", "email", "source", "status", "projectId", "notes", "nextAction", "nextActionAt", "deadline", "primarySalesId", "outcome"];
   for (const f of fields) {
     if (f in body) updateData[camelToSnake(f)] = body[f] === null ? null : body[f];
   }
@@ -146,6 +192,40 @@ router.patch("/leads/:leadId", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
+  // Notify on assignment change
+  const newSalesId = updated.primarySalesId;
+  if (newSalesId && newSalesId !== oldLead.primarySalesId) {
+    const [salesUser, project] = await Promise.all([
+      db.select().from(usersTable).where(eq(usersTable.id, newSalesId)).limit(1).then(r => r[0]),
+      updated.projectId ? db.select().from(projectsTable).where(eq(projectsTable.id, updated.projectId)).limit(1).then(r => r[0]) : Promise.resolve(null),
+    ]);
+    if (salesUser) {
+      db.insert(notificationsTable).values({
+        userId: salesUser.id,
+        type: "lead_assigned",
+        titleEn: "New Lead Assigned",
+        bodyEn: `You have been assigned a new lead: ${updated.name}.`,
+        link: `/leads/${leadId}`,
+      }).catch(() => {});
+      sendLeadAssignedEmail(salesUser.email, salesUser.name, updated.name, updated.phone ?? "N/A", project?.name ?? null, appUrl).catch(() => {});
+    }
+  }
+
+  // Notify on status change
+  if (updated.status !== oldLead.status && newSalesId) {
+    const [salesUser] = await db.select().from(usersTable).where(eq(usersTable.id, newSalesId)).limit(1);
+    if (salesUser) {
+      db.insert(notificationsTable).values({
+        userId: salesUser.id,
+        type: updated.status === "won" ? "lead_won" : "lead_status_changed",
+        titleEn: updated.status === "won" ? "Deal Closed! 🎉" : "Lead Status Updated",
+        bodyEn: `${updated.name} moved from ${oldLead.status} to ${updated.status}.`,
+        link: `/leads/${leadId}`,
+      }).catch(() => {});
+      sendLeadStatusChangedEmail(salesUser.email, salesUser.name, updated.name, oldLead.status, updated.status, appUrl).catch(() => {});
+    }
+  }
+
   res.json({ ...updated, projectName: null, primarySalesName: null });
 });
 
@@ -160,11 +240,14 @@ router.delete("/leads/:leadId", requireAuth, async (req, res): Promise<void> => 
 router.post("/leads/:leadId/assign", requireAuth, async (req, res): Promise<void> => {
   const { leadId } = req.params as { leadId: string };
   const { salesId } = req.body as { salesId?: string };
+  const appUrl = getAppUrl(req);
 
   if (!salesId) {
     res.status(400).json({ error: "salesId required" });
     return;
   }
+
+  const [oldLead] = await db.select().from(leadsTable).where(eq(leadsTable.id, leadId)).limit(1);
 
   const [updated] = await db
     .update(leadsTable)
@@ -177,7 +260,22 @@ router.post("/leads/:leadId/assign", requireAuth, async (req, res): Promise<void
     return;
   }
 
-  const [salesUser] = await db.select().from(usersTable).where(eq(usersTable.id, salesId)).limit(1);
+  const [salesUser, project] = await Promise.all([
+    db.select().from(usersTable).where(eq(usersTable.id, salesId)).limit(1).then(r => r[0]),
+    updated.projectId ? db.select().from(projectsTable).where(eq(projectsTable.id, updated.projectId)).limit(1).then(r => r[0]) : Promise.resolve(null),
+  ]);
+
+  // Notify newly assigned sales rep
+  if (salesUser && salesId !== oldLead?.primarySalesId) {
+    db.insert(notificationsTable).values({
+      userId: salesUser.id,
+      type: "lead_assigned",
+      titleEn: "New Lead Assigned",
+      bodyEn: `You have been assigned a new lead: ${updated.name}.`,
+      link: `/leads/${leadId}`,
+    }).catch(() => {});
+    sendLeadAssignedEmail(salesUser.email, salesUser.name, updated.name, updated.phone ?? "N/A", project?.name ?? null, appUrl).catch(() => {});
+  }
 
   res.json({ ...updated, projectName: null, primarySalesName: salesUser?.name ?? null });
 });
@@ -186,11 +284,14 @@ router.post("/leads/:leadId/assign", requireAuth, async (req, res): Promise<void
 router.patch("/leads/:leadId/status", requireAuth, async (req, res): Promise<void> => {
   const { leadId } = req.params as { leadId: string };
   const { status } = req.body as { status?: string };
+  const appUrl = getAppUrl(req);
 
   if (!status) {
     res.status(400).json({ error: "status required" });
     return;
   }
+
+  const [oldLead] = await db.select().from(leadsTable).where(eq(leadsTable.id, leadId)).limit(1);
 
   const [updated] = await db
     .update(leadsTable)
@@ -201,6 +302,21 @@ router.patch("/leads/:leadId/status", requireAuth, async (req, res): Promise<voi
   if (!updated) {
     res.status(404).json({ error: "Lead not found" });
     return;
+  }
+
+  // Notify assigned sales rep on status change
+  if (oldLead && updated.status !== oldLead.status && updated.primarySalesId) {
+    const [salesUser] = await db.select().from(usersTable).where(eq(usersTable.id, updated.primarySalesId)).limit(1);
+    if (salesUser) {
+      db.insert(notificationsTable).values({
+        userId: salesUser.id,
+        type: updated.status === "won" ? "lead_won" : "lead_status_changed",
+        titleEn: updated.status === "won" ? "Deal Closed! 🎉" : "Lead Status Updated",
+        bodyEn: `${updated.name} moved from ${oldLead.status} to ${updated.status}.`,
+        link: `/leads/${leadId}`,
+      }).catch(() => {});
+      sendLeadStatusChangedEmail(salesUser.email, salesUser.name, updated.name, oldLead.status, updated.status, appUrl).catch(() => {});
+    }
   }
 
   res.json({ ...updated, projectName: null, primarySalesName: null });
