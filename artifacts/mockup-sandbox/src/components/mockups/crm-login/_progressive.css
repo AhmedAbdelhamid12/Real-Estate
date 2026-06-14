@@ -1,0 +1,38 @@
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideRightFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-right-fade {
+  animation: slideRightFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+:root {
+  --til-navy: #0F2D52;
+  --til-navy-dark: #0A1E38;
+  --til-navy-deep: #060F1C;
+  --til-gold: #C9A84C;
+  --til-gold-light: #E2C37A;
+  --til-offwhite: #F8F9FC;
+}
