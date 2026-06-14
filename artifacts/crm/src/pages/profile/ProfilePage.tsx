@@ -223,7 +223,7 @@ export function ProfilePage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Phone Number</FormLabel>
-                          <FormControl><Input placeholder="+971..." {...field} /></FormControl>
+                          <FormControl><Input placeholder="+20..." {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -340,7 +340,7 @@ export function ProfilePage() {
                           <MessageCircle className="w-4 h-4 text-green-500" /> WhatsApp Number
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="+971501234567" {...field} />
+                          <Input placeholder="+201012345678" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

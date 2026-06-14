@@ -440,7 +440,7 @@ export function RegisterPage() {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  placeholder="+971 50 123 4567"
+                  placeholder="+20 10 1234 5678"
                   {...form.register("phone")}
                   className={form.formState.errors.phone ? "border-destructive" : ""}
                 />

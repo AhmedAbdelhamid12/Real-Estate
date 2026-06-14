@@ -75,17 +75,17 @@ export function TopBar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <div className="flex items-center justify-between px-4 py-2 border-b">
-              <h3 className="font-semibold text-sm">Notifications</h3>
+              <h3 className="font-semibold text-sm">{t("topbar.notifications")}</h3>
               {unreadCount > 0 && (
                 <Button variant="ghost" size="sm" onClick={handleMarkAllRead} className="h-auto py-1 px-2 text-xs">
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Mark all read
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> {t("topbar.mark_all_read")}
                 </Button>
               )}
             </div>
             <ScrollArea className="h-[300px]">
               {notifications.length === 0 ? (
                 <div className="p-4 text-center text-sm text-muted-foreground">
-                  No notifications
+                  {t("topbar.no_notifications")}
                 </div>
               ) : (
                 <div className="flex flex-col">
@@ -97,7 +97,9 @@ export function TopBar() {
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium leading-none">{notification.titleEn}</span>
+                        <span className="text-sm font-medium leading-none">
+                          {locale === "ar" ? (notification.titleAr || notification.titleEn) : notification.titleEn}
+                        </span>
                         {!notification.isRead && (
                           <Button
                             variant="ghost"
@@ -109,7 +111,9 @@ export function TopBar() {
                           </Button>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground">{notification.bodyEn}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {locale === "ar" ? (notification.bodyAr || notification.bodyEn) : notification.bodyEn}
+                      </span>
                       <span className="text-[10px] text-muted-foreground mt-1">
                         {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                       </span>
@@ -160,14 +164,14 @@ export function TopBar() {
               <DropdownMenuItem asChild>
                 <Link href="/profile" className="w-full flex items-center cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                  <span>{t("topbar.profile")}</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 cursor-pointer">
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t("topbar.logout")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

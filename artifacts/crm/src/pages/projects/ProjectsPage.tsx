@@ -120,7 +120,7 @@ export function ProjectsPage() {
                       <FormItem>
                         <FormLabel>Location</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Dubai Marina" {...field} />
+                          <Input placeholder="e.g. New Cairo" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -145,7 +145,7 @@ export function ProjectsPage() {
                   name="avgPrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Average Price (AED)</FormLabel>
+                      <FormLabel>Average Price (EGP)</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="1000000" {...field} />
                       </FormControl>
@@ -227,7 +227,7 @@ export function ProjectsPage() {
                       <p className="text-xs text-muted-foreground mb-1">Starting from</p>
                       <p className="font-semibold">
                         {project.avgPrice 
-                          ? new Intl.NumberFormat("en-AE", { style: "currency", currency: "AED", maximumFractionDigits: 0 }).format(Number(project.avgPrice))
+                          ? new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(Number(project.avgPrice))
                           : "TBA"}
                       </p>
                     </div>

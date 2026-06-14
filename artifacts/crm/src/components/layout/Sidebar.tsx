@@ -38,34 +38,34 @@ export function Sidebar() {
 
   const navItems = [
     {
-      title: "Overview",
+      title: t("sidebar.overview"),
       items: [
         { href: "/home", label: t("nav.home"), icon: Home },
         { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
       ],
     },
     {
-      title: "Pipeline",
+      title: t("sidebar.pipeline"),
       items: [
         { href: "/leads", label: t("nav.leads.list"), icon: ListTodo },
         { href: "/leads/kanban", label: t("nav.leads.kanban"), icon: Kanban },
       ],
     },
     {
-      title: "Inventory",
+      title: t("sidebar.inventory"),
       items: [
         { href: "/projects", label: t("nav.projects"), icon: Building2 },
         { href: "/resale", label: t("nav.resale"), icon: Briefcase },
       ],
     },
     {
-      title: "Clients",
+      title: t("sidebar.clients"),
       items: [
         { href: "/clients", label: t("nav.clients"), icon: Users },
       ],
     },
     {
-      title: "People",
+      title: t("sidebar.people"),
       items: [
         { href: "/employees", label: t("nav.employees"), icon: Users2 },
         ...(isAdminOrHigher
@@ -74,7 +74,7 @@ export function Sidebar() {
       ],
     },
     {
-      title: "Tools",
+      title: t("sidebar.tools"),
       items: [
         { href: "/planner", label: t("nav.planner"), icon: Calendar },
         ...(isAdminOrHigher ? [{ href: "/reports", label: t("nav.reports"), icon: FileText }] : []),

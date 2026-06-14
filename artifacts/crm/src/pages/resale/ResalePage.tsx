@@ -293,7 +293,7 @@ export function ResalePage() {
     if (!price) return "-";
     const num = Number(price);
     if (isNaN(num)) return price;
-    return new Intl.NumberFormat("en-AE", { style: "currency", currency: "AED", maximumFractionDigits: 0 }).format(num);
+    return new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(num);
   };
 
   const unitTypes = [...new Set(allUnits.map((u) => u.unitType).filter(Boolean) as string[])];
@@ -351,7 +351,7 @@ export function ResalePage() {
                 <div className="grid grid-cols-3 gap-4">
                   <FormField control={form.control} name="price" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price (AED)</FormLabel>
+                      <FormLabel>Price (EGP)</FormLabel>
                       <FormControl><Input placeholder="1500000" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>

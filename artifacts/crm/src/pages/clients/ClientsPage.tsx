@@ -101,7 +101,7 @@ export function ClientsPage() {
                       <FormItem>
                         <FormLabel>Phone *</FormLabel>
                         <FormControl>
-                          <Input placeholder="+971..." {...field} />
+                          <Input placeholder="+20..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -224,7 +224,7 @@ export function ClientsPage() {
                     </TableCell>
                     <TableCell className="font-medium">
                       {client.dealValue 
-                        ? new Intl.NumberFormat("en-AE", { style: "currency", currency: "AED", maximumFractionDigits: 0 }).format(Number(client.dealValue))
+                        ? new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(Number(client.dealValue))
                         : "-"}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">

@@ -113,7 +113,7 @@ export function LeadsListPage() {
                       <FormItem>
                         <FormLabel>Phone *</FormLabel>
                         <FormControl>
-                          <Input placeholder="+971..." {...field} />
+                          <Input placeholder="+20..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

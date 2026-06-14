@@ -39,7 +39,7 @@ function downloadCsv(rows: string[][], filename: string) {
 }
 
 function formatPrice(val: number) {
-  return new Intl.NumberFormat("en-AE", { style: "currency", currency: "AED", maximumFractionDigits: 0 }).format(val);
+  return new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(val);
 }
 
 export function ReportsPage() {
@@ -114,7 +114,7 @@ export function ReportsPage() {
       ...(leadsReport?.bySource ?? []).map((s: any) => [s.source, String(s.count)]),
       [],
       ["=== RESALE UNITS ==="],
-      ["Project", "Units", "Total Value (AED)"],
+      ["Project", "Units", "Total Value (EGP)"],
       ...(resaleReport?.byProject ?? []).map((p) => [p.project, String(p.count), String(p.totalValue)]),
     ];
     downloadCsv(rows, `full-report-${rangeLabel}.csv`);
@@ -396,7 +396,7 @@ export function ReportsPage() {
               { label: "Total Units", value: resaleReport?.total ?? 0, color: "text-blue-500", bg: "bg-blue-500/10" },
               { label: "Available", value: resaleReport?.activeCount ?? 0, color: "text-emerald-500", bg: "bg-emerald-500/10" },
               { label: "Inactive", value: resaleReport?.inactiveCount ?? 0, color: "text-amber-500", bg: "bg-amber-500/10" },
-              { label: "Portfolio Value", value: resaleReport?.totalValue ? formatPrice(resaleReport.totalValue) : "AED 0", color: "text-violet-500", bg: "bg-violet-500/10" },
+              { label: "Portfolio Value", value: resaleReport?.totalValue ? formatPrice(resaleReport.totalValue) : "EGP 0", color: "text-violet-500", bg: "bg-violet-500/10" },
             ].map((kpi) => (
               <Card key={kpi.label} className="border-0 shadow-md">
                 <CardContent className="p-4 flex items-center gap-3">

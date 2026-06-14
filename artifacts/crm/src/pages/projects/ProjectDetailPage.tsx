@@ -114,7 +114,7 @@ export function ProjectDetailPage() {
                 <p className="text-sm text-muted-foreground mb-1">Avg Price</p>
                 <p className="font-medium">
                   {project.avgPrice 
-                    ? new Intl.NumberFormat("en-AE", { style: "currency", currency: "AED", maximumFractionDigits: 0 }).format(Number(project.avgPrice))
+                    ? new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(Number(project.avgPrice))
                     : "-"}
                 </p>
               </div>

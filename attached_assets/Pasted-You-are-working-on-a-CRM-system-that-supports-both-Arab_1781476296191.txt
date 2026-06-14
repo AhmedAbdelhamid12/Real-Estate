@@ -1,0 +1,97 @@
+You are working on a CRM system that supports both Arabic and English languages.
+The system is built for the Egyptian market. Fix the following issues in BOTH
+web and mobile code:
+
+---
+
+## 🇪🇬 ISSUE 1 — Region/Locale is set to UAE instead of Egypt
+
+- Find all locale, region, currency, phone format, and country settings
+- Change any UAE reference (AE, UAE, دولة الإمارات, +971, AED) to Egypt
+  (EG, Egypt, مصر, +20, EGP)
+- Default country in all dropdowns, phone inputs, and address fields
+  must be Egypt
+- Timezone must be: Africa/Cairo (UTC+3)
+- Currency: EGP (Egyptian Pound / جنيه مصري)
+
+---
+
+## 🌐 ISSUE 2 — Arabic language is incomplete across the system
+
+When the user selects Arabic:
+
+### A) Full Translation Required:
+- Every single page must be fully translated — no English text should
+  remain visible anywhere when Arabic is selected
+- All UI elements: buttons, labels, placeholders, tooltips, error messages,
+  success messages, loading text, empty state messages, table headers,
+  form fields, dropdown options, modal titles, notifications — ALL must
+  be in Arabic
+- All static data and default values displayed to the user must be in Arabic
+- Section titles, page titles, breadcrumbs — all in Arabic
+
+### B) Sidebar / Side Navigation:
+- Do NOT move or flip the sidebar to the other side when Arabic is selected
+- Keep the sidebar in its ORIGINAL position
+- Only translate the sidebar menu items text to Arabic
+- Keep icons in place, only the text labels change to Arabic
+
+### C) RTL Layout:
+- When Arabic is selected, apply RTL (right-to-left) direction to the
+  content area ONLY if it doesn't break the sidebar position
+- Text alignment inside cards, tables, and forms should be right-aligned
+  in Arabic mode
+- Do not flip the entire layout, only adjust text direction
+
+---
+
+## 🗣️ ISSUE 3 — Arabic must be natural, not literal translation
+
+- Use natural Egyptian/Arabic CRM terminology, not word-for-word translation
+- Examples of correct terminology:
+  * Customer → عميل (not "زبون")
+  * Lead → عميل محتمل (not "قيادة")
+  * Deal / Opportunity → صفقة
+  * Pipeline → خط المبيعات
+  * Follow up → متابعة
+  * Dashboard → لوحة التحكم
+  * Invoice → فاتورة
+  * Quotation → عرض سعر
+  * Contract → عقد
+  * Task → مهمة
+  * Note → ملاحظة
+  * Contact → جهة اتصال
+  * Account → حساب
+  * Report → تقرير
+  * Settings → الإعدادات
+  * Logout → تسجيل الخروج
+  * Search → بحث
+  * Filter → تصفية
+  * Export → تصدير
+  * Import → استيراد
+
+---
+
+## 📱 ISSUE 4 — Apply all fixes to BOTH platforms
+
+Apply every fix above to:
+1. **Web app** — React / Vue / Angular / HTML (whatever is used)
+2. **Mobile app** — React Native / Flutter / whichever framework is used
+
+Make sure the language selection is synced between web and mobile
+using the same language preference storage (AsyncStorage / localStorage /
+backend user settings).
+
+---
+
+## ✅ Checklist before finishing:
+
+- [ ] No UAE references remain anywhere in the codebase
+- [ ] Egypt is the default country/locale/currency/timezone
+- [ ] Selecting Arabic = 100% Arabic UI on ALL pages
+- [ ] Sidebar stays in position, only text is translated
+- [ ] No English text leaks through when Arabic is selected
+- [ ] Arabic is natural CRM Arabic, not machine/literal translation
+- [ ] RTL text direction applied correctly without breaking layout
+- [ ] Fixes applied in both web and mobile code
+- [ ] Language preference is saved and persists after refresh/reopen
