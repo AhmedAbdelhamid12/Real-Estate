@@ -6,9 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -17,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isSmallScreen = SCREEN_WIDTH < 375;
@@ -53,18 +51,15 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollViewCompat
       style={[s.container, { backgroundColor: c.sidebarBg }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      contentContainerStyle={[
+        s.scroll,
+        { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 32 },
+      ]}
+      showsVerticalScrollIndicator={false}
+      bottomOffset={24}
     >
-      <ScrollView
-        contentContainerStyle={[
-          s.scroll,
-          { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 32 },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
         {/* Header / Logo */}
         <View style={s.header}>
           <View style={s.logoOuter}>
@@ -168,8 +163,7 @@ export default function LoginScreen() {
         <Text style={s.footer}>
           TIL Real Estate Group © {new Date().getFullYear()}
         </Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollViewCompat>
   );
 }
 
