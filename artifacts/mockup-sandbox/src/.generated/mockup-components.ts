@@ -2,7 +2,9 @@
 type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/crm-login/CommandCenter.tsx": () => import("../components/mockups/crm-login/CommandCenter.tsx"),
+  "./components/mockups/crm-login/Polished.tsx": () => import("../components/mockups/crm-login/Polished.tsx"),
   "./components/mockups/crm-login/Progressive.tsx": () => import("../components/mockups/crm-login/Progressive.tsx"),
+  "./components/mockups/crm-login/SplitPanel.tsx": () => import("../components/mockups/crm-login/SplitPanel.tsx"),
   "./components/mockups/crm-login/SplitStory.tsx": () => import("../components/mockups/crm-login/SplitStory.tsx"),
   "./components/mockups/crm-login/ValueFirst.tsx": () => import("../components/mockups/crm-login/ValueFirst.tsx"),
   "./components/mockups/til-crm/ContactDetail.tsx": () => import("../components/mockups/til-crm/ContactDetail.tsx"),
