@@ -84,7 +84,10 @@ export function Sidebar() {
   ];
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border" style={{ position: "relative" }}>
+      {/* Gold top accent line */}
+      <div style={{ height: "2px", background: "linear-gradient(90deg, transparent, #c8a84b 30%, #e8d070 50%, #c8a84b 70%, transparent)", flexShrink: 0 }} />
+
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center justify-between px-4 border-b border-sidebar-border">
         {!isCollapsed && (

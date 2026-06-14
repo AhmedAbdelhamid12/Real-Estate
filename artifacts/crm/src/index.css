@@ -73,4 +73,20 @@
   body {
     @apply font-sans antialiased bg-background text-foreground selection:bg-primary/20 selection:text-primary;
   }
+  .dark body {
+    background-image:
+      linear-gradient(rgba(200, 168, 75, 0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200, 168, 75, 0.028) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+}
+
+@layer utilities {
+  .til-gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,168,75,0.4) 30%, rgba(232,208,112,0.6) 50%, rgba(200,168,75,0.4) 70%, transparent);
+  }
+  .til-card-glow {
+    box-shadow: 0 0 0 1px rgba(200,168,75,0.12), 0 4px 24px rgba(0,0,0,0.4);
+  }
 }

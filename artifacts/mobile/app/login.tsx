@@ -284,7 +284,7 @@ const s = StyleSheet.create({
     opacity: 0.65,
   },
   loginBtnText: {
-    color: "#0A1E38",
+    color: "#060D18",
     fontSize: 15,
     fontWeight: "700" as const,
     letterSpacing: 0.3,

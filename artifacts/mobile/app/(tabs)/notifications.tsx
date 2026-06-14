@@ -57,7 +57,7 @@ export default function NotificationsScreen() {
       {unreadCount > 0 && (
         <TouchableOpacity style={s.markAllBtn} onPress={handleMarkAllRead} activeOpacity={0.75}>
           <View style={s.markAllInner}>
-            <Feather name="check-circle" size={14} color="#0A1E38" />
+            <Feather name="check-circle" size={14} color={c.sidebarActiveFg} />
             <Text style={s.markAllText}>Mark all as read ({unreadCount})</Text>
           </View>
         </TouchableOpacity>
@@ -102,7 +102,7 @@ export default function NotificationsScreen() {
             </View>
             {!item.isRead && (
               <TouchableOpacity onPress={() => handleMarkRead(item.id)} style={s.checkBtn}>
-                <Feather name="check" size={14} color="#0A1E38" />
+                <Feather name="check" size={14} color={c.sidebarActiveFg} />
               </TouchableOpacity>
             )}
           </TouchableOpacity>
@@ -123,7 +123,7 @@ function makeStyles(c: ReturnType<typeof useColors>["colors"], bottomInset: numb
       paddingHorizontal: 14, paddingVertical: 9,
       alignSelf: "flex-start" as const,
     },
-    markAllText: { fontSize: 13, fontWeight: "600" as const, color: "#0A1E38" },
+    markAllText: { fontSize: 13, fontWeight: "600" as const, color: c.sidebarActiveFg },
 
     list:        { paddingHorizontal: 20, paddingTop: 4 },
 

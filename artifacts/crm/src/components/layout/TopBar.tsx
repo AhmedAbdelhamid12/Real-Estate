@@ -56,9 +56,9 @@ export function TopBar() {
   };
 
   return (
-    <header className="h-16 shrink-0 border-b bg-card flex items-center justify-between px-6 z-10 sticky top-0 md:static ml-12 md:ml-0">
+    <header className="h-16 shrink-0 bg-card flex items-center justify-between px-6 z-10 sticky top-0 md:static ml-12 md:ml-0" style={{ borderBottom: "1px solid rgba(200,168,75,0.14)" }}>
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold hidden sm:block tracking-tight" style={{ color: "hsl(213 73% 19%)" }}>
+        <h1 className="text-xl font-semibold hidden sm:block tracking-tight text-foreground">
           TIL Real Estate Group
         </h1>
       </div>

@@ -116,27 +116,27 @@ export const lightColors = {
   tabBarInactive: 'rgba(255,255,255,0.45)',
 } as const;
 
-// ─── SEMANTIC COLORS — DARK THEME ──────────────────────────────────────────
+// ─── SEMANTIC COLORS — DARK THEME (Editorial) ──────────────────────────────
 export const darkColors = {
-  background:        '#060F1C',
-  surface:           '#0A1828',
-  card:              '#0A1828',
-  foreground:        '#F1F5F9',
-  muted:             '#0D1E30',
-  subtle:            '#122540',
-  mutedForeground:   '#64748B',
+  background:        '#080F1C',
+  surface:           '#0D1829',
+  card:              '#0D1A2E',
+  foreground:        '#E4EBF5',
+  muted:             '#0D1829',
+  subtle:            '#1A2D4D',
+  mutedForeground:   '#3D5878',
 
   primary:           '#C9A84C',
   primaryHover:      '#D4B86A',
-  primaryMuted:      'rgba(201,168,76,0.15)',
-  primaryForeground: '#060F1C',
+  primaryMuted:      'rgba(201,168,76,0.12)',
+  primaryForeground: '#080F1C',
 
-  secondary:           '#122540',
-  secondaryForeground: '#F1F5F9',
+  secondary:           '#1A2D4D',
+  secondaryForeground: '#E4EBF5',
 
   accent:           '#C9A84C',
   accentHover:      '#D4B86A',
-  accentForeground: '#060F1C',
+  accentForeground: '#080F1C',
 
   success:           '#4ADE80',
   successMuted:      '#052E16',
@@ -152,23 +152,23 @@ export const darkColors = {
   infoForeground:    '#60A5FA',
 
   destructive:           '#F87171',
-  destructiveForeground: '#060F1C',
+  destructiveForeground: '#080F1C',
 
-  border:  '#1A3A5C',
-  divider: '#0F2240',
-  input:   '#1A3A5C',
+  border:  'rgba(200,168,75,0.15)',
+  divider: 'rgba(200,168,75,0.07)',
+  input:   'rgba(255,255,255,0.07)',
   ring:    '#C9A84C',
 
-  sidebarBg:       '#040C18',
-  sidebarText:     '#E5E7EB',
+  sidebarBg:       '#060D18',
+  sidebarText:     '#C8D8E8',
   sidebarActive:   '#C9A84C',
-  sidebarActiveFg: '#040C18',
-  sidebarHover:    'rgba(201,168,76,0.10)',
-  sidebarBorder:   'rgba(255,255,255,0.06)',
+  sidebarActiveFg: '#060D18',
+  sidebarHover:    'rgba(200,168,75,0.10)',
+  sidebarBorder:   'rgba(200,168,75,0.14)',
 
-  tabBarBg:       '#040C18',
+  tabBarBg:       '#060D18',
   tabBarActive:   '#C9A84C',
-  tabBarInactive: 'rgba(255,255,255,0.40)',
+  tabBarInactive: 'rgba(255,255,255,0.38)',
 } as const;
 
 // ─── CRM STATUS COLORS ─────────────────────────────────────────────────────

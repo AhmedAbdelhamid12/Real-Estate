@@ -5,213 +5,236 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Building, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Building2, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(1, { message: "Password is required" }),
 });
-
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const BASE_URL = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
+
+const STATS = [
+  { num: "1,200+", label: "Active agents" },
+  { num: "EGP 2.4B+", label: "Sales managed" },
+  { num: "38%", label: "Conversion lift" },
+];
 
 export function LoginPage() {
   const [, setLocation] = useLocation();
   const { refetch } = useAuth();
   const login = useLogin();
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = (data: LoginFormValues) => {
     setError(null);
-    login.mutate(
-      { data },
-      {
-        onSuccess: async () => {
-          await refetch();
-          setLocation("/dashboard");
-        },
-        onError: (err) => {
-          setError(
-            (err as any)?.message || "Invalid credentials. Please try again."
-          );
-        },
-      }
-    );
+    login.mutate({ data }, {
+      onSuccess: async () => {
+        await refetch();
+        setLocation("/dashboard");
+      },
+      onError: (err) => {
+        setError((err as any)?.message || "Invalid credentials. Please try again.");
+      },
+    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="bg-primary text-primary-foreground p-3 rounded-xl mb-4 shadow-sm">
-            <Building className="h-8 w-8" />
+    <div style={{
+      minHeight: "100vh", width: "100%",
+      background: "#080f1c",
+      fontFamily: "'Inter', system-ui, sans-serif",
+      display: "flex", flexDirection: "column",
+      position: "relative", overflow: "hidden",
+    }}>
+      {/* Architectural line pattern */}
+      <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.035, pointerEvents: "none" }} viewBox="0 0 1920 1080" preserveAspectRatio="none">
+        {Array.from({ length: 22 }, (_, i) => (
+          <line key={i} x1={i * 92} y1="0" x2={i * 92 + 240} y2="1080" stroke="#c8a84b" strokeWidth="1" />
+        ))}
+        {Array.from({ length: 7 }, (_, i) => (
+          <line key={`h${i}`} x1="0" y1={i * 170} x2="1920" y2={i * 170 + 60} stroke="#c8a84b" strokeWidth="0.5" />
+        ))}
+      </svg>
+
+      {/* Gold top rule */}
+      <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, #c8a84b 20%, #e8d070 50%, #c8a84b 80%, transparent)", opacity: 0.6, flexShrink: 0 }} />
+
+      {/* Top bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 48px", position: "relative", zIndex: 10, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ background: "linear-gradient(135deg, #c8a84b, #e8d070)", padding: "8px", borderRadius: "10px", boxShadow: "0 4px 16px rgba(200,168,75,0.3)" }}>
+            <Building2 style={{ width: 18, height: 18, color: "#080f1c", strokeWidth: 2.5 }} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">TIL Real Estate Group</h1>
-          <p className="text-muted-foreground mt-2">
-            Premium Real Estate CRM Platform
+          <span style={{ fontSize: "14px", fontWeight: 600, color: "#8BAFC7", letterSpacing: "0.02em" }}>TIL Real Estate Group</span>
+        </div>
+        <span style={{ fontSize: "11px", color: "#2d4459", letterSpacing: "0.12em", textTransform: "uppercase" }}>Premium CRM</span>
+      </div>
+
+      {/* Main layout */}
+      <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "0 48px 48px", position: "relative", zIndex: 10, gap: "0", minHeight: 0 }}>
+
+        {/* LEFT: Display headline */}
+        <div style={{ flex: "0 0 52%", paddingRight: "72px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}>
+            <div style={{ width: 28, height: "1px", background: "#c8a84b" }} />
+            <span style={{ fontSize: "11px", fontWeight: 600, color: "#c8a84b", letterSpacing: "0.16em", textTransform: "uppercase" }}>Welcome back</span>
+          </div>
+
+          <h1 style={{ fontSize: "clamp(56px, 6vw, 88px)", fontWeight: 800, lineHeight: 0.95, letterSpacing: "-0.04em", color: "#E4EBF5", margin: "0 0 28px" }}>
+            Sign<br />
+            <span style={{ WebkitTextStroke: "2px #c8a84b", color: "transparent" }}>In</span>
+            <span style={{ color: "#c8a84b" }}>.</span>
+          </h1>
+
+          <p style={{ fontSize: "15px", lineHeight: 1.75, color: "#3D5878", maxWidth: "400px", marginBottom: "0" }}>
+            Egypt's most sophisticated real estate intelligence platform. Manage leads, close deals, and track performance across every asset class.
           </p>
+
+          <div style={{ display: "flex", gap: "40px", marginTop: "48px", borderTop: "1px solid rgba(200,168,75,0.12)", paddingTop: "28px" }}>
+            {STATS.map(({ num, label }) => (
+              <div key={label}>
+                <div style={{ fontSize: "20px", fontWeight: 700, color: "#c8a84b", marginBottom: "4px" }}>{num}</div>
+                <div style={{ fontSize: "11px", color: "#2d4459", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <Card className="shadow-lg border-muted">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold">
-              Welcome back
-            </CardTitle>
-            <CardDescription>
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
-              {error && (
-                <Alert variant="destructive" className="py-3">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+        {/* Vertical divider */}
+        <div style={{ width: "1px", alignSelf: "stretch", margin: "0 52px", background: "linear-gradient(180deg, transparent, rgba(200,168,75,0.18) 25%, rgba(200,168,75,0.18) 75%, transparent)", flexShrink: 0 }} />
+
+        {/* RIGHT: Form */}
+        <div style={{ flex: 1, maxWidth: "380px" }}>
+          <div style={{ fontSize: "11px", color: "#2d4459", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "36px" }}>
+            Sign in to your account
+          </div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            {error && (
+              <div style={{ marginBottom: "20px", padding: "10px 14px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: "8px", fontSize: "13px", color: "#F87171" }}>
+                {error}
+              </div>
+            )}
+
+            {/* Email */}
+            <div style={{ marginBottom: "28px" }}>
+              <label style={{ display: "block", fontSize: "10px", fontWeight: 600, color: focusedField === "email" ? "#c8a84b" : "#3D5878", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px", transition: "color 0.2s" }}>
+                Email address
+              </label>
+              <input
+                type="email"
+                placeholder="name@example.com"
+                autoComplete="email"
+                {...form.register("email")}
+                onFocus={() => setFocusedField("email")}
+                onBlur={() => setFocusedField(null)}
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  background: "transparent", border: "none",
+                  borderBottom: `1px solid ${focusedField === "email" ? "#c8a84b" : form.formState.errors.email ? "#F87171" : "rgba(255,255,255,0.1)"}`,
+                  padding: "10px 0", color: "#C8D8E8", fontSize: "15px", outline: "none", transition: "border-color 0.2s",
+                }}
+              />
+              {form.formState.errors.email && (
+                <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>{form.formState.errors.email.message}</p>
               )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  {...form.register("email")}
-                  className={
-                    form.formState.errors.email ? "border-destructive" : ""
-                  }
-                />
-                {form.formState.errors.email && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  {...form.register("password")}
-                  className={
-                    form.formState.errors.password ? "border-destructive" : ""
-                  }
-                />
-                {form.formState.errors.password && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full mt-6"
-                disabled={login.isPending}
-              >
-                {login.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                Sign in
-              </Button>
-            </form>
-
-            {/* OAuth */}
-            <div className="space-y-3">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <a href={`${BASE_URL}/api/auth/google`}>
-                  <Button variant="outline" className="w-full" type="button">
-                    <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
-                      <path
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        fill="#34A853"
-                      />
-                      <path
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        fill="#EA4335"
-                      />
-                    </svg>
-                    Google
-                  </Button>
-                </a>
-                <a href={`${BASE_URL}/api/auth/facebook`}>
-                  <Button variant="outline" className="w-full" type="button">
-                    <svg
-                      className="h-4 w-4 mr-2"
-                      fill="#1877F2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                    </svg>
-                    Facebook
-                  </Button>
-                </a>
-              </div>
             </div>
-          </CardContent>
-          <CardFooter className="flex justify-center border-t p-6">
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                href="/register"
-                className="text-primary hover:underline font-medium"
-              >
-                Request access
-              </Link>
-            </p>
-          </CardFooter>
-        </Card>
+
+            {/* Password */}
+            <div style={{ marginBottom: "36px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <label style={{ fontSize: "10px", fontWeight: 600, color: focusedField === "password" ? "#c8a84b" : "#3D5878", textTransform: "uppercase", letterSpacing: "0.1em", transition: "color 0.2s" }}>
+                  Password
+                </label>
+                <Link href="/forgot-password" style={{ fontSize: "12px", color: "#c8a84b", textDecoration: "none", opacity: 0.75 }}>
+                  Forgot?
+                </Link>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  {...form.register("password")}
+                  onFocus={() => setFocusedField("password")}
+                  onBlur={() => setFocusedField(null)}
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    background: "transparent", border: "none",
+                    borderBottom: `1px solid ${focusedField === "password" ? "#c8a84b" : form.formState.errors.password ? "#F87171" : "rgba(255,255,255,0.1)"}`,
+                    padding: "10px 32px 10px 0", color: "#C8D8E8", fontSize: "15px", outline: "none", transition: "border-color 0.2s",
+                  }}
+                />
+                <button type="button" onClick={() => setShowPassword(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", display: "flex", alignItems: "center", padding: 0 }}>
+                  {showPassword ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
+                </button>
+              </div>
+              {form.formState.errors.password && (
+                <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>{form.formState.errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Sign in CTA */}
+            <button
+              type="submit"
+              disabled={login.isPending}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                width: "100%", background: "transparent",
+                border: "1px solid #c8a84b", borderRadius: "4px", padding: "13px 20px",
+                color: login.isPending ? "rgba(200,168,75,0.5)" : "#c8a84b",
+                fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
+                cursor: login.isPending ? "not-allowed" : "pointer", marginBottom: "24px",
+                transition: "all 0.2s",
+              }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {login.isPending && <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} />}
+                Sign in
+              </span>
+              <ArrowRight style={{ width: 15, height: 15 }} />
+            </button>
+          </form>
+
+          {/* OAuth */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "28px" }}>
+            <a href={`${BASE_URL}/api/auth/google`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "10px", fontSize: "13px", color: "#4e6b82", textDecoration: "none" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Google
+            </a>
+            <a href={`${BASE_URL}/api/auth/facebook`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "10px", fontSize: "13px", color: "#4e6b82", textDecoration: "none" }}>
+              <svg width="14" height="14" fill="#1877F2" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Facebook
+            </a>
+          </div>
+
+          <p style={{ fontSize: "12.5px", color: "#2d4459" }}>
+            No account?{" "}
+            <Link href="/register" style={{ color: "#c8a84b", textDecoration: "none", fontWeight: 500 }}>Request access</Link>
+          </p>
+        </div>
       </div>
+
+      {/* Gold bottom rule */}
+      <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, #c8a84b 40%, transparent)", opacity: 0.3, flexShrink: 0 }} />
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

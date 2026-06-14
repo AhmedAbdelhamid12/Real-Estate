@@ -168,7 +168,7 @@ export default function LeadDetailScreen() {
                 onPress={handleLogCall}
                 disabled={createActivity.isPending}
               >
-                <Feather name="phone" size={14} color="#0A1E38" />
+                <Feather name="phone" size={14} color={c.sidebarActiveFg} />
                 <Text style={s.logBtnText}>Log Call</Text>
               </TouchableOpacity>
             </View>
@@ -258,7 +258,7 @@ function makeStyles(c: ReturnType<typeof useColors>["colors"]) {
       flexDirection: "row", alignItems: "center", gap: 6,
       backgroundColor: "#C9A84C", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8,
     },
-    logBtnText:    { color: "#0A1E38", fontWeight: "700" as const, fontSize: 14 },
+    logBtnText:    { color: c.sidebarActiveFg, fontWeight: "700" as const, fontSize: 14 },
 
     activityItem:  {
       flexDirection: "row", gap: 10, padding: 12,
