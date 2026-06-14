@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ActivityIndicator, KeyboardAvoidingView, Platform,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -10,6 +17,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const isSmallScreen = SCREEN_WIDTH < 375;
 
 export default function LoginScreen() {
   const theme = useColors();
@@ -42,23 +52,24 @@ export default function LoginScreen() {
     }
   }
 
-  const s = styles(c, insets.bottom);
-
   return (
     <KeyboardAvoidingView
-      style={[s.container, { paddingTop: insets.top || 60 }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={[s.container, { backgroundColor: c.sidebarBg }]}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={s.scroll}
+        contentContainerStyle={[
+          s.scroll,
+          { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 32 },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Header / Logo */}
         <View style={s.header}>
           <View style={s.logoOuter}>
             <View style={s.logoInner}>
-              <Feather name="home" size={28} color={theme.brand.navyDark} />
+              <Feather name="home" size={isSmallScreen ? 22 : 26} color={theme.brand.navyDark} />
             </View>
           </View>
           <Text style={s.brand}>TIL Group</Text>
@@ -66,15 +77,23 @@ export default function LoginScreen() {
         </View>
 
         {/* Form Card */}
-        <View style={s.formCard}>
-          <Text style={s.welcome}>Welcome back</Text>
-          <Text style={s.welcomeSub}>Sign in to your account</Text>
+        <View style={[s.formCard, { backgroundColor: c.card }]}>
+          <Text style={[s.welcome, { color: c.foreground }]}>Welcome back</Text>
+          <Text style={[s.welcomeSub, { color: c.mutedForeground }]}>
+            Sign in to your account
+          </Text>
 
-          <Text style={s.label}>Email Address</Text>
-          <View style={[s.inputBox, email ? s.inputBoxFocused : null]}>
+          {/* Email */}
+          <Text style={[s.label, { color: c.foreground }]}>Email Address</Text>
+          <View
+            style={[
+              s.inputBox,
+              { backgroundColor: c.muted, borderColor: email ? c.accent : c.border },
+            ]}
+          >
             <Feather name="mail" size={16} color={c.mutedForeground} style={s.inputIcon} />
             <TextInput
-              style={s.input}
+              style={[s.input, { color: c.foreground }]}
               placeholder="you@company.com"
               placeholderTextColor={c.mutedForeground}
               value={email}
@@ -85,11 +104,19 @@ export default function LoginScreen() {
             />
           </View>
 
-          <Text style={[s.label, { marginTop: 16 }]}>Password</Text>
-          <View style={[s.inputBox, password ? s.inputBoxFocused : null]}>
+          {/* Password */}
+          <Text style={[s.label, { color: c.foreground, marginTop: 14 }]}>
+            Password
+          </Text>
+          <View
+            style={[
+              s.inputBox,
+              { backgroundColor: c.muted, borderColor: password ? c.accent : c.border },
+            ]}
+          >
             <Feather name="lock" size={16} color={c.mutedForeground} style={s.inputIcon} />
             <TextInput
-              style={s.input}
+              style={[s.input, { color: c.foreground }]}
               placeholder="••••••••"
               placeholderTextColor={c.mutedForeground}
               value={password}
@@ -97,28 +124,44 @@ export default function LoginScreen() {
               secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={s.eyeBtn}>
-              <Feather name={showPassword ? "eye-off" : "eye"} size={16} color={c.mutedForeground} />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={s.eyeBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Feather
+                name={showPassword ? "eye-off" : "eye"}
+                size={16}
+                color={c.mutedForeground}
+              />
             </TouchableOpacity>
           </View>
 
+          {/* Error */}
           {!!error && (
-            <View style={s.errorBox}>
+            <View
+              style={[
+                s.errorBox,
+                { backgroundColor: c.dangerMuted, borderColor: `${c.danger}30` },
+              ]}
+            >
               <Feather name="alert-circle" size={14} color={c.danger} />
-              <Text style={s.errorText}>{error}</Text>
+              <Text style={[s.errorText, { color: c.danger }]}>{error}</Text>
             </View>
           )}
 
+          {/* Login Button */}
           <TouchableOpacity
             style={[s.loginBtn, isLoading && s.loginBtnDisabled]}
             onPress={handleLogin}
             disabled={isLoading}
             activeOpacity={0.85}
           >
-            {isLoading
-              ? <ActivityIndicator color={theme.brand.navyDark} />
-              : <Text style={s.loginBtnText}>Sign In</Text>
-            }
+            {isLoading ? (
+              <ActivityIndicator color={theme.brand.navyDark} />
+            ) : (
+              <Text style={s.loginBtnText}>Sign In</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -130,62 +173,133 @@ export default function LoginScreen() {
   );
 }
 
-function styles(c: ReturnType<typeof useColors>["colors"], bottomInset: number) {
-  return StyleSheet.create({
-    container:     { flex: 1, backgroundColor: c.sidebarBg },
-    scroll:        { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingBottom: bottomInset + 24 },
-    header:        { alignItems: "center", marginBottom: 36 },
-    logoOuter:     {
-      width: 76, height: 76, borderRadius: 22,
-      backgroundColor: "rgba(201,168,76,0.18)",
-      alignItems: "center", justifyContent: "center",
-      marginBottom: 16,
-    },
-    logoInner:     {
-      width: 60, height: 60, borderRadius: 16,
-      backgroundColor: "#C9A84C",
-      alignItems: "center", justifyContent: "center",
-      shadowColor: "#C9A84C", shadowOpacity: 0.5, shadowRadius: 16, elevation: 8,
-    },
-    brand:         { fontSize: 26, fontWeight: "700" as const, color: "#C9A84C", letterSpacing: 0.5 },
-    subtitle:      { fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 4 },
+const s = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scroll: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingHorizontal: isSmallScreen ? 16 : 24,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
+  logoOuter: {
+    width: isSmallScreen ? 64 : 72,
+    height: isSmallScreen ? 64 : 72,
+    borderRadius: 20,
+    backgroundColor: "rgba(201,168,76,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+  },
+  logoInner: {
+    width: isSmallScreen ? 50 : 56,
+    height: isSmallScreen ? 50 : 56,
+    borderRadius: 15,
+    backgroundColor: "#C9A84C",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#C9A84C",
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  brand: {
+    fontSize: isSmallScreen ? 22 : 24,
+    fontWeight: "700" as const,
+    color: "#C9A84C",
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: isSmallScreen ? 12 : 13,
+    color: "rgba(255,255,255,0.55)",
+    marginTop: 4,
+  },
 
-    formCard:      {
-      backgroundColor: c.card, borderRadius: 20, padding: 24,
-      shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 24, elevation: 10,
-    },
-    welcome:       { fontSize: 22, fontWeight: "700" as const, color: c.foreground, marginBottom: 4 },
-    welcomeSub:    { fontSize: 14, color: c.mutedForeground, marginBottom: 24 },
+  formCard: {
+    borderRadius: 20,
+    padding: isSmallScreen ? 20 : 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 10,
+  },
+  welcome: {
+    fontSize: isSmallScreen ? 19 : 21,
+    fontWeight: "700" as const,
+    marginBottom: 4,
+  },
+  welcomeSub: {
+    fontSize: 13,
+    marginBottom: 22,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    marginBottom: 6,
+  },
+  inputBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
+    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    height: 48,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+  },
+  eyeBtn: {
+    padding: 4,
+  },
 
-    label:         { fontSize: 13, fontWeight: "600" as const, color: c.foreground, marginBottom: 6 },
-    inputBox:      {
-      flexDirection: "row", alignItems: "center",
-      backgroundColor: c.muted, borderRadius: 12,
-      borderWidth: 1.5, borderColor: c.border,
-      paddingHorizontal: 14, height: 50,
-    },
-    inputBoxFocused: { borderColor: c.accent },
-    inputIcon:     { marginRight: 10 },
-    input:         { flex: 1, fontSize: 15, color: c.foreground },
-    eyeBtn:        { padding: 6 },
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+  },
+  errorText: {
+    fontSize: 13,
+    flex: 1,
+  },
 
-    errorBox:      {
-      flexDirection: "row", alignItems: "center", gap: 6,
-      backgroundColor: c.dangerMuted,
-      borderRadius: 10, padding: 12, marginTop: 12,
-      borderWidth: 1, borderColor: `${c.danger}30`,
-    },
-    errorText:     { color: c.danger, fontSize: 13, flex: 1 },
+  loginBtn: {
+    backgroundColor: "#C9A84C",
+    borderRadius: 13,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 22,
+    shadowColor: "#C9A84C",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 7,
+  },
+  loginBtnDisabled: {
+    opacity: 0.65,
+  },
+  loginBtnText: {
+    color: "#0A1E38",
+    fontSize: 15,
+    fontWeight: "700" as const,
+    letterSpacing: 0.3,
+  },
 
-    loginBtn:      {
-      backgroundColor: "#C9A84C", borderRadius: 13,
-      height: 52, alignItems: "center", justifyContent: "center",
-      marginTop: 24,
-      shadowColor: "#C9A84C", shadowOpacity: 0.40, shadowRadius: 14, elevation: 7,
-    },
-    loginBtnDisabled: { opacity: 0.65 },
-    loginBtnText:  { color: "#0A1E38", fontSize: 16, fontWeight: "700" as const, letterSpacing: 0.3 },
-
-    footer:        { textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 32 },
-  });
-}
+  footer: {
+    textAlign: "center",
+    color: "rgba(255,255,255,0.35)",
+    fontSize: 12,
+    marginTop: 28,
+  },
+});

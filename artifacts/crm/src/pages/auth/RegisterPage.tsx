@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import {
   useRegister,
   useVerifyEmail,
   useListTeamLeaders,
+  apiFetch,
 } from "@workspace/api-client-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +29,31 @@ import {
 } from "@/components/ui/select";
 import { Building, Loader2, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
+const RESEND_COOLDOWN = 60;
+
+function useResendCountdown() {
+  const [seconds, setSeconds] = useState(RESEND_COOLDOWN);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const start = useCallback(() => {
+    setSeconds(RESEND_COOLDOWN);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setSeconds((s) => {
+        if (s <= 1) {
+          clearInterval(timerRef.current!);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+
+  return { seconds, start, canResend: seconds === 0 };
+}
 
 const registerSchema = z
   .object({
@@ -121,10 +147,13 @@ export function RegisterPage() {
   const { data: teamLeaders = [] } = useListTeamLeaders();
 
   const [error, setError] = useState<string | null>(null);
+  const [resendMsg, setResendMsg] = useState<string | null>(null);
+  const [isResending, setIsResending] = useState(false);
   const [stage, setStage] = useState<"register" | "verify" | "pending">(
     "register"
   );
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const { seconds, start: startCountdown, canResend } = useResendCountdown();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -163,12 +192,36 @@ export function RegisterPage() {
         onSuccess: () => {
           setRegisteredEmail(data.email);
           setStage("verify");
+          startCountdown();
         },
         onError: (err) => {
           setError((err as any)?.message || "Registration failed. Please try again.");
         },
       }
     );
+  };
+
+  const handleResend = async () => {
+    setResendMsg(null);
+    setError(null);
+    setIsResending(true);
+    try {
+      const res = await apiFetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: registeredEmail }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        throw new Error(data.error ?? "Failed to resend code");
+      }
+      setResendMsg("A new code has been sent to your email.");
+      startCountdown();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend code");
+    } finally {
+      setIsResending(false);
+    }
   };
 
   const onVerify = (data: VerifyFormValues) => {
@@ -221,6 +274,11 @@ export function RegisterPage() {
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
+                {resendMsg && (
+                  <Alert className="py-3 border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-400">
+                    <AlertDescription>{resendMsg}</AlertDescription>
+                  </Alert>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="code">Verification code</Label>
                   <Input
@@ -228,7 +286,7 @@ export function RegisterPage() {
                     inputMode="numeric"
                     maxLength={6}
                     placeholder="123456"
-                    className={`text-center text-2xl tracking-widest font-mono ${verifyForm.formState.errors.code ? "border-destructive" : ""}`}
+                    className={`text-center text-2xl tracking-widest font-mono h-14 ${verifyForm.formState.errors.code ? "border-destructive" : ""}`}
                     {...verifyForm.register("code")}
                   />
                   {verifyForm.formState.errors.code && (
@@ -239,7 +297,7 @@ export function RegisterPage() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full mt-6"
+                  className="w-full mt-2"
                   disabled={verifyEmail.isPending}
                 >
                   {verifyEmail.isPending ? (
@@ -247,6 +305,27 @@ export function RegisterPage() {
                   ) : null}
                   Verify email
                 </Button>
+
+                <div className="flex items-center justify-center pt-1">
+                  {canResend ? (
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={isResending}
+                      className="text-sm text-primary hover:underline disabled:opacity-50 flex items-center gap-1"
+                    >
+                      {isResending && <Loader2 className="h-3 w-3 animate-spin" />}
+                      Resend code
+                    </button>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Resend code in{" "}
+                      <span className="font-medium tabular-nums text-foreground">
+                        {seconds}s
+                      </span>
+                    </p>
+                  )}
+                </div>
               </form>
             </CardContent>
             <CardFooter className="flex justify-center border-t p-6">
@@ -255,6 +334,7 @@ export function RegisterPage() {
                 onClick={() => {
                   setStage("register");
                   setError(null);
+                  setResendMsg(null);
                 }}
                 className="text-sm text-muted-foreground hover:text-foreground"
               >

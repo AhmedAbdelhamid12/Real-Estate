@@ -333,6 +333,46 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
   res.json({ success: true });
 });
 
+// POST /auth/resend-verification
+router.post("/auth/resend-verification", async (req, res): Promise<void> => {
+  const { email } = req.body as { email?: string };
+
+  if (!email) {
+    res.status(400).json({ error: "email is required" });
+    return;
+  }
+
+  const [user] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, email.toLowerCase()))
+    .limit(1);
+
+  if (!user) {
+    res.status(400).json({ error: "No account found with this email" });
+    return;
+  }
+
+  if (user.emailVerifiedAt) {
+    res.status(400).json({ error: "Email already verified" });
+    return;
+  }
+
+  const verifyCode = generateVerifyCode();
+  const verifyTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+  await db
+    .update(usersTable)
+    .set({ verifyToken: verifyCode, verifyTokenExpires })
+    .where(eq(usersTable.id, user.id));
+
+  sendVerificationCode(user.email, user.name, verifyCode).catch((err) => {
+    req.log.error({ err }, "Failed to resend verification email");
+  });
+
+  res.json({ success: true });
+});
+
 // ── OAuth ─────────────────────────────────────────────────────────────────────
 
 async function handleOAuthCallback(

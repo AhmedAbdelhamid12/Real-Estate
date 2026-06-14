@@ -1,19 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useI18n } from "@/contexts/i18nContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { ShieldCheck, ArrowLeft } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
 import { apiFetch } from "@workspace/api-client-react";
+
+const RESEND_COOLDOWN = 60;
+
+function useResendCountdown() {
+  const [seconds, setSeconds] = useState(RESEND_COOLDOWN);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const start = useCallback(() => {
+    setSeconds(RESEND_COOLDOWN);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setSeconds((s) => {
+        if (s <= 1) {
+          clearInterval(timerRef.current!);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    start();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [start]);
+
+  return { seconds, start, canResend: seconds === 0 };
+}
 
 export function VerifyEmailPage() {
   const { t } = useI18n();
   const [, setLocation] = useLocation();
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState<string | null>(null);
+  const { seconds, start: startCountdown, canResend } = useResendCountdown();
 
   const email = new URLSearchParams(window.location.search).get("email") ?? "";
 
@@ -44,15 +76,24 @@ export function VerifyEmailPage() {
   }
 
   async function handleResend() {
+    setResendMsg(null);
+    setIsResending(true);
     try {
-      await apiFetch("/api/auth/resend-verification", {
+      const res = await apiFetch("/api/auth/resend-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      toast.success("Verification code resent!");
-    } catch {
-      toast.error("Failed to resend code");
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        throw new Error(data.error ?? "Failed to resend code");
+      }
+      setResendMsg("A new code has been sent to your email.");
+      startCountdown();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to resend code");
+    } finally {
+      setIsResending(false);
     }
   }
 
@@ -66,11 +107,21 @@ export function VerifyEmailPage() {
           <CardTitle className="text-2xl">{t("auth.verify_email")}</CardTitle>
           <CardDescription>
             {t("auth.verify_code")}
-            {email && <><br /><span className="font-medium text-foreground">{email}</span></>}
+            {email && (
+              <>
+                <br />
+                <span className="font-medium text-foreground">{email}</span>
+              </>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {resendMsg && (
+              <Alert className="py-3 border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950/30 dark:text-green-400">
+                <AlertDescription>{resendMsg}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-2">
               <Label>Verification Code</Label>
               <Input
@@ -84,17 +135,47 @@ export function VerifyEmailPage() {
                 autoFocus
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || code.length !== 6}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || code.length !== 6}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
               {isLoading ? t("common.loading") : "Verify Email"}
             </Button>
-            <div className="flex items-center justify-between text-sm">
-              <Button variant="ghost" size="sm" type="button" onClick={() => setLocation("/login")}>
+
+            <div className="flex items-center justify-between text-sm pt-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setLocation("/login")}
+              >
                 <ArrowLeft className="w-4 h-4 me-1" />
                 {t("auth.login")}
               </Button>
-              <Button variant="ghost" size="sm" type="button" onClick={handleResend}>
-                Resend code
-              </Button>
+
+              {canResend ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isResending}
+                >
+                  {isResending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                  Resend code
+                </Button>
+              ) : (
+                <span className="text-muted-foreground px-3 py-1">
+                  Resend in{" "}
+                  <span className="font-medium tabular-nums text-foreground">
+                    {seconds}s
+                  </span>
+                </span>
+              )}
             </div>
           </form>
         </CardContent>
