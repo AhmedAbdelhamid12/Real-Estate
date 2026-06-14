@@ -32,25 +32,30 @@ function NativeTabLayout() {
 }
 
 function ClassicTabLayout() {
-  const colors = useColors();
+  const theme = useColors();
+  const c = theme.colors;
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
 
+  const TAB_BG  = c.tabBarBg;
+  const ACTIVE  = c.tabBarActive;
+  const INACTIVE = c.tabBarInactive;
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarActiveTintColor:   ACTIVE,
+        tabBarInactiveTintColor: INACTIVE,
         headerShown: true,
-        headerStyle: { backgroundColor: colors.card },
-        headerTintColor: colors.foreground,
+        headerStyle: { backgroundColor: c.tabBarBg },
+        headerTintColor: "#FFFFFF",
+        headerTitleStyle: { color: "#C9A84C", fontWeight: "700" as const },
         tabBarStyle: {
           position: "absolute",
-          backgroundColor: isIOS ? "transparent" : colors.background,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
+          backgroundColor: isIOS ? "transparent" : TAB_BG,
+          borderTopWidth: 0,
           elevation: 0,
           height: isWeb ? 84 : 60,
           paddingBottom: isWeb ? 34 : 8,
@@ -58,19 +63,20 @@ function ClassicTabLayout() {
         tabBarBackground: () =>
           isIOS ? (
             <BlurView
-              intensity={100}
-              tint={isDark ? "dark" : "light"}
-              style={StyleSheet.absoluteFill}
+              intensity={90}
+              tint="dark"
+              style={[StyleSheet.absoluteFill, { backgroundColor: `${TAB_BG}CC` }]}
             />
           ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: TAB_BG }]} />
           ),
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "TIL Group",
+          tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
               <SymbolView name="house" tintColor={color} size={size} />
@@ -83,6 +89,7 @@ function ClassicTabLayout() {
         name="leads"
         options={{
           title: "Leads",
+          tabBarLabel: "Leads",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
               <SymbolView name="person.2" tintColor={color} size={size} />
@@ -94,7 +101,8 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="notifications"
         options={{
-          title: "Alerts",
+          title: "Notifications",
+          tabBarLabel: "Alerts",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
               <SymbolView name="bell" tintColor={color} size={size} />
@@ -107,6 +115,7 @@ function ClassicTabLayout() {
         name="profile"
         options={{
           title: "Profile",
+          tabBarLabel: "Profile",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
               <SymbolView name="person.crop.circle" tintColor={color} size={size} />

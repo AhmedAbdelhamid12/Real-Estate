@@ -1,0 +1,164 @@
+Yes, apply the TIL brand colors to the mobile app fully.
+
+But before that, make sure the following is 100% done correctly:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ STEP 1 — COMPLETE THE DESIGN TOKENS SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expand lib/design-tokens/src/tokens.ts to include:
+
+1. FULL COLOR SYSTEM:
+   - brand colors (navy, gold, etc.)
+   - semantic colors:
+     * background, surface, card
+     * foreground, muted, subtle
+     * primary, primary-hover, primary-muted
+     * success, warning, danger, info
+     * border, divider
+     * sidebar-bg, sidebar-text, sidebar-active
+   - status colors for CRM:
+     * lead, qualified, proposal, 
+       negotiation, won, lost
+
+2. TYPOGRAPHY TOKENS:
+   fontFamily: { sans, mono, display }
+   fontSize: { xs, sm, base, lg, xl, 2xl, 3xl, 4xl }
+   fontWeight: { normal, medium, semibold, bold }
+   lineHeight: { tight, normal, relaxed }
+   letterSpacing: { tight, normal, wide }
+
+3. SPACING TOKENS:
+   spacing scale: 0, 1, 2, 3, 4, 5, 6, 8, 
+                  10, 12, 16, 20, 24, 32, 40, 48
+
+4. BORDER RADIUS TOKENS:
+   radius: { none, sm(6), md(10), lg(14), 
+             xl(20), full(9999) }
+
+5. SHADOW TOKENS:
+   shadow: { sm, md, lg, glow }
+   (web: CSS box-shadow, native: elevation + shadowColor)
+
+6. ANIMATION TOKENS:
+   duration: { fast:150, normal:250, slow:400 }
+   easing: { easeIn, easeOut, spring }
+
+7. DARK MODE:
+   Every semantic color must have a dark variant
+   Export: tokens.light and tokens.dark
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ STEP 2 — WEB (Tailwind v4 Integration)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In web.ts:
+- injectTilTheme() must inject ALL tokens as 
+  CSS custom properties on :root AND .dark
+- Map tokens → Tailwind CSS v4 theme in 
+  tailwind.config.ts so I can use:
+  * bg-primary, text-foreground, border-border
+  * shadow-glow, rounded-card, etc.
+- Add @layer base in globals.css with 
+  all CSS variables
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ STEP 3 — MOBILE (React Native Full Apply)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In native.ts export a complete theme object:
+
+export const theme = {
+  colors: { ...semanticColors },
+  typography: { ...typographyTokens },
+  spacing: { ...spacingTokens },
+  radius: { ...radiusTokens },
+  shadows: { ...nativeShadows },
+}
+
+Then apply to ALL mobile screens:
+
+1. LOGIN SCREEN:
+   - Background: brand.navy
+   - Logo centered
+   - Input fields: themed border + focus state
+   - Button: brand.gold with navy text
+   - Full dark mode support
+
+2. TAB NAVIGATION:
+   - Tab bar: brand.navy background
+   - Active icon: brand.gold
+   - Inactive: white/40
+   - Labels: themed fonts
+
+3. DASHBOARD SCREEN:
+   - Header: brand.navy
+   - KPI Cards: theme.colors.card + shadow
+   - Stats: proper color-coded badges
+   - List items: themed rows with dividers
+
+4. CONTACTS SCREEN:
+   - Avatar with brand color initials
+   - Status badges: semantic colors
+   - Search bar: themed
+   - Row hover/press states
+
+5. DEALS SCREEN:
+   - Stage colors from CRM status tokens
+   - Card design matching web Kanban cards
+
+6. SETTINGS/PROFILE SCREEN:
+   - Themed list sections
+   - Theme toggle (light/dark)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ STEP 4 — SHARED UI COMPONENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create packages/ui/src/ with themed components
+that work on BOTH web and mobile:
+
+- <Button variant="primary|secondary|ghost|danger" />
+- <Badge variant="success|warning|danger|info|default" />
+- <Card /> with themed shadow and radius
+- <Avatar /> with brand color fallback
+- <StatusDot /> for CRM statuses
+- <Skeleton /> for loading states
+
+Each component must:
+✓ Import colors from @workspace/design-tokens
+✓ Support dark mode
+✓ Have TypeScript types
+✓ Work on both platforms (or have web/native split)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ STEP 5 — VERIFY HOT RELOAD CHAIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Confirm this works end-to-end:
+1. I change ONE value in tokens.ts
+2. Web (Vite) hot-reloads → CSS vars update instantly
+3. Mobile (Metro) hot-reloads → RN styles update instantly
+4. No manual rebuild needed for either platform
+
+Show me the final file structure after all 
+changes with a tree view.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 DELIVERABLES ORDER:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. lib/design-tokens/src/tokens.ts (complete)
+2. lib/design-tokens/src/web.ts (updated)
+3. lib/design-tokens/src/native.ts (updated)
+4. tailwind.config.ts (mapped to tokens)
+5. globals.css (CSS variables)
+6. Mobile: app/(auth)/login.tsx
+7. Mobile: app/(tabs)/_layout.tsx
+8. Mobile: app/(tabs)/index.tsx (dashboard)
+9. Mobile: app/(tabs)/contacts.tsx
+10. packages/ui/src/ (shared components)
+11. Final folder tree
+
+Do everything in order, show complete 
+file contents for each file, no placeholders,
+no "// ... rest of code", full production code only.

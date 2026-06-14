@@ -10,34 +10,62 @@ import { useColors } from "@/hooks/useColors";
 import { useAuthContext } from "@/contexts/AuthContext";
 import * as Haptics from "expo-haptics";
 
-const ROLE_COLORS: Record<string, string> = {
-  ceo: "#7c3aed", admin: "#dc2626", director: "#0891b2",
-  team_leader: "#2563eb", sales: "#16a34a",
+const ROLE_MAP: Record<string, { color: string; label: string }> = {
+  ceo:         { color: "#7C3AED", label: "CEO" },
+  admin:       { color: "#DC2626", label: "Admin" },
+  director:    { color: "#0891B2", label: "Director" },
+  team_leader: { color: "#2563EB", label: "Team Leader" },
+  sales:       { color: "#16A34A", label: "Sales" },
 };
 
-function MenuItem({ icon, label, onPress, destructive = false }: {
+function MenuItem({
+  icon, label, subtitle, onPress, destructive = false,
+}: {
   icon: React.ComponentProps<typeof Feather>["name"];
   label: string;
+  subtitle?: string;
   onPress: () => void;
   destructive?: boolean;
 }) {
-  const colors = useColors();
-  const styles = makeStyles(colors);
+  const theme = useColors();
+  const c = theme.colors;
   return (
-    <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
-      <Feather name={icon} size={18} color={destructive ? colors.destructive : colors.foreground} />
-      <Text style={[styles.menuLabel, destructive && { color: colors.destructive }]}>{label}</Text>
-      {!destructive && <Feather name="chevron-right" size={16} color={colors.mutedForeground} />}
+    <TouchableOpacity
+      style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 16 }}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={{
+        width: 34, height: 34, borderRadius: 10,
+        backgroundColor: destructive ? `${c.danger}15` : `${c.primary}10`,
+        alignItems: "center", justifyContent: "center",
+      }}>
+        <Feather
+          name={icon}
+          size={16}
+          color={destructive ? c.danger : c.primary}
+        />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 15, color: destructive ? c.danger : c.foreground }}>{label}</Text>
+        {subtitle && <Text style={{ fontSize: 12, color: c.mutedForeground, marginTop: 1 }}>{subtitle}</Text>}
+      </View>
+      {!destructive && <Feather name="chevron-right" size={16} color={c.mutedForeground} />}
     </TouchableOpacity>
   );
 }
 
+function Divider({ left = 60 }: { left?: number }) {
+  const theme = useColors();
+  return <View style={{ height: 1, backgroundColor: theme.colors.border, marginLeft: left }} />;
+}
+
 export default function ProfileScreen() {
-  const colors = useColors();
+  const theme = useColors();
+  const c = theme.colors;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, signOut } = useAuthContext();
-  const styles = makeStyles(colors);
 
   function handleSignOut() {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -56,84 +84,148 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  const roleColor = ROLE_COLORS[user.role] ?? colors.primary;
+  const role = ROLE_MAP[user.role] ?? { color: c.primary, label: user.role };
+  const initials = user.name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+
+  const s = makeStyles(c, insets.bottom);
 
   return (
     <ScrollView
-      style={[styles.container, { paddingTop: insets.top || 67 }]}
-      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 34 + 60 }]}
+      style={[s.container, { paddingTop: insets.top || 12 }]}
+      contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 34 + 60 }]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Avatar + Info */}
-      <View style={styles.profileCard}>
-        <View style={[styles.avatar, { backgroundColor: roleColor }]}>
-          <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
+      {/* Profile Hero Card */}
+      <View style={s.heroCard}>
+        {/* Gold ring + avatar */}
+        <View style={s.avatarRing}>
+          <View style={[s.avatar, { backgroundColor: role.color }]}>
+            <Text style={s.avatarText}>{initials}</Text>
+          </View>
         </View>
-        <Text style={styles.name}>{user.name}</Text>
-        {user.title && <Text style={styles.title}>{user.title}</Text>}
-        <Text style={styles.email}>{user.email}</Text>
-        <View style={[styles.roleBadge, { backgroundColor: `${roleColor}20` }]}>
-          <Text style={[styles.roleText, { color: roleColor }]}>
-            {user.role.replace("_", " ").toUpperCase()}
-          </Text>
+        <Text style={s.name}>{user.name}</Text>
+        {user.title && <Text style={s.title}>{user.title}</Text>}
+        <Text style={s.email}>{user.email}</Text>
+        <View style={[s.roleBadge, { backgroundColor: `${role.color}18` }]}>
+          <View style={[s.roleIndicator, { backgroundColor: role.color }]} />
+          <Text style={[s.roleText, { color: role.color }]}>{role.label}</Text>
+        </View>
+
+        {/* Mini stat bar */}
+        <View style={s.statBar}>
+          <View style={s.statItem}>
+            <Feather name="star" size={14} color="#C9A84C" />
+            <Text style={s.statLabel}>TIL Member</Text>
+          </View>
         </View>
       </View>
 
-      {/* Menu */}
-      <View style={styles.menuSection}>
-        <Text style={styles.menuSectionTitle}>Account</Text>
-        <View style={styles.menuCard}>
-          <MenuItem icon="user" label="My Profile" onPress={() => {}} />
-          <View style={styles.separator} />
-          <MenuItem icon="bell" label="Notifications" onPress={() => router.push("/(tabs)/notifications")} />
+      {/* Account */}
+      <View style={s.menuSection}>
+        <Text style={s.sectionLabel}>ACCOUNT</Text>
+        <View style={s.menuCard}>
+          <MenuItem
+            icon="user"
+            label="My Profile"
+            subtitle="View and edit personal info"
+            onPress={() => {}}
+          />
+          <Divider />
+          <MenuItem
+            icon="bell"
+            label="Notifications"
+            subtitle="Manage your alerts"
+            onPress={() => router.push("/(tabs)/notifications")}
+          />
         </View>
       </View>
 
-      <View style={styles.menuSection}>
-        <Text style={styles.menuSectionTitle}>More</Text>
-        <View style={styles.menuCard}>
-          <MenuItem icon="bar-chart-2" label="My Performance" onPress={() => {}} />
-          <View style={styles.separator} />
-          <MenuItem icon="calendar" label="Daily Planner" onPress={() => {}} />
+      {/* Performance */}
+      <View style={s.menuSection}>
+        <Text style={s.sectionLabel}>PERFORMANCE</Text>
+        <View style={s.menuCard}>
+          <MenuItem
+            icon="bar-chart-2"
+            label="My Performance"
+            subtitle="Sales stats and targets"
+            onPress={() => {}}
+          />
+          <Divider />
+          <MenuItem
+            icon="calendar"
+            label="Daily Planner"
+            subtitle="Tasks and schedule"
+            onPress={() => {}}
+          />
         </View>
       </View>
 
-      <View style={[styles.menuSection, { marginTop: 8 }]}>
-        <View style={styles.menuCard}>
+      {/* Sign Out */}
+      <View style={[s.menuSection, { marginTop: 4 }]}>
+        <View style={s.menuCard}>
           <MenuItem icon="log-out" label="Sign Out" onPress={handleSignOut} destructive />
         </View>
       </View>
 
-      <Text style={styles.version}>PropOS CRM v1.0.0</Text>
+      <Text style={s.version}>TIL Real Estate Group CRM · v1.0.0</Text>
     </ScrollView>
   );
 }
 
-function makeStyles(colors: ReturnType<typeof useColors>) {
+function makeStyles(c: ReturnType<typeof useColors>["colors"], bottomInset: number) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    content: { paddingHorizontal: 20 },
-    profileCard: {
-      alignItems: "center", backgroundColor: colors.card,
-      borderRadius: 16, padding: 24, marginBottom: 24,
-      borderWidth: 1, borderColor: colors.border,
+    container:     { flex: 1, backgroundColor: c.background },
+    content:       { paddingHorizontal: 20 },
+
+    heroCard:      {
+      alignItems: "center", backgroundColor: c.card,
+      borderRadius: 20, padding: 28, marginBottom: 24,
+      borderWidth: 1, borderColor: c.border,
+      shadowColor: "#000", shadowOpacity: 0.07, shadowRadius: 14, elevation: 5,
     },
-    avatar: {
-      width: 80, height: 80, borderRadius: 40,
-      alignItems: "center", justifyContent: "center", marginBottom: 12,
+    avatarRing:    {
+      width: 92, height: 92, borderRadius: 28, marginBottom: 14,
+      borderWidth: 2.5, borderColor: "#C9A84C",
+      alignItems: "center", justifyContent: "center",
     },
-    avatarText: { fontSize: 32, fontWeight: "bold" as const, color: "#fff" },
-    name: { fontSize: 20, fontWeight: "bold" as const, color: colors.foreground },
-    title: { fontSize: 13, color: colors.mutedForeground, marginTop: 2 },
-    email: { fontSize: 13, color: colors.mutedForeground, marginTop: 4 },
-    roleBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 12 },
-    roleText: { fontSize: 11, fontWeight: "700" as const },
-    menuSection: { marginBottom: 16 },
-    menuSectionTitle: { fontSize: 12, fontWeight: "600" as const, color: colors.mutedForeground, marginBottom: 8, textTransform: "uppercase" as const, letterSpacing: 0.5 },
-    menuCard: { backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border, overflow: "hidden" as const },
-    menuItem: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
-    menuLabel: { flex: 1, fontSize: 15, color: colors.foreground },
-    separator: { height: 1, backgroundColor: colors.border, marginLeft: 48 },
-    version: { textAlign: "center", color: colors.mutedForeground, fontSize: 12, marginTop: 24 },
+    avatar:        {
+      width: 80, height: 80, borderRadius: 22,
+      alignItems: "center", justifyContent: "center",
+    },
+    avatarText:    { fontSize: 30, fontWeight: "700" as const, color: "#FFFFFF" },
+    name:          { fontSize: 20, fontWeight: "700" as const, color: c.foreground },
+    title:         { fontSize: 13, color: c.mutedForeground, marginTop: 2 },
+    email:         { fontSize: 13, color: c.mutedForeground, marginTop: 3 },
+    roleBadge:     {
+      flexDirection: "row", alignItems: "center", gap: 6,
+      paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, marginTop: 12,
+    },
+    roleIndicator: { width: 7, height: 7, borderRadius: 4 },
+    roleText:      { fontSize: 12, fontWeight: "700" as const },
+    statBar:       {
+      flexDirection: "row", justifyContent: "center",
+      borderTopWidth: 1, borderTopColor: c.border, marginTop: 16, paddingTop: 14, width: "100%",
+    },
+    statItem:      { flexDirection: "row", alignItems: "center", gap: 5 },
+    statLabel:     { fontSize: 12, color: c.mutedForeground },
+
+    menuSection:   { marginBottom: 16 },
+    sectionLabel:  {
+      fontSize: 11, fontWeight: "600" as const, color: c.mutedForeground,
+      marginBottom: 8, letterSpacing: 0.8,
+    },
+    menuCard:      {
+      backgroundColor: c.card, borderRadius: 14,
+      borderWidth: 1, borderColor: c.border, overflow: "hidden" as const,
+      shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
+    },
+    version:       {
+      textAlign: "center", color: c.mutedForeground,
+      fontSize: 12, marginTop: 24,
+    },
   });
 }

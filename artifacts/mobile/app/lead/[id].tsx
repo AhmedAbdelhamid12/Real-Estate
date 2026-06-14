@@ -14,10 +14,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 
 const STATUSES = ["new", "called", "qualified", "proposal", "negotiation", "won", "lost"] as const;
-const STATUS_COLORS: Record<string, string> = {
-  new: "#3b82f6", called: "#8b5cf6", qualified: "#10b981",
-  proposal: "#f59e0b", negotiation: "#f97316", won: "#22c55e", lost: "#ef4444",
-};
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -29,7 +25,9 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function LeadDetailScreen() {
-  const colors = useColors();
+  const theme = useColors();
+  const c = theme.colors;
+  const cr = theme.crmStatus;
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -69,107 +67,116 @@ export default function LeadDetailScreen() {
     );
   }
 
-  const styles = makeStyles(colors);
+  const s = makeStyles(c);
 
   if (isLoading) return (
-    <View style={styles.center}><Text style={{ color: colors.mutedForeground }}>Loading...</Text></View>
+    <View style={s.center}><Text style={{ color: c.mutedForeground }}>Loading...</Text></View>
   );
 
   if (!lead) return (
-    <View style={styles.center}><Text style={{ color: colors.mutedForeground }}>Lead not found</Text></View>
+    <View style={s.center}><Text style={{ color: c.mutedForeground }}>Lead not found</Text></View>
   );
+
+  const sc = (cr as Record<string, { bg: string; muted: string; text: string; label: string }>)[lead.status];
+  const statusColor = sc?.bg ?? "#6B7280";
+  const statusLabel = sc?.label ?? lead.status;
 
   return (
     <ScrollView
-      style={[styles.container, { paddingTop: insets.top || 67 }]}
-      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 34 }]}
+      style={[s.container, { paddingTop: insets.top || 67 }]}
+      contentContainerStyle={[s.content, { paddingBottom: insets.bottom + 34 }]}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.backRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.back}>
-          <Feather name="arrow-left" size={20} color={colors.foreground} />
+      <View style={s.backRow}>
+        <TouchableOpacity onPress={() => router.back()} style={s.back}>
+          <Feather name="arrow-left" size={20} color={c.foreground} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{lead.name}</Text>
+        <Text style={s.headerTitle} numberOfLines={1}>{lead.name}</Text>
       </View>
 
       {/* Lead Info Card */}
-      <View style={styles.card}>
-        <View style={[styles.statusBadge, { backgroundColor: `${STATUS_COLORS[lead.status] ?? colors.muted}20` }]}>
-          <View style={[styles.dot, { backgroundColor: STATUS_COLORS[lead.status] ?? colors.muted }]} />
-          <Text style={[styles.statusText, { color: STATUS_COLORS[lead.status] ?? colors.mutedForeground }]}>
-            {lead.status}
+      <View style={s.card}>
+        <View style={[s.statusBadge, { backgroundColor: `${statusColor}18` }]}>
+          <View style={[s.dot, { backgroundColor: statusColor }]} />
+          <Text style={[s.statusText, { color: sc?.text ?? statusColor }]}>
+            {statusLabel}
           </Text>
         </View>
 
-        <Text style={styles.leadName}>{lead.name}</Text>
-        {lead.projectName ? <Text style={styles.meta}>🏗 {lead.projectName}</Text> : null}
-        {lead.primarySalesName ? <Text style={styles.meta}>👤 {lead.primarySalesName}</Text> : null}
-        {lead.phone ? <Text style={styles.meta}>📞 {lead.phone}</Text> : null}
-        {lead.email ? <Text style={styles.meta}>✉️ {lead.email}</Text> : null}
-        {lead.source ? <Text style={styles.meta}>🔗 Source: {lead.source}</Text> : null}
+        <Text style={s.leadName}>{lead.name}</Text>
+        {lead.projectName      ? <Text style={s.meta}>🏗  {lead.projectName}</Text> : null}
+        {lead.primarySalesName ? <Text style={s.meta}>👤  {lead.primarySalesName}</Text> : null}
+        {lead.phone            ? <Text style={s.meta}>📞  {lead.phone}</Text> : null}
+        {lead.email            ? <Text style={s.meta}>✉️  {lead.email}</Text> : null}
+        {lead.source           ? <Text style={s.meta}>🔗  Source: {lead.source}</Text> : null}
         {lead.notes ? (
-          <View style={styles.notesBox}>
-            <Text style={styles.notesLabel}>Notes</Text>
-            <Text style={styles.notesText}>{lead.notes}</Text>
+          <View style={s.notesBox}>
+            <Text style={s.notesLabel}>Notes</Text>
+            <Text style={s.notesText}>{lead.notes}</Text>
           </View>
         ) : null}
       </View>
 
       {/* Status Selector */}
-      <Text style={styles.sectionTitle}>Update Status</Text>
+      <Text style={s.sectionTitle}>Update Status</Text>
       <ScrollView
         horizontal showsHorizontalScrollIndicator={false}
-        style={styles.statusRow} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}
+        style={s.statusRow} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}
       >
-        {STATUSES.map((s) => (
-          <TouchableOpacity
-            key={s}
-            style={[
-              styles.statusChip,
-              lead.status === s && { backgroundColor: STATUS_COLORS[s], borderColor: STATUS_COLORS[s] },
-            ]}
-            onPress={() => s !== lead.status && handleStatusChange(s)}
-          >
-            <Text style={[styles.statusChipText, lead.status === s && { color: "#fff" }]}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {STATUSES.map((status) => {
+          const chip = (cr as Record<string, { bg: string; label: string }>)[status];
+          const chipColor = chip?.bg ?? "#6B7280";
+          const isActive = lead.status === status;
+          return (
+            <TouchableOpacity
+              key={status}
+              style={[s.statusChip, isActive && { backgroundColor: chipColor, borderColor: chipColor }]}
+              onPress={() => status !== lead.status && handleStatusChange(status)}
+            >
+              <Text style={[s.statusChipText, isActive && { color: "#fff" }]}>
+                {chip?.label ?? (status.charAt(0).toUpperCase() + status.slice(1))}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* Log Activity */}
-      <View style={styles.actionCard}>
-        <Text style={styles.sectionTitle}>Log Activity</Text>
+      <View style={s.actionCard}>
+        <Text style={s.sectionTitle}>Log Activity</Text>
         {showNoteInput ? (
-          <View style={styles.noteInput}>
+          <View style={{ gap: 8 }}>
             <TextInput
-              style={styles.noteField}
+              style={s.noteField}
               placeholder="Add notes about this call..."
-              placeholderTextColor={colors.mutedForeground}
+              placeholderTextColor={c.mutedForeground}
               value={note}
               onChangeText={setNote}
               multiline
               numberOfLines={3}
             />
-            <View style={styles.noteActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => { setShowNoteInput(false); setNote(""); }}>
-                <Text style={{ color: colors.mutedForeground }}>Cancel</Text>
+            <View style={{ flexDirection: "row", gap: 8, justifyContent: "flex-end" }}>
+              <TouchableOpacity
+                style={s.cancelBtn}
+                onPress={() => { setShowNoteInput(false); setNote(""); }}
+              >
+                <Text style={{ color: c.mutedForeground }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.logBtn, createActivity.isPending && { opacity: 0.6 }]}
+                style={[s.logBtn, createActivity.isPending && { opacity: 0.6 }]}
                 onPress={handleLogCall}
                 disabled={createActivity.isPending}
               >
-                <Feather name="phone" size={14} color="#fff" />
-                <Text style={styles.logBtnText}>Log Call</Text>
+                <Feather name="phone" size={14} color="#0A1E38" />
+                <Text style={s.logBtnText}>Log Call</Text>
               </TouchableOpacity>
             </View>
           </View>
         ) : (
-          <TouchableOpacity style={styles.logCallBtn} onPress={() => setShowNoteInput(true)}>
-            <Feather name="phone" size={16} color={colors.primary} />
-            <Text style={[styles.logCallText, { color: colors.primary }]}>Log a Call</Text>
+          <TouchableOpacity style={s.logCallBtn} onPress={() => setShowNoteInput(true)}>
+            <Feather name="phone" size={16} color={c.accent} />
+            <Text style={[s.logCallText, { color: c.accent }]}>Log a Call</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -177,16 +184,16 @@ export default function LeadDetailScreen() {
       {/* Activities */}
       {activities.length > 0 && (
         <View>
-          <Text style={styles.sectionTitle}>Activity History</Text>
+          <Text style={s.sectionTitle}>Activity History</Text>
           {activities.map((act) => (
-            <View key={act.id} style={styles.activityItem}>
-              <Feather name="phone" size={14} color={colors.primary} style={{ marginTop: 2 }} />
+            <View key={act.id} style={s.activityItem}>
+              <View style={s.actIcon}>
+                <Feather name="phone" size={14} color={c.accent} />
+              </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.actType}>{act.type}</Text>
-                {act.notes ? <Text style={styles.actNotes}>{act.notes}</Text> : null}
-                <Text style={styles.actTime}>
-                  {act.userName} • {timeAgo(act.createdAt)}
-                </Text>
+                <Text style={s.actType}>{act.type}</Text>
+                {act.notes ? <Text style={s.actNotes}>{act.notes}</Text> : null}
+                <Text style={s.actTime}>{act.userName} · {timeAgo(act.createdAt)}</Text>
               </View>
             </View>
           ))}
@@ -196,67 +203,74 @@ export default function LeadDetailScreen() {
   );
 }
 
-function makeStyles(colors: ReturnType<typeof useColors>) {
+function makeStyles(c: ReturnType<typeof useColors>["colors"]) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    content: { paddingHorizontal: 20 },
-    center: { flex: 1, alignItems: "center", justifyContent: "center" },
-    backRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16, marginTop: 8 },
-    back: { padding: 4 },
-    headerTitle: { flex: 1, fontSize: 18, fontWeight: "700" as const, color: colors.foreground },
-    card: {
-      backgroundColor: colors.card, borderRadius: 16, padding: 20,
-      borderWidth: 1, borderColor: colors.border, marginBottom: 20,
+    container:     { flex: 1, backgroundColor: c.background },
+    content:       { paddingHorizontal: 20 },
+    center:        { flex: 1, alignItems: "center", justifyContent: "center" },
+    backRow:       { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16, marginTop: 8 },
+    back:          { padding: 4 },
+    headerTitle:   { flex: 1, fontSize: 18, fontWeight: "700" as const, color: c.foreground },
+
+    card:          {
+      backgroundColor: c.card, borderRadius: 16, padding: 20,
+      borderWidth: 1, borderColor: c.border, marginBottom: 20,
+      shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 10, elevation: 3,
     },
-    statusBadge: {
+    statusBadge:   {
       flexDirection: "row", alignItems: "center", gap: 6,
       alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4,
       borderRadius: 8, marginBottom: 12,
     },
-    dot: { width: 6, height: 6, borderRadius: 3 },
-    statusText: { fontSize: 12, fontWeight: "600" as const, textTransform: "capitalize" as const },
-    leadName: { fontSize: 20, fontWeight: "bold" as const, color: colors.foreground, marginBottom: 12 },
-    meta: { fontSize: 14, color: colors.mutedForeground, marginBottom: 4 },
-    notesBox: { marginTop: 12, padding: 12, backgroundColor: colors.muted, borderRadius: 10 },
-    notesLabel: { fontSize: 12, fontWeight: "600" as const, color: colors.mutedForeground, marginBottom: 4 },
-    notesText: { fontSize: 14, color: colors.foreground },
-    sectionTitle: { fontSize: 15, fontWeight: "700" as const, color: colors.foreground, marginBottom: 10 },
-    statusRow: { marginHorizontal: -20, marginBottom: 20 },
-    statusChip: {
+    dot:           { width: 7, height: 7, borderRadius: 4 },
+    statusText:    { fontSize: 12, fontWeight: "600" as const },
+    leadName:      { fontSize: 20, fontWeight: "700" as const, color: c.foreground, marginBottom: 12 },
+    meta:          { fontSize: 14, color: c.mutedForeground, marginBottom: 5 },
+    notesBox:      { marginTop: 12, padding: 12, backgroundColor: c.muted, borderRadius: 10 },
+    notesLabel:    { fontSize: 12, fontWeight: "600" as const, color: c.mutedForeground, marginBottom: 4 },
+    notesText:     { fontSize: 14, color: c.foreground },
+
+    sectionTitle:  { fontSize: 15, fontWeight: "700" as const, color: c.foreground, marginBottom: 10 },
+    statusRow:     { marginHorizontal: -20, marginBottom: 20 },
+    statusChip:    {
       paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-      backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
+      backgroundColor: c.card, borderWidth: 1.5, borderColor: c.border,
     },
-    statusChipText: { fontSize: 13, fontWeight: "500" as const, color: colors.foreground },
-    actionCard: {
-      backgroundColor: colors.card, borderRadius: 16, padding: 16,
-      borderWidth: 1, borderColor: colors.border, marginBottom: 20,
+    statusChipText:{ fontSize: 13, fontWeight: "500" as const, color: c.foreground },
+
+    actionCard:    {
+      backgroundColor: c.card, borderRadius: 16, padding: 16,
+      borderWidth: 1, borderColor: c.border, marginBottom: 20,
     },
-    logCallBtn: {
+    logCallBtn:    {
       flexDirection: "row", alignItems: "center", gap: 8,
-      borderWidth: 1.5, borderColor: colors.primary, borderRadius: 10,
+      borderWidth: 1.5, borderColor: c.accent, borderRadius: 10,
       paddingHorizontal: 16, paddingVertical: 12,
     },
-    logCallText: { fontSize: 15, fontWeight: "600" as const },
-    noteInput: { gap: 8 },
-    noteField: {
-      backgroundColor: colors.muted, borderRadius: 10, padding: 12,
-      fontSize: 14, color: colors.foreground, minHeight: 80,
+    logCallText:   { fontSize: 15, fontWeight: "600" as const },
+    noteField:     {
+      backgroundColor: c.muted, borderRadius: 10, padding: 12,
+      fontSize: 14, color: c.foreground, minHeight: 80,
       textAlignVertical: "top" as const,
     },
-    noteActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },
-    cancelBtn: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-    logBtn: {
+    cancelBtn:     { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
+    logBtn:        {
       flexDirection: "row", alignItems: "center", gap: 6,
-      backgroundColor: colors.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8,
+      backgroundColor: "#C9A84C", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8,
     },
-    logBtnText: { color: "#fff", fontWeight: "600" as const, fontSize: 14 },
-    activityItem: {
+    logBtnText:    { color: "#0A1E38", fontWeight: "700" as const, fontSize: 14 },
+
+    activityItem:  {
       flexDirection: "row", gap: 10, padding: 12,
-      backgroundColor: colors.card, borderRadius: 10, marginBottom: 8,
-      borderWidth: 1, borderColor: colors.border,
+      backgroundColor: c.card, borderRadius: 12, marginBottom: 8,
+      borderWidth: 1, borderColor: c.border,
     },
-    actType: { fontSize: 13, fontWeight: "600" as const, color: colors.foreground, textTransform: "capitalize" as const },
-    actNotes: { fontSize: 13, color: colors.mutedForeground, marginTop: 2 },
-    actTime: { fontSize: 11, color: colors.mutedForeground, marginTop: 4 },
+    actIcon:       {
+      width: 30, height: 30, borderRadius: 9,
+      backgroundColor: `${c.accent}18`, alignItems: "center", justifyContent: "center",
+    },
+    actType:       { fontSize: 13, fontWeight: "600" as const, color: c.foreground, textTransform: "capitalize" as const },
+    actNotes:      { fontSize: 13, color: c.mutedForeground, marginTop: 2 },
+    actTime:       { fontSize: 11, color: c.mutedForeground, marginTop: 4 },
   });
 }

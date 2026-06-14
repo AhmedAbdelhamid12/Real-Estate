@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ActivityIndicator, KeyboardAvoidingView, Platform,
-  ScrollView, useColorScheme,
+  ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -12,7 +12,8 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
 export default function LoginScreen() {
-  const colors = useColors();
+  const theme = useColors();
+  const c = theme.colors;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signIn } = useAuthContext();
@@ -41,34 +42,41 @@ export default function LoginScreen() {
     }
   }
 
-  const styles = makeStyles(colors);
+  const s = styles(c, insets.bottom);
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top || 67 }]}
+      style={[s.container, { paddingTop: insets.top || 60 }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={s.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.logoBox}>
-            <Feather name="home" size={32} color={colors.primaryForeground} />
+        {/* Header */}
+        <View style={s.header}>
+          <View style={s.logoOuter}>
+            <View style={s.logoInner}>
+              <Feather name="home" size={28} color={theme.brand.navyDark} />
+            </View>
           </View>
-          <Text style={styles.brand}>PropOS</Text>
-          <Text style={styles.subtitle}>Real Estate CRM</Text>
+          <Text style={s.brand}>TIL Group</Text>
+          <Text style={s.subtitle}>Real Estate CRM Platform</Text>
         </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
-          <View style={styles.inputBox}>
-            <Feather name="mail" size={16} color={colors.mutedForeground} style={styles.inputIcon} />
+        {/* Form Card */}
+        <View style={s.formCard}>
+          <Text style={s.welcome}>Welcome back</Text>
+          <Text style={s.welcomeSub}>Sign in to your account</Text>
+
+          <Text style={s.label}>Email Address</Text>
+          <View style={[s.inputBox, email ? s.inputBoxFocused : null]}>
+            <Feather name="mail" size={16} color={c.mutedForeground} style={s.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={s.input}
               placeholder="you@company.com"
-              placeholderTextColor={colors.mutedForeground}
+              placeholderTextColor={c.mutedForeground}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -77,92 +85,107 @@ export default function LoginScreen() {
             />
           </View>
 
-          <Text style={[styles.label, { marginTop: 16 }]}>Password</Text>
-          <View style={styles.inputBox}>
-            <Feather name="lock" size={16} color={colors.mutedForeground} style={styles.inputIcon} />
+          <Text style={[s.label, { marginTop: 16 }]}>Password</Text>
+          <View style={[s.inputBox, password ? s.inputBoxFocused : null]}>
+            <Feather name="lock" size={16} color={c.mutedForeground} style={s.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={s.input}
               placeholder="••••••••"
-              placeholderTextColor={colors.mutedForeground}
+              placeholderTextColor={c.mutedForeground}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-              <Feather name={showPassword ? "eye-off" : "eye"} size={16} color={colors.mutedForeground} />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={s.eyeBtn}>
+              <Feather name={showPassword ? "eye-off" : "eye"} size={16} color={c.mutedForeground} />
             </TouchableOpacity>
           </View>
 
           {!!error && (
-            <View style={styles.errorBox}>
-              <Feather name="alert-circle" size={14} color={colors.destructive} />
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={s.errorBox}>
+              <Feather name="alert-circle" size={14} color={c.danger} />
+              <Text style={s.errorText}>{error}</Text>
             </View>
           )}
 
           <TouchableOpacity
-            style={[styles.loginBtn, isLoading && styles.loginBtnDisabled]}
+            style={[s.loginBtn, isLoading && s.loginBtnDisabled]}
             onPress={handleLogin}
             disabled={isLoading}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             {isLoading
-              ? <ActivityIndicator color={colors.primaryForeground} />
-              : <Text style={styles.loginBtnText}>Sign In</Text>
+              ? <ActivityIndicator color={theme.brand.navyDark} />
+              : <Text style={s.loginBtnText}>Sign In</Text>
             }
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.footer, { paddingBottom: insets.bottom + 34 }]}>
-          PropOS CRM © 2026
+        <Text style={s.footer}>
+          TIL Real Estate Group © {new Date().getFullYear()}
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-function makeStyles(colors: ReturnType<typeof useColors>) {
+function styles(c: ReturnType<typeof useColors>["colors"], bottomInset: number) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    scroll: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24 },
-    header: { alignItems: "center", marginBottom: 48 },
-    logoBox: {
-      width: 72, height: 72, borderRadius: 20,
-      backgroundColor: colors.primary,
+    container:     { flex: 1, backgroundColor: c.sidebarBg },
+    scroll:        { flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingBottom: bottomInset + 24 },
+    header:        { alignItems: "center", marginBottom: 36 },
+    logoOuter:     {
+      width: 76, height: 76, borderRadius: 22,
+      backgroundColor: "rgba(201,168,76,0.18)",
       alignItems: "center", justifyContent: "center",
       marginBottom: 16,
-      shadowColor: colors.primary, shadowOpacity: 0.3,
-      shadowRadius: 16, elevation: 8,
     },
-    brand: { fontSize: 28, fontWeight: "bold" as const, color: colors.foreground },
-    subtitle: { fontSize: 14, color: colors.mutedForeground, marginTop: 4 },
-    form: { gap: 4 },
-    label: { fontSize: 13, fontWeight: "600" as const, color: colors.foreground, marginBottom: 6 },
-    inputBox: {
+    logoInner:     {
+      width: 60, height: 60, borderRadius: 16,
+      backgroundColor: "#C9A84C",
+      alignItems: "center", justifyContent: "center",
+      shadowColor: "#C9A84C", shadowOpacity: 0.5, shadowRadius: 16, elevation: 8,
+    },
+    brand:         { fontSize: 26, fontWeight: "700" as const, color: "#C9A84C", letterSpacing: 0.5 },
+    subtitle:      { fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 4 },
+
+    formCard:      {
+      backgroundColor: c.card, borderRadius: 20, padding: 24,
+      shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 24, elevation: 10,
+    },
+    welcome:       { fontSize: 22, fontWeight: "700" as const, color: c.foreground, marginBottom: 4 },
+    welcomeSub:    { fontSize: 14, color: c.mutedForeground, marginBottom: 24 },
+
+    label:         { fontSize: 13, fontWeight: "600" as const, color: c.foreground, marginBottom: 6 },
+    inputBox:      {
       flexDirection: "row", alignItems: "center",
-      backgroundColor: colors.card, borderRadius: 12,
-      borderWidth: 1, borderColor: colors.border,
+      backgroundColor: c.muted, borderRadius: 12,
+      borderWidth: 1.5, borderColor: c.border,
       paddingHorizontal: 14, height: 50,
     },
-    inputIcon: { marginRight: 10 },
-    input: { flex: 1, fontSize: 16, color: colors.foreground },
-    eyeBtn: { padding: 4 },
-    errorBox: {
+    inputBoxFocused: { borderColor: c.accent },
+    inputIcon:     { marginRight: 10 },
+    input:         { flex: 1, fontSize: 15, color: c.foreground },
+    eyeBtn:        { padding: 6 },
+
+    errorBox:      {
       flexDirection: "row", alignItems: "center", gap: 6,
-      backgroundColor: `${colors.destructive}15`,
-      borderRadius: 8, padding: 10, marginTop: 8,
+      backgroundColor: c.dangerMuted,
+      borderRadius: 10, padding: 12, marginTop: 12,
+      borderWidth: 1, borderColor: `${c.danger}30`,
     },
-    errorText: { color: colors.destructive, fontSize: 13, flex: 1 },
-    loginBtn: {
-      backgroundColor: colors.primary, borderRadius: 12,
+    errorText:     { color: c.danger, fontSize: 13, flex: 1 },
+
+    loginBtn:      {
+      backgroundColor: "#C9A84C", borderRadius: 13,
       height: 52, alignItems: "center", justifyContent: "center",
       marginTop: 24,
-      shadowColor: colors.primary, shadowOpacity: 0.3,
-      shadowRadius: 12, elevation: 6,
+      shadowColor: "#C9A84C", shadowOpacity: 0.40, shadowRadius: 14, elevation: 7,
     },
-    loginBtnDisabled: { opacity: 0.7 },
-    loginBtnText: { color: colors.primaryForeground, fontSize: 16, fontWeight: "700" as const },
-    footer: { textAlign: "center", color: colors.mutedForeground, fontSize: 12, marginTop: 48 },
+    loginBtnDisabled: { opacity: 0.65 },
+    loginBtnText:  { color: "#0A1E38", fontSize: 16, fontWeight: "700" as const, letterSpacing: 0.3 },
+
+    footer:        { textAlign: "center", color: "rgba(255,255,255,0.35)", fontSize: 12, marginTop: 32 },
   });
 }

@@ -237,7 +237,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     path: "/",
   });
 
-  res.json({ user: sanitizeUser(user) });
+  res.json({ user: sanitizeUser(user), token, accessToken: token });
 });
 
 // POST /auth/logout
