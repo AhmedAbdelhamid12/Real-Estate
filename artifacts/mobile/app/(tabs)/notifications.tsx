@@ -2,7 +2,6 @@ import React from "react";
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity, RefreshControl,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 import {
@@ -11,6 +10,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -25,7 +25,6 @@ function timeAgo(dateStr: string): string {
 export default function NotificationsScreen() {
   const theme = useColors();
   const c = theme.colors;
-  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
   const { data: notifications = [], isLoading, refetch } = useListNotifications();
@@ -49,19 +48,26 @@ export default function NotificationsScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }
 
-  const s = makeStyles(c, insets.bottom);
+  const s = makeStyles(c);
 
   return (
-    <View style={[s.container, { paddingTop: insets.top || 12 }]}>
-      {/* Mark all CTA */}
-      {unreadCount > 0 && (
-        <TouchableOpacity style={s.markAllBtn} onPress={handleMarkAllRead} activeOpacity={0.75}>
-          <View style={s.markAllInner}>
-            <Feather name="check-circle" size={14} color={c.sidebarActiveFg} />
-            <Text style={s.markAllText}>Mark all as read ({unreadCount})</Text>
-          </View>
-        </TouchableOpacity>
-      )}
+    <View style={s.container}>
+      <ScreenHeader
+        title="Alerts"
+        subtitle={unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+        rightElement={
+          unreadCount > 0 ? (
+            <TouchableOpacity
+              onPress={handleMarkAllRead}
+              style={[s.markAllBtn, { backgroundColor: c.accent }]}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Feather name="check-circle" size={13} color="#060D18" />
+              <Text style={s.markAllText}>Mark all</Text>
+            </TouchableOpacity>
+          ) : null
+        }
+      />
 
       <FlatList
         data={notifications}
@@ -74,35 +80,52 @@ export default function NotificationsScreen() {
             colors={[c.accent]}
           />
         }
-        contentContainerStyle={[s.list, { paddingBottom: insets.bottom + 34 + 60 }]}
+        contentContainerStyle={s.list}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!!notifications.length}
         ListEmptyComponent={() => (
           <View style={s.empty}>
-            <View style={s.emptyIcon}>
+            <View style={[s.emptyIcon, { backgroundColor: `${c.accent}18` }]}>
               <Feather name="bell-off" size={28} color={c.accent} />
             </View>
-            <Text style={s.emptyTitle}>{isLoading ? "Loading..." : "All caught up!"}</Text>
-            <Text style={s.emptyText}>No notifications at the moment</Text>
+            <Text style={[s.emptyTitle, { color: c.foreground }]}>
+              {isLoading ? "Loading..." : "All caught up!"}
+            </Text>
+            <Text style={[s.emptyText, { color: c.mutedForeground }]}>
+              No notifications at the moment
+            </Text>
           </View>
         )}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[s.card, !item.isRead && s.cardUnread]}
+            style={[
+              s.card,
+              { backgroundColor: c.card, borderColor: c.border },
+              !item.isRead && { backgroundColor: `${c.accent}08`, borderColor: `${c.accent}30` },
+            ]}
             onPress={() => !item.isRead && handleMarkRead(item.id)}
             activeOpacity={0.75}
           >
             <View style={[s.dot, { backgroundColor: item.isRead ? c.border : c.accent }]} />
             <View style={s.cardContent}>
-              <Text style={s.cardTitle} numberOfLines={1}>{item.titleEn}</Text>
+              <Text style={[s.cardTitle, { color: c.foreground }]} numberOfLines={1}>
+                {item.titleEn}
+              </Text>
               {item.bodyEn ? (
-                <Text style={s.cardBody} numberOfLines={2}>{item.bodyEn}</Text>
+                <Text style={[s.cardBody, { color: c.mutedForeground }]} numberOfLines={2}>
+                  {item.bodyEn}
+                </Text>
               ) : null}
-              <Text style={s.cardTime}>{timeAgo(item.createdAt)}</Text>
+              <Text style={[s.cardTime, { color: c.mutedForeground }]}>
+                {timeAgo(item.createdAt)}
+              </Text>
             </View>
             {!item.isRead && (
-              <TouchableOpacity onPress={() => handleMarkRead(item.id)} style={s.checkBtn}>
-                <Feather name="check" size={14} color={c.sidebarActiveFg} />
+              <TouchableOpacity
+                onPress={() => handleMarkRead(item.id)}
+                style={[s.checkBtn, { backgroundColor: c.accent }]}
+              >
+                <Feather name="check" size={14} color="#060D18" />
               </TouchableOpacity>
             )}
           </TouchableOpacity>
@@ -112,48 +135,33 @@ export default function NotificationsScreen() {
   );
 }
 
-function makeStyles(c: ReturnType<typeof useColors>["colors"], bottomInset: number) {
+function makeStyles(c: ReturnType<typeof useColors>["colors"]) {
   return StyleSheet.create({
     container:   { flex: 1, backgroundColor: c.background },
 
-    markAllBtn:  { paddingHorizontal: 20, paddingBottom: 8 },
-    markAllInner:{
-      flexDirection: "row", alignItems: "center", gap: 7,
-      backgroundColor: "#C9A84C", borderRadius: 10,
-      paddingHorizontal: 14, paddingVertical: 9,
-      alignSelf: "flex-start" as const,
+    markAllBtn:  {
+      flexDirection: "row", alignItems: "center", gap: 5,
+      paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
     },
-    markAllText: { fontSize: 13, fontWeight: "600" as const, color: c.sidebarActiveFg },
+    markAllText: { fontSize: 12, fontWeight: "600", color: "#060D18" },
 
-    list:        { paddingHorizontal: 20, paddingTop: 4 },
+    list:        { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 100 },
 
     empty:       { alignItems: "center", paddingTop: 60, gap: 8 },
-    emptyIcon:   {
-      width: 64, height: 64, borderRadius: 20,
-      backgroundColor: `${c.accent}18`, alignItems: "center", justifyContent: "center",
-      marginBottom: 4,
-    },
-    emptyTitle:  { fontSize: 16, fontWeight: "700" as const, color: c.foreground },
-    emptyText:   { color: c.mutedForeground, fontSize: 14 },
+    emptyIcon:   { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center", marginBottom: 4 },
+    emptyTitle:  { fontSize: 16, fontWeight: "700" },
+    emptyText:   { fontSize: 14 },
 
     card:        {
       flexDirection: "row", alignItems: "flex-start", gap: 12,
-      backgroundColor: c.card, borderRadius: 13, padding: 14,
-      marginBottom: 8, borderWidth: 1, borderColor: c.border,
+      borderRadius: 13, padding: 14, marginBottom: 8, borderWidth: 1,
       shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
-    },
-    cardUnread:  {
-      backgroundColor: `${c.accent}08`,
-      borderColor: `${c.accent}30`,
     },
     dot:         { width: 9, height: 9, borderRadius: 5, marginTop: 5 },
     cardContent: { flex: 1 },
-    cardTitle:   { fontSize: 14, fontWeight: "600" as const, color: c.foreground },
-    cardBody:    { fontSize: 13, color: c.mutedForeground, marginTop: 3 },
-    cardTime:    { fontSize: 11, color: c.mutedForeground, marginTop: 5 },
-    checkBtn:    {
-      padding: 7, borderRadius: 9,
-      backgroundColor: "#C9A84C",
-    },
+    cardTitle:   { fontSize: 14, fontWeight: "600" },
+    cardBody:    { fontSize: 13, marginTop: 3 },
+    cardTime:    { fontSize: 11, marginTop: 5 },
+    checkBtn:    { padding: 7, borderRadius: 9 },
   });
 }

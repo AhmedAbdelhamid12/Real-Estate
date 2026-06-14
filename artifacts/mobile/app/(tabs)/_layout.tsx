@@ -5,8 +5,9 @@ import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { useColors } from "@/hooks/useColors";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 function NativeTabLayout() {
   return (
@@ -34,24 +35,20 @@ function NativeTabLayout() {
 function ClassicTabLayout() {
   const theme = useColors();
   const c = theme.colors;
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { isDark } = useAppTheme();
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
 
-  const TAB_BG  = c.tabBarBg;
-  const ACTIVE  = c.tabBarActive;
+  const TAB_BG   = c.tabBarBg;
+  const ACTIVE   = c.tabBarActive;
   const INACTIVE = c.tabBarInactive;
 
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor:   ACTIVE,
         tabBarInactiveTintColor: INACTIVE,
-        headerShown: true,
-        headerStyle: { backgroundColor: c.tabBarBg },
-        headerTintColor: "#FFFFFF",
-        headerTitleStyle: { color: "#C9A84C", fontWeight: "700" as const },
         tabBarStyle: {
           position: "absolute",
           backgroundColor: isIOS ? "transparent" : TAB_BG,
@@ -64,7 +61,7 @@ function ClassicTabLayout() {
           isIOS ? (
             <BlurView
               intensity={90}
-              tint="dark"
+              tint={isDark ? "dark" : "light"}
               style={[StyleSheet.absoluteFill, { backgroundColor: `${TAB_BG}CC` }]}
             />
           ) : (
@@ -75,7 +72,6 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "TIL Group",
           tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
@@ -88,7 +84,6 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="leads"
         options={{
-          title: "Leads",
           tabBarLabel: "Leads",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
@@ -101,7 +96,6 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="notifications"
         options={{
-          title: "Notifications",
           tabBarLabel: "Alerts",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
@@ -114,7 +108,6 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
           tabBarLabel: "Profile",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (

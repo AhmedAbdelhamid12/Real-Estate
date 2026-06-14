@@ -317,7 +317,7 @@ function makeStyles(c: ReturnType<typeof useColors>["colors"], _focusedField: st
     },
     subtitle: {
       fontSize: isSmallScreen ? 12 : 13,
-      color: isDark ? "#3D5878" : "#6B8CAA",
+      color: isDark ? "#4E7A9A" : "#4A7A9B",
       letterSpacing: 0.3,
     },
 

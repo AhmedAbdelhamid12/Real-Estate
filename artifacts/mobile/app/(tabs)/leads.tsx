@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
-  TextInput, RefreshControl,
+  TextInput,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useListLeads } from "@workspace/api-client-react";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import type { Lead } from "@workspace/api-client-react";
 
 const STATUSES = ["all", "new", "called", "qualified", "proposal", "negotiation", "won", "lost"];
@@ -28,50 +28,45 @@ function LeadItem({ lead, onPress }: { lead: Lead; onPress: () => void }) {
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
 
-  const s = StyleSheet.create({
-    card:     {
-      flexDirection: "row" as const, alignItems: "center" as const, gap: 12,
-      backgroundColor: c.card, borderRadius: 13, padding: 14,
-      marginBottom: 8, borderWidth: 1, borderColor: c.border,
-      shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, elevation: 2,
-    },
-    avatar:   {
-      width: 40, height: 40, borderRadius: 12,
-      backgroundColor: `${color}20`, alignItems: "center" as const, justifyContent: "center" as const,
-    },
-    avatarTxt:{ fontSize: 14, fontWeight: "700" as const, color },
-    info:     { flex: 1 },
-    name:     { fontSize: 14, fontWeight: "600" as const, color: c.foreground },
-    meta:     { fontSize: 12, color: c.mutedForeground, marginTop: 2 },
-    badge:    { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 7, backgroundColor: muted },
-    badgeTxt: { fontSize: 11, fontWeight: "600" as const, color: sc?.text ?? color },
-  });
-
   return (
-    <TouchableOpacity style={s.card} onPress={onPress} activeOpacity={0.75}>
-      <View style={s.avatar}>
-        <Text style={s.avatarTxt}>{initials}</Text>
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: c.card, borderColor: c.border }]}
+      onPress={onPress}
+      activeOpacity={0.75}
+    >
+      <View style={[styles.avatar, { backgroundColor: `${color}20` }]}>
+        <Text style={[styles.avatarTxt, { color }]}>{initials}</Text>
       </View>
-      <View style={s.info}>
-        <Text style={s.name} numberOfLines={1}>{lead.name}</Text>
-        <Text style={s.meta} numberOfLines={1}>
+      <View style={styles.info}>
+        <Text style={[styles.name, { color: c.foreground }]} numberOfLines={1}>{lead.name}</Text>
+        <Text style={[styles.meta, { color: c.mutedForeground }]} numberOfLines={1}>
           {lead.projectName ?? "No project"}
           {lead.primarySalesName ? ` · ${lead.primarySalesName}` : ""}
         </Text>
       </View>
-      <View style={s.badge}>
-        <Text style={s.badgeTxt}>{label}</Text>
+      <View style={[styles.badge, { backgroundColor: muted }]}>
+        <Text style={[styles.badgeTxt, { color: sc?.text ?? color }]}>{label}</Text>
       </View>
       <Feather name="chevron-right" size={16} color={c.mutedForeground} />
     </TouchableOpacity>
   );
 }
 
+const styles = StyleSheet.create({
+  card:     { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 13, padding: 14, marginBottom: 8, borderWidth: 1, shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  avatar:   { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  avatarTxt:{ fontSize: 14, fontWeight: "700" },
+  info:     { flex: 1 },
+  name:     { fontSize: 14, fontWeight: "600" },
+  meta:     { fontSize: 12, marginTop: 2 },
+  badge:    { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 7 },
+  badgeTxt: { fontSize: 11, fontWeight: "600" },
+});
+
 export default function LeadsScreen() {
   const theme = useColors();
   const c = theme.colors;
   const cr = theme.crmStatus;
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [activeStatus, setActiveStatus] = useState("all");
@@ -85,7 +80,7 @@ export default function LeadsScreen() {
     (l.projectName ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const s = makeStyles(c, insets.bottom);
+  const s = makeStyles(c);
 
   const statusChip = (status: string) => {
     if (status === "all") return { label: "All", color: c.accent };
@@ -94,22 +89,26 @@ export default function LeadsScreen() {
   };
 
   return (
-    <View style={[s.container, { paddingTop: insets.top || 12 }]}>
+    <View style={s.container}>
+      <ScreenHeader title="Leads" subtitle={`${filtered.length} total`} noBorder />
+
       {/* Search */}
-      <View style={s.searchBox}>
-        <Feather name="search" size={16} color={c.mutedForeground} style={s.searchIcon} />
-        <TextInput
-          style={s.searchInput}
-          placeholder="Search leads..."
-          placeholderTextColor={c.mutedForeground}
-          value={search}
-          onChangeText={setSearch}
-        />
-        {search.length > 0 && (
-          <TouchableOpacity onPress={() => setSearch("")} style={s.clearBtn}>
-            <Feather name="x" size={15} color={c.mutedForeground} />
-          </TouchableOpacity>
-        )}
+      <View style={s.searchWrap}>
+        <View style={[s.searchBox, { backgroundColor: c.card, borderColor: c.border }]}>
+          <Feather name="search" size={16} color={c.mutedForeground} style={s.searchIcon} />
+          <TextInput
+            style={[s.searchInput, { color: c.foreground }]}
+            placeholder="Search leads..."
+            placeholderTextColor={c.mutedForeground}
+            value={search}
+            onChangeText={setSearch}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch("")} style={s.clearBtn}>
+              <Feather name="x" size={15} color={c.mutedForeground} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Status Filter */}
@@ -125,24 +124,20 @@ export default function LeadsScreen() {
           const active = item === activeStatus;
           return (
             <TouchableOpacity
-              style={[s.filterChip, active && { backgroundColor: ch.color, borderColor: ch.color }]}
+              style={[
+                s.filterChip,
+                { backgroundColor: c.card, borderColor: c.border },
+                active && { backgroundColor: ch.color, borderColor: ch.color },
+              ]}
               onPress={() => setActiveStatus(item)}
             >
-              <Text style={[s.filterText, active && s.filterTextActive]}>
+              <Text style={[s.filterText, { color: c.mutedForeground }, active && s.filterTextActive]}>
                 {ch.label}
               </Text>
             </TouchableOpacity>
           );
         }}
       />
-
-      {/* Count row */}
-      {!isLoading && (
-        <Text style={s.countText}>
-          {filtered.length} lead{filtered.length !== 1 ? "s" : ""}
-          {activeStatus !== "all" ? ` · ${statusChip(activeStatus).label}` : ""}
-        </Text>
-      )}
 
       {/* Lead List */}
       <FlatList
@@ -154,22 +149,18 @@ export default function LeadsScreen() {
             onPress={() => router.push({ pathname: "/lead/[id]", params: { id: item.id } })}
           />
         )}
-        contentContainerStyle={[s.list, { paddingBottom: insets.bottom + 34 + 60 }]}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={refetch}
-            tintColor={c.accent}
-            colors={[c.accent]}
-          />
-        }
+        contentContainerStyle={s.list}
+        refreshing={isLoading}
+        onRefresh={refetch}
         ListEmptyComponent={() => (
           <View style={s.empty}>
             <Feather name="inbox" size={36} color={c.mutedForeground} />
-            <Text style={s.emptyText}>{isLoading ? "Loading..." : "No leads found"}</Text>
+            <Text style={[s.emptyText, { color: c.mutedForeground }]}>
+              {isLoading ? "Loading..." : "No leads found"}
+            </Text>
             {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch("")} style={s.clearSearch}>
-                <Text style={{ color: c.accent, fontSize: 14, fontWeight: "600" as const }}>
+              <TouchableOpacity onPress={() => setSearch("")}>
+                <Text style={{ color: c.accent, fontSize: 14, fontWeight: "600" }}>
                   Clear search
                 </Text>
               </TouchableOpacity>
@@ -182,30 +173,27 @@ export default function LeadsScreen() {
   );
 }
 
-function makeStyles(c: ReturnType<typeof useColors>["colors"], bottomInset: number) {
+function makeStyles(c: ReturnType<typeof useColors>["colors"]) {
   return StyleSheet.create({
-    container:       { flex: 1, backgroundColor: c.background },
-    searchBox:       {
+    container:        { flex: 1, backgroundColor: c.background },
+    searchWrap:       { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 4 },
+    searchBox:        {
       flexDirection: "row", alignItems: "center",
-      backgroundColor: c.card, borderRadius: 13,
-      borderWidth: 1.5, borderColor: c.border,
+      borderRadius: 13, borderWidth: 1.5,
       paddingHorizontal: 14, height: 46,
-      marginHorizontal: 20, marginBottom: 10,
     },
-    searchIcon:      { marginRight: 8 },
-    searchInput:     { flex: 1, fontSize: 15, color: c.foreground },
-    clearBtn:        { padding: 4 },
-    filterRow:       { maxHeight: 48, marginBottom: 8 },
-    filterChip:      {
+    searchIcon:       { marginRight: 8 },
+    searchInput:      { flex: 1, fontSize: 15 },
+    clearBtn:         { padding: 4 },
+    filterRow:        { maxHeight: 48, marginBottom: 4 },
+    filterChip:       {
       paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-      backgroundColor: c.card, borderWidth: 1.5, borderColor: c.border,
+      borderWidth: 1.5,
     },
-    filterText:      { fontSize: 13, color: c.mutedForeground, fontWeight: "500" as const },
-    filterTextActive:{ color: "#FFFFFF" },
-    countText:       { fontSize: 12, color: c.mutedForeground, marginLeft: 20, marginBottom: 8 },
-    list:            { paddingHorizontal: 20, paddingTop: 4 },
-    empty:           { alignItems: "center", paddingTop: 60, gap: 12 },
-    emptyText:       { color: c.mutedForeground, fontSize: 15 },
-    clearSearch:     { marginTop: 4 },
+    filterText:       { fontSize: 13, fontWeight: "500" },
+    filterTextActive: { color: "#FFFFFF" },
+    list:             { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 100 },
+    empty:            { alignItems: "center", paddingTop: 60, gap: 12 },
+    emptyText:        { fontSize: 15 },
   });
 }
