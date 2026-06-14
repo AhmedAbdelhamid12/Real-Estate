@@ -4,19 +4,9 @@ import { useForgotPassword } from "@workspace/api-client-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Building, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { AuthShell } from "@/components/layout/AuthShell";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -24,10 +14,13 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+const ease = [0.22, 1, 0.36, 1] as const;
+
 export function ForgotPasswordPage() {
   const forgotPassword = useForgotPassword();
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -36,110 +29,166 @@ export function ForgotPasswordPage() {
 
   const onSubmit = (data: FormValues) => {
     setError(null);
-    forgotPassword.mutate(
-      { data },
-      {
-        onSuccess: () => setSent(true),
-        onError: () =>
-          setError("Something went wrong. Please try again."),
-      }
-    );
+    forgotPassword.mutate({ data }, {
+      onSuccess: () => setSent(true),
+      onError: () => setError("Something went wrong. Please try again."),
+    });
   };
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <Card className="w-full max-w-md shadow-lg border-muted text-center p-6">
-          <CardHeader>
-            <div className="mx-auto bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-500 p-3 rounded-full mb-4 w-fit">
-              <CheckCircle2 className="h-8 w-8" />
-            </div>
-            <CardTitle className="text-2xl">Check your email</CardTitle>
-            <CardDescription className="text-base mt-2">
-              If that email is registered, you'll receive a password reset link
-              shortly.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/login">
-              <Button variant="outline" className="w-full">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to login
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthShell maxWidth={400}>
+        <div style={{ textAlign: "center" }}>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4, ease }}
+            style={{
+              width: 56, height: 56,
+              background: "rgba(74,222,128,0.1)",
+              border: "1px solid rgba(74,222,128,0.25)",
+              borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 24px",
+            }}
+          >
+            <CheckCircle2 style={{ width: 24, height: 24, color: "#4ADE80" }} />
+          </motion.div>
+          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#E4EBF5", marginBottom: "12px" }}>
+            Check your inbox
+          </h2>
+          <p style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}>
+            If that email is registered, you'll receive a password reset link shortly.
+          </p>
+          <Link
+            href="/login"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              color: "#c8a84b", textDecoration: "none",
+              fontSize: "13px", fontWeight: 600, letterSpacing: "0.06em",
+            }}
+          >
+            <ArrowLeft style={{ width: 14, height: 14 }} />
+            Back to sign in
+          </Link>
+        </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="bg-primary text-primary-foreground p-3 rounded-xl mb-4 shadow-sm">
-            <Building className="h-8 w-8" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">TIL Real Estate Group</h1>
-          <p className="text-muted-foreground mt-2">Password recovery</p>
-        </div>
+    <AuthShell maxWidth={400}>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease }}
+        style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "28px" }}
+      >
+        <div style={{ width: 24, height: "1px", background: "#c8a84b" }} />
+        <span style={{ fontSize: "10px", fontWeight: 600, color: "#c8a84b", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+          Password recovery
+        </span>
+      </motion.div>
 
-        <Card className="shadow-lg border-muted">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold">
-              Forgot password?
-            </CardTitle>
-            <CardDescription>
-              Enter your email and we'll send you a reset link
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
-              {error && (
-                <Alert variant="destructive" className="py-3">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  {...form.register("email")}
-                  className={
-                    form.formState.errors.email ? "border-destructive" : ""
-                  }
-                />
-                {form.formState.errors.email && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
-              <Button
-                type="submit"
-                className="w-full mt-6"
-                disabled={forgotPassword.isPending}
-              >
-                {forgotPassword.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                Send reset link
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex justify-center border-t p-6">
-            <Link href="/login" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-3 w-3" />
-              Back to login
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+      <motion.h2
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.1, ease }}
+        style={{ fontSize: "28px", fontWeight: 800, color: "#E4EBF5", letterSpacing: "-0.03em", marginBottom: "8px" }}
+      >
+        Forgot password?
+      </motion.h2>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.15, ease }}
+        style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "36px" }}
+      >
+        Enter your email and we'll send you a reset link.
+      </motion.p>
+
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              marginBottom: "20px", padding: "10px 14px",
+              background: "rgba(248,113,113,0.1)",
+              border: "1px solid rgba(248,113,113,0.25)",
+              borderRadius: "8px", fontSize: "13px", color: "#F87171",
+            }}
+          >
+            {error}
+          </motion.div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease }}
+          style={{ marginBottom: "32px" }}
+        >
+          <label style={{
+            display: "block", fontSize: "10px", fontWeight: 600,
+            color: focusedField === "email" ? "#c8a84b" : "#3D5878",
+            textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px",
+            transition: "color 0.2s",
+          }}>
+            Email address
+          </label>
+          <input
+            type="email"
+            placeholder="name@example.com"
+            autoComplete="email"
+            {...form.register("email")}
+            onFocus={() => setFocusedField("email")}
+            onBlur={() => setFocusedField(null)}
+            style={{
+              width: "100%", boxSizing: "border-box",
+              background: "transparent", border: "none",
+              borderBottom: `1px solid ${focusedField === "email" ? "#c8a84b" : form.formState.errors.email ? "#F87171" : "rgba(255,255,255,0.1)"}`,
+              padding: "10px 0", color: "#C8D8E8", fontSize: "15px", outline: "none",
+              transition: "border-color 0.2s",
+            }}
+          />
+          {form.formState.errors.email && (
+            <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>
+              {form.formState.errors.email.message}
+            </p>
+          )}
+        </motion.div>
+
+        <motion.button
+          type="submit"
+          disabled={forgotPassword.isPending}
+          whileHover={{ scale: forgotPassword.isPending ? 1 : 1.015, backgroundColor: "rgba(200,168,75,0.08)" }}
+          whileTap={{ scale: forgotPassword.isPending ? 1 : 0.98 }}
+          transition={{ duration: 0.15 }}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            width: "100%", background: "transparent",
+            border: "1px solid #c8a84b", borderRadius: "4px", padding: "13px 20px",
+            color: forgotPassword.isPending ? "rgba(200,168,75,0.5)" : "#c8a84b",
+            fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
+            cursor: forgotPassword.isPending ? "not-allowed" : "pointer", marginBottom: "24px",
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {forgotPassword.isPending && <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} />}
+            Send reset link
+          </span>
+          <ArrowRight style={{ width: 15, height: 15 }} />
+        </motion.button>
+      </form>
+
+      <Link href="/login" style={{
+        display: "flex", alignItems: "center", gap: "6px",
+        fontSize: "12.5px", color: "#2d4459", textDecoration: "none",
+      }}>
+        <ArrowLeft style={{ width: 13, height: 13 }} />
+        Back to sign in
+      </Link>
+    </AuthShell>
   );
 }

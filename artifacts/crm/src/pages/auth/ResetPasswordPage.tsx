@@ -4,25 +4,13 @@ import { useResetPassword } from "@workspace/api-client-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Building, Loader2, CheckCircle2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, CheckCircle2, ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
+import { AuthShell } from "@/components/layout/AuthShell";
 
 const schema = z
   .object({
-    password: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters" }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters" }),
     confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -32,6 +20,8 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>;
 
+const ease = [0.22, 1, 0.36, 1] as const;
+
 export function ResetPasswordPage() {
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -40,6 +30,9 @@ export function ResetPasswordPage() {
   const resetPassword = useResetPassword();
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPwd, setShowPwd] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -47,152 +40,243 @@ export function ResetPasswordPage() {
   });
 
   const onSubmit = (data: FormValues) => {
-    if (!token) {
-      setError("Invalid or missing reset token.");
-      return;
-    }
+    if (!token) { setError("Invalid or missing reset token."); return; }
     setError(null);
-    resetPassword.mutate(
-      { data: { token, password: data.password } },
-      {
-        onSuccess: () => setDone(true),
-        onError: (err) =>
-          setError(
-            (err as any)?.message || "Invalid or expired reset link."
-          ),
-      }
-    );
+    resetPassword.mutate({ data: { token, password: data.password } }, {
+      onSuccess: () => setDone(true),
+      onError: (err) => setError((err as any)?.message || "Invalid or expired reset link."),
+    });
   };
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <Card className="w-full max-w-md shadow-lg border-muted text-center p-6">
-          <CardHeader>
-            <CardTitle className="text-2xl">Invalid link</CardTitle>
-            <CardDescription>
-              This password reset link is missing or invalid.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/forgot-password">
-              <Button variant="outline" className="w-full">
-                Request a new link
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthShell maxWidth={400}>
+        <div style={{ textAlign: "center" }}>
+          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#E4EBF5", marginBottom: "12px" }}>
+            Invalid link
+          </h2>
+          <p style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}>
+            This password reset link is missing or invalid.
+          </p>
+          <Link
+            href="/forgot-password"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              border: "1px solid #c8a84b", borderRadius: "4px",
+              padding: "11px 20px", color: "#c8a84b",
+              textDecoration: "none", fontSize: "12px", fontWeight: 600,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+            }}
+          >
+            Request a new link
+            <ArrowRight style={{ width: 14, height: 14 }} />
+          </Link>
+        </div>
+      </AuthShell>
     );
   }
 
   if (done) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <Card className="w-full max-w-md shadow-lg border-muted text-center p-6">
-          <CardHeader>
-            <div className="mx-auto bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-500 p-3 rounded-full mb-4 w-fit">
-              <CheckCircle2 className="h-8 w-8" />
-            </div>
-            <CardTitle className="text-2xl">Password updated</CardTitle>
-            <CardDescription className="text-base mt-2">
-              Your password has been changed successfully.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/login">
-              <Button className="w-full">Sign in with new password</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthShell maxWidth={400}>
+        <div style={{ textAlign: "center" }}>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4, ease }}
+            style={{
+              width: 56, height: 56,
+              background: "rgba(74,222,128,0.1)",
+              border: "1px solid rgba(74,222,128,0.25)",
+              borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 24px",
+            }}
+          >
+            <CheckCircle2 style={{ width: 24, height: 24, color: "#4ADE80" }} />
+          </motion.div>
+          <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#E4EBF5", marginBottom: "12px" }}>
+            Password updated
+          </h2>
+          <p style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "32px" }}>
+            Your password has been changed successfully.
+          </p>
+          <Link
+            href="/login"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              border: "1px solid #c8a84b", borderRadius: "4px",
+              padding: "11px 20px", color: "#c8a84b",
+              textDecoration: "none", fontSize: "12px", fontWeight: 600,
+              letterSpacing: "0.1em", textTransform: "uppercase",
+            }}
+          >
+            Sign in <ArrowRight style={{ width: 14, height: 14 }} />
+          </Link>
+        </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="bg-primary text-primary-foreground p-3 rounded-xl mb-4 shadow-sm">
-            <Building className="h-8 w-8" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">TIL Real Estate Group</h1>
-          <p className="text-muted-foreground mt-2">Set a new password</p>
-        </div>
+    <AuthShell maxWidth={400}>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease }}
+        style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "28px" }}
+      >
+        <div style={{ width: 24, height: "1px", background: "#c8a84b" }} />
+        <span style={{ fontSize: "10px", fontWeight: 600, color: "#c8a84b", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+          Reset password
+        </span>
+      </motion.div>
 
-        <Card className="shadow-lg border-muted">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold">
-              Reset password
-            </CardTitle>
-            <CardDescription>Enter and confirm your new password</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
-              {error && (
-                <Alert variant="destructive" className="py-3">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="password">New password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  {...form.register("password")}
-                  className={
-                    form.formState.errors.password ? "border-destructive" : ""
-                  }
-                />
-                {form.formState.errors.password && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.password.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm new password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  {...form.register("confirmPassword")}
-                  className={
-                    form.formState.errors.confirmPassword
-                      ? "border-destructive"
-                      : ""
-                  }
-                />
-                {form.formState.errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
-              <Button
-                type="submit"
-                className="w-full mt-6"
-                disabled={resetPassword.isPending}
-              >
-                {resetPassword.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                Set new password
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex justify-center border-t p-6">
-            <Link
-              href="/login"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Back to login
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+      <motion.h2
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.1, ease }}
+        style={{ fontSize: "28px", fontWeight: 800, color: "#E4EBF5", letterSpacing: "-0.03em", marginBottom: "8px" }}
+      >
+        New password
+      </motion.h2>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.15, ease }}
+        style={{ fontSize: "14px", color: "#3D5878", lineHeight: 1.7, marginBottom: "36px" }}
+      >
+        Enter and confirm your new password below.
+      </motion.p>
+
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              marginBottom: "20px", padding: "10px 14px",
+              background: "rgba(248,113,113,0.1)",
+              border: "1px solid rgba(248,113,113,0.25)",
+              borderRadius: "8px", fontSize: "13px", color: "#F87171",
+            }}
+          >
+            {error}
+          </motion.div>
+        )}
+
+        {/* New password */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease }}
+          style={{ marginBottom: "28px" }}
+        >
+          <label style={{
+            display: "block", fontSize: "10px", fontWeight: 600,
+            color: focusedField === "password" ? "#c8a84b" : "#3D5878",
+            textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px",
+            transition: "color 0.2s",
+          }}>
+            New password
+          </label>
+          <div style={{ position: "relative" }}>
+            <input
+              type={showPwd ? "text" : "password"}
+              placeholder="••••••••"
+              {...form.register("password")}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: "transparent", border: "none",
+                borderBottom: `1px solid ${focusedField === "password" ? "#c8a84b" : form.formState.errors.password ? "#F87171" : "rgba(255,255,255,0.1)"}`,
+                padding: "10px 32px 10px 0", color: "#C8D8E8", fontSize: "15px",
+                outline: "none", transition: "border-color 0.2s",
+              }}
+            />
+            <button type="button" onClick={() => setShowPwd(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", display: "flex", alignItems: "center", padding: 0 }}>
+              {showPwd ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
+            </button>
+          </div>
+          {form.formState.errors.password && (
+            <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>
+              {form.formState.errors.password.message}
+            </p>
+          )}
+        </motion.div>
+
+        {/* Confirm password */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.28, ease }}
+          style={{ marginBottom: "36px" }}
+        >
+          <label style={{
+            display: "block", fontSize: "10px", fontWeight: 600,
+            color: focusedField === "confirm" ? "#c8a84b" : "#3D5878",
+            textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px",
+            transition: "color 0.2s",
+          }}>
+            Confirm password
+          </label>
+          <div style={{ position: "relative" }}>
+            <input
+              type={showConfirm ? "text" : "password"}
+              placeholder="••••••••"
+              {...form.register("confirmPassword")}
+              onFocus={() => setFocusedField("confirm")}
+              onBlur={() => setFocusedField(null)}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: "transparent", border: "none",
+                borderBottom: `1px solid ${focusedField === "confirm" ? "#c8a84b" : form.formState.errors.confirmPassword ? "#F87171" : "rgba(255,255,255,0.1)"}`,
+                padding: "10px 32px 10px 0", color: "#C8D8E8", fontSize: "15px",
+                outline: "none", transition: "border-color 0.2s",
+              }}
+            />
+            <button type="button" onClick={() => setShowConfirm(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", display: "flex", alignItems: "center", padding: 0 }}>
+              {showConfirm ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
+            </button>
+          </div>
+          {form.formState.errors.confirmPassword && (
+            <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>
+              {form.formState.errors.confirmPassword.message}
+            </p>
+          )}
+        </motion.div>
+
+        <motion.button
+          type="submit"
+          disabled={resetPassword.isPending}
+          whileHover={{ scale: resetPassword.isPending ? 1 : 1.015, backgroundColor: "rgba(200,168,75,0.08)" }}
+          whileTap={{ scale: resetPassword.isPending ? 1 : 0.98 }}
+          transition={{ duration: 0.15 }}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            width: "100%", background: "transparent",
+            border: "1px solid #c8a84b", borderRadius: "4px", padding: "13px 20px",
+            color: resetPassword.isPending ? "rgba(200,168,75,0.5)" : "#c8a84b",
+            fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
+            cursor: resetPassword.isPending ? "not-allowed" : "pointer", marginBottom: "24px",
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {resetPassword.isPending && <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} />}
+            Set new password
+          </span>
+          <ArrowRight style={{ width: 15, height: 15 }} />
+        </motion.button>
+      </form>
+
+      <Link href="/login" style={{
+        display: "flex", alignItems: "center", gap: "6px",
+        fontSize: "12.5px", color: "#2d4459", textDecoration: "none",
+      }}>
+        <ArrowLeft style={{ width: 13, height: 13 }} />
+        Back to sign in
+      </Link>
+    </AuthShell>
   );
 }

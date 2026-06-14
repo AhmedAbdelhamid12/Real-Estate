@@ -7,8 +7,8 @@ import { buildNativeTheme } from "@workspace/design-tokens/native";
  * Change any value there → this hook updates instantly.
  */
 export function useColors() {
-  const scheme = useColorScheme();
-  return buildNativeTheme(scheme === "dark");
+  useColorScheme();
+  return buildNativeTheme(true);
 }
 
 export type AppColors = ReturnType<typeof useColors>["colors"];
