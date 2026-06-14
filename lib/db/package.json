@@ -13,6 +13,8 @@
     "seed": "tsx src/seed/seed.ts"
   },
   "dependencies": {
+    "@workspace/permissions": "workspace:*",
+    "bcryptjs": "^2.4.3",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "^0.8.3",
     "pg": "^8.20.0",
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/pg": "^8.20.0",
-    "drizzle-kit": "^0.31.10"
+    "drizzle-kit": "^0.31.10",
+    "tsx": "catalog:"
   }
 }
