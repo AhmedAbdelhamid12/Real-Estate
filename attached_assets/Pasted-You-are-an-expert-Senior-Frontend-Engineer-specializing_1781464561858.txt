@@ -1,0 +1,273 @@
+You are an expert Senior Frontend Engineer specializing in 
+Enterprise CRM Systems. Build a world-class CRM dashboard using 
+the following strict technical specifications:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧱 TECH STACK:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Framework: Next.js 15 (App Router + Server Components)
+- Language: TypeScript (strict mode)
+- Styling: Tailwind CSS v4
+- UI Library: shadcn/ui + Radix UI primitives
+- Icons: Lucide React (primary) + Phosphor Icons (accent)
+- Animations: Motion (Framer Motion v11)
+- Charts: Recharts + Tremor
+- Tables: TanStack Table v8
+- Forms: React Hook Form + Zod validation
+- Toast: Sonner
+- Command: cmdk (Command Palette)
+- Drag & Drop: @dnd-kit
+- Font: Inter (UI) + Geist (headings) via next/font
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎨 DESIGN SYSTEM (STRICT):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COLOR PALETTE (CSS Variables):
+  --background:     oklch(0.98 0.005 250)
+  --foreground:     oklch(0.12 0.015 250)
+  --primary:        oklch(0.55 0.22 264)   /* Electric Indigo */
+  --primary-hover:  oklch(0.48 0.22 264)
+  --secondary:      oklch(0.94 0.01 250)
+  --accent:         oklch(0.62 0.20 160)   /* Emerald Green */
+  --accent-warm:    oklch(0.70 0.18 55)    /* Amber */
+  --destructive:    oklch(0.55 0.22 25)    /* Modern Red */
+  --border:         oklch(0.88 0.008 250)
+  --muted:          oklch(0.96 0.005 250)
+  --muted-foreground: oklch(0.50 0.012 250)
+  --card:           oklch(1.00 0.00 0)
+  --sidebar-bg:     oklch(0.11 0.015 264)  /* Deep Navy */
+  --sidebar-text:   oklch(0.85 0.010 250)
+
+DARK MODE (class="dark"):
+  --background:     oklch(0.09 0.015 264)
+  --foreground:     oklch(0.95 0.008 250)
+  --card:           oklch(0.13 0.018 264)
+  --border:         oklch(0.22 0.015 264)
+  --sidebar-bg:     oklch(0.07 0.012 264)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📐 TYPOGRAPHY SCALE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Display:    Geist, 36px/44px, weight 700, tracking -0.02em
+  H1:         Geist, 28px/36px, weight 700, tracking -0.015em
+  H2:         Geist, 22px/30px, weight 600, tracking -0.01em
+  H3:         Inter, 18px/26px, weight 600
+  Body:       Inter, 14px/22px, weight 400
+  Body-sm:    Inter, 13px/20px, weight 400
+  Caption:    Inter, 12px/18px, weight 400, muted color
+  Label:      Inter, 12px/16px, weight 500, uppercase, 0.06em tracking
+  Code:       JetBrains Mono, 13px
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📏 SPACING & LAYOUT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Base unit: 4px (Tailwind default)
+  Sidebar width: 260px (collapsed: 64px)
+  Header height: 60px
+  Content padding: 24px (desktop) / 16px (mobile)
+  Card padding: 20px
+  Border radius: 
+    --radius-sm: 6px   (inputs, badges)
+    --radius-md: 10px  (cards, dropdowns)
+    --radius-lg: 14px  (modals, panels)
+    --radius-xl: 20px  (feature cards)
+  
+  Shadows:
+    --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.05)
+    --shadow-md: 0 4px 12px oklch(0 0 0 / 0.08)
+    --shadow-lg: 0 8px 32px oklch(0 0 0 / 0.12)
+    --shadow-glow: 0 0 24px oklch(0.55 0.22 264 / 0.15)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏗️ LAYOUT STRUCTURE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ┌─────────────────────────────────┐
+  │  SIDEBAR (260px, fixed)         │
+  │  ├── Logo + Brand               │
+  │  ├── Navigation Groups          │
+  │  │   ├── Dashboard              │
+  │  │   ├── Contacts               │
+  │  │   ├── Deals / Pipeline       │
+  │  │   ├── Tasks                  │
+  │  │   ├── Calendar               │
+  │  │   ├── Email                  │
+  │  │   ├── Reports                │
+  │  │   └── Settings               │
+  │  └── User Profile (bottom)      │
+  ├─────────────────────────────────┤
+  │  HEADER (60px)                  │
+  │  ├── Breadcrumb                 │
+  │  ├── Global Search (cmdk)       │
+  │  ├── Notifications Bell         │
+  │  ├── Theme Toggle               │
+  │  └── User Avatar Menu           │
+  ├─────────────────────────────────┤
+  │  MAIN CONTENT                   │
+  │  ├── Page Header (title+actions)│
+  │  └── Content Grid               │
+  └─────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 CRM PAGES TO BUILD:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. DASHBOARD
+   - KPI Cards (4): Total Revenue, Active Deals,
+     New Contacts, Conversion Rate
+     → Each with: icon, value, trend %, sparkline
+   - Revenue Chart (Area): last 12 months (Recharts)
+   - Sales Pipeline Funnel (bar chart)
+   - Recent Activities Feed
+   - Top Performers Table
+   - Tasks Due Today widget
+
+2. CONTACTS PAGE
+   - Stats bar (Total, Active, New this month, VIP)
+   - View toggle: Table ↔ Kanban ↔ Grid Cards
+   - Filter sidebar: Status, Tags, Location, Score
+   - Data Table (TanStack):
+     → Avatar + Name + Company
+     → Email (copyable)
+     → Phone
+     → Status badge (color-coded)
+     → Lead Score (progress bar)
+     → Last Activity (relative time)
+     → Actions menu (⋯)
+   - Inline editing
+   - Bulk actions toolbar
+   - Export CSV button
+
+3. DEALS / PIPELINE
+   - Kanban board (@dnd-kit drag & drop):
+     → Columns: Lead → Qualified → Proposal → 
+                Negotiation → Won → Lost
+     → Cards: Contact avatar, deal value, 
+              probability %, due date, owner
+   - Pipeline value totals per stage
+   - Quick-add deal modal
+
+4. CONTACT DETAIL PAGE
+   - Left panel: Profile card, contact info, tags
+   - Center: Timeline of all interactions
+   - Right panel: Related deals, tasks, notes
+   - Activity composer (Email, Call, Meeting, Note)
+
+5. REPORTS
+   - Date range picker
+   - Revenue by source (Donut chart)
+   - Activity heatmap (calendar view)
+   - Team performance comparison
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎬 ANIMATIONS SPEC (Motion):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Page transitions:
+    initial: { opacity: 0, y: 8 }
+    animate: { opacity: 1, y: 0 }
+    transition: { duration: 0.25, ease: "easeOut" }
+
+  Card entrance (stagger):
+    Each card delays by index * 0.05s
+    initial: { opacity: 0, scale: 0.97 }
+    animate: { opacity: 1, scale: 1 }
+
+  Sidebar items:
+    Hover: x: 2, background color transition 150ms
+    Active: indicator line slides in from left
+
+  KPI Cards:
+    Numbers count up on mount (0 → value)
+    Trend badge slides up with fade
+
+  Table rows:
+    Hover: subtle background shift + shadow
+    Row actions: slide in from right on hover
+
+  Kanban cards:
+    Drag: scale(1.03) + shadow-glow + slight tilt
+    Drop zone: border pulse animation
+    
+  Toast (Sonner):
+    Slide in from bottom-right with spring
+
+  Modal:
+    Backdrop: fade in 200ms
+    Panel: scale(0.96)→(1) + translateY(8px)→(0)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧱 COMPONENT STANDARDS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BUTTONS:
+  Primary:   bg-primary text-white, hover:brightness(1.1)
+             shadow-sm, active:scale(0.98)
+  Secondary: bg-secondary border border-border
+  Ghost:     transparent, hover:bg-muted
+  Danger:    bg-destructive text-white
+  Icon:      40×40px, rounded-md
+  All: height-9 (36px), px-4, gap-2, font-medium text-sm
+
+BADGES:
+  Active:   bg-emerald-500/10 text-emerald-600 
+  Inactive: bg-muted text-muted-foreground
+  Warning:  bg-amber-500/10 text-amber-600
+  Danger:   bg-red-500/10 text-red-600
+  New:      bg-primary/10 text-primary
+
+DATA TABLE:
+  Header: bg-muted/50, text-xs uppercase, font-semibold,
+          text-muted-foreground, py-3 px-4
+  Row:    border-b border-border, py-3 px-4, 
+          hover:bg-muted/40, transition-colors 150ms
+  Zebra:  odd rows bg-muted/20
+  Checkbox column: 40px
+  Actions column: right-aligned, w-[50px]
+  Sticky header on scroll
+  
+CARDS:
+  bg-card, border border-border, rounded-[--radius-md]
+  shadow-[--shadow-sm], hover:shadow-[--shadow-md]
+  padding: 20px, transition-shadow 200ms
+  
+  Stat Card extras:
+    Icon wrapper: 40×40, rounded-[--radius-sm],
+    bg-primary/10, icon color: primary
+    
+INPUT FIELDS:
+  height: 36px, border border-border
+  focus: ring-2 ring-primary/30 border-primary
+  rounded-[--radius-sm], px-3, text-sm
+  bg-background, placeholder:text-muted-foreground
+
+SIDEBAR NAV ITEMS:
+  Default: text-sidebar-text/70, rounded-[--radius-sm]
+  Hover:   bg-white/8 text-sidebar-text
+  Active:  bg-primary text-white shadow-[--shadow-glow]
+  Height: 38px, px-3, gap-3, text-sm font-medium
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ PERFORMANCE RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- All tables must use TanStack Virtual for 1000+ rows
+- Charts: lazy load with React.lazy + Suspense
+- Images: next/image with blur placeholder
+- Icons: import individually (tree-shake)
+- Animations: respect prefers-reduced-motion
+- Server Components by default, Client only when needed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ OUTPUT FORMAT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+For each component provide:
+1. Complete TypeScript code
+2. All Tailwind classes (no inline styles)
+3. Motion animation wrappers
+4. Responsive variants (sm/md/lg)
+5. Dark mode support
+6. Accessibility (aria labels, keyboard nav)
+7. Loading skeleton version
+
+Start with: globals.css (CSS variables) → 
+layout.tsx → sidebar → header → 
+dashboard page → contacts page
