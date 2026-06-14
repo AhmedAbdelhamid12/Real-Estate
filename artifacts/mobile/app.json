@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "PropOS Mobile",
-    "slug": "mobile",
+    "name": "TIL",
+    "slug": "til",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "til",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -14,9 +14,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.til.app"
     },
-    "android": {},
+    "android": {
+      "package": "com.til.app"
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
