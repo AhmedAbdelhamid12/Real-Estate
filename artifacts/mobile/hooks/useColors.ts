@@ -1,14 +1,14 @@
-import { useColorScheme } from "react-native";
 import { buildNativeTheme } from "@workspace/design-tokens/native";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 /**
  * Returns the full TIL design theme for the current color scheme.
  * Source of truth: lib/design-tokens/src/tokens.ts
- * Change any value there → this hook updates instantly.
+ * Respects user's dark/light preference stored in AsyncStorage.
  */
 export function useColors() {
-  useColorScheme();
-  return buildNativeTheme(true);
+  const { isDark } = useAppTheme();
+  return buildNativeTheme(isDark);
 }
 
 export type AppColors = ReturnType<typeof useColors>["colors"];

@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { useAppTheme } from "@/contexts/ThemeContext";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -33,6 +34,7 @@ const EASE = Easing.bezier(0.22, 1, 0.36, 1);
 export default function LoginScreen() {
   const theme = useColors();
   const c = theme.colors;
+  const { isDark, toggleTheme } = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signIn } = useAuthContext();
@@ -118,7 +120,7 @@ export default function LoginScreen() {
     btnScale.value = withSpring(1, { damping: 14, stiffness: 200 });
   }
 
-  const s = makeStyles(c, focusedField);
+  const s = makeStyles(c, focusedField, isDark);
 
   return (
     <KeyboardAwareScrollViewCompat
@@ -132,6 +134,15 @@ export default function LoginScreen() {
     >
       {/* Gold accent line at top */}
       <View style={s.goldRule} />
+
+      {/* Theme toggle */}
+      <TouchableOpacity
+        onPress={toggleTheme}
+        style={[s.themeToggle, { top: insets.top + 12 }]}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Feather name={isDark ? "sun" : "moon"} size={16} color="#c8a84b" />
+      </TouchableOpacity>
 
       {/* Header / Logo */}
       <Animated.View style={[s.header, logoStyle]}>
@@ -235,7 +246,7 @@ export default function LoginScreen() {
   );
 }
 
-function makeStyles(c: ReturnType<typeof useColors>["colors"], _focusedField: string | null) {
+function makeStyles(c: ReturnType<typeof useColors>["colors"], _focusedField: string | null, isDark: boolean) {
   return StyleSheet.create({
     container: { flex: 1 },
     scroll: {
@@ -250,6 +261,20 @@ function makeStyles(c: ReturnType<typeof useColors>["colors"], _focusedField: st
       height: 2,
       backgroundColor: "#c8a84b",
       opacity: 0.7,
+    },
+
+    themeToggle: {
+      position: "absolute",
+      right: 20,
+      zIndex: 20,
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      backgroundColor: isDark ? "rgba(200,168,75,0.1)" : "rgba(200,168,75,0.15)",
+      borderWidth: 1,
+      borderColor: isDark ? "rgba(200,168,75,0.25)" : "rgba(200,168,75,0.35)",
+      alignItems: "center",
+      justifyContent: "center",
     },
 
     header: { alignItems: "center", marginBottom: 8 },
@@ -292,7 +317,7 @@ function makeStyles(c: ReturnType<typeof useColors>["colors"], _focusedField: st
     },
     subtitle: {
       fontSize: isSmallScreen ? 12 : 13,
-      color: "#3D5878",
+      color: isDark ? "#3D5878" : "#6B8CAA",
       letterSpacing: 0.3,
     },
 
@@ -366,7 +391,7 @@ function makeStyles(c: ReturnType<typeof useColors>["colors"], _focusedField: st
 
     footer: {
       textAlign: "center",
-      color: "rgba(255,255,255,0.22)",
+      color: isDark ? "rgba(255,255,255,0.22)" : "rgba(15,31,56,0.35)",
       fontSize: 12,
       marginTop: 28,
     },

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
+import { useTheme } from "next-themes";
 import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Building2, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Building2, ArrowRight, Eye, EyeOff, Loader2, Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 
 const loginSchema = z.object({
@@ -24,10 +25,38 @@ const STATS = [
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
+function usePalette() {
+  const { resolvedTheme } = useTheme();
+  const dark = resolvedTheme !== "light";
+  return {
+    dark,
+    bg:            dark ? "#080f1c"                     : "#EEF2F8",
+    fg:            dark ? "#E4EBF5"                     : "#0F1F38",
+    fgBody:        dark ? "#3D5878"                     : "#4A6785",
+    fgMuted:       dark ? "#2d4459"                     : "#8BAFC7",
+    inputBorder:   dark ? "rgba(255,255,255,0.1)"       : "rgba(15,31,56,0.15)",
+    inputFocused:  "#c8a84b",
+    inputText:     dark ? "#C8D8E8"                     : "#0F1F38",
+    gridOpacity:   dark ? 0.035                         : 0.055,
+    statDivider:   dark ? "rgba(200,168,75,0.12)"       : "rgba(200,168,75,0.22)",
+    oauthBorder:   dark ? "rgba(255,255,255,0.08)"      : "rgba(15,31,56,0.12)",
+    oauthText:     dark ? "#4e6b82"                     : "#4A6785",
+    divider:       dark ? "rgba(200,168,75,0.18)"       : "rgba(200,168,75,0.28)",
+    brandText:     dark ? "#8BAFC7"                     : "#4A6785",
+    premiumText:   dark ? "#2d4459"                     : "#8BAFC7",
+    registerText:  dark ? "#2d4459"                     : "#4A6785",
+    iconBg:        dark ? "#080f1c"                     : "#EEF2F8",
+    toggleBg:      dark ? "rgba(200,168,75,0.08)"       : "rgba(200,168,75,0.12)",
+    toggleBorder:  dark ? "rgba(200,168,75,0.2)"        : "rgba(200,168,75,0.3)",
+  };
+}
+
 export function LoginPage() {
   const [, setLocation] = useLocation();
   const { refetch } = useAuth();
   const login = useLogin();
+  const { setTheme, resolvedTheme } = useTheme();
+  const p = usePalette();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -50,16 +79,21 @@ export function LoginPage() {
     });
   };
 
+  function toggleTheme() {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  }
+
   return (
     <div style={{
       minHeight: "100vh", width: "100%",
-      background: "#080f1c",
+      background: p.bg,
       fontFamily: "'Inter', system-ui, sans-serif",
       display: "flex", flexDirection: "column",
       position: "relative", overflow: "hidden",
+      transition: "background 0.3s ease",
     }}>
       {/* Architectural line pattern */}
-      <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.035, pointerEvents: "none" }} viewBox="0 0 1920 1080" preserveAspectRatio="none">
+      <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: p.gridOpacity, pointerEvents: "none" }} viewBox="0 0 1920 1080" preserveAspectRatio="none">
         {Array.from({ length: 22 }, (_, i) => (
           <line key={i} x1={i * 92} y1="0" x2={i * 92 + 240} y2="1080" stroke="#c8a84b" strokeWidth="1" />
         ))}
@@ -68,7 +102,7 @@ export function LoginPage() {
         ))}
       </svg>
 
-      {/* Gold top rule — animate width */}
+      {/* Gold top rule */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
@@ -85,11 +119,31 @@ export function LoginPage() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ background: "linear-gradient(135deg, #c8a84b, #e8d070)", padding: "8px", borderRadius: "10px", boxShadow: "0 4px 16px rgba(200,168,75,0.3)" }}>
-            <Building2 style={{ width: 18, height: 18, color: "#080f1c", strokeWidth: 2.5 }} />
+            <Building2 style={{ width: 18, height: 18, color: p.iconBg, strokeWidth: 2.5 }} />
           </div>
-          <span style={{ fontSize: "14px", fontWeight: 600, color: "#8BAFC7", letterSpacing: "0.02em" }}>TIL Real Estate Group</span>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: p.brandText, letterSpacing: "0.02em", transition: "color 0.3s" }}>TIL Real Estate Group</span>
         </div>
-        <span style={{ fontSize: "11px", color: "#2d4459", letterSpacing: "0.12em", textTransform: "uppercase" }}>Premium CRM</span>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 34, height: 34, borderRadius: "8px",
+              background: p.toggleBg,
+              border: `1px solid ${p.toggleBorder}`,
+              cursor: "pointer", color: "#c8a84b",
+              transition: "background 0.2s, border-color 0.2s",
+            }}
+          >
+            {p.dark
+              ? <Sun style={{ width: 15, height: 15 }} />
+              : <Moon style={{ width: 15, height: 15 }} />
+            }
+          </button>
+          <span style={{ fontSize: "11px", color: p.premiumText, letterSpacing: "0.12em", textTransform: "uppercase", transition: "color 0.3s" }}>Premium CRM</span>
+        </div>
       </motion.div>
 
       {/* Main layout */}
@@ -112,7 +166,7 @@ export function LoginPage() {
               initial={{ y: 80, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.75, delay: 0.25, ease }}
-              style={{ fontSize: "clamp(56px, 6vw, 88px)", fontWeight: 800, lineHeight: 0.95, letterSpacing: "-0.04em", color: "#E4EBF5", margin: 0 }}
+              style={{ fontSize: "clamp(56px, 6vw, 88px)", fontWeight: 800, lineHeight: 0.95, letterSpacing: "-0.04em", color: p.fg, margin: 0, transition: "color 0.3s" }}
             >
               Sign
             </motion.h1>
@@ -131,7 +185,7 @@ export function LoginPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5, ease }}
-            style={{ fontSize: "15px", lineHeight: 1.75, color: "#3D5878", maxWidth: "400px", marginBottom: "0" }}
+            style={{ fontSize: "15px", lineHeight: 1.75, color: p.fgBody, maxWidth: "400px", marginBottom: "0", transition: "color 0.3s" }}
           >
             Egypt's most sophisticated real estate intelligence platform. Manage leads, close deals, and track performance across every asset class.
           </motion.p>
@@ -140,7 +194,7 @@ export function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.65, ease }}
-            style={{ display: "flex", gap: "40px", marginTop: "48px", borderTop: "1px solid rgba(200,168,75,0.12)", paddingTop: "28px" }}
+            style={{ display: "flex", gap: "40px", marginTop: "48px", borderTop: `1px solid ${p.statDivider}`, paddingTop: "28px", transition: "border-color 0.3s" }}
           >
             {STATS.map(({ num, label }, i) => (
               <motion.div
@@ -150,7 +204,7 @@ export function LoginPage() {
                 transition={{ duration: 0.45, delay: 0.7 + i * 0.1, ease }}
               >
                 <div style={{ fontSize: "20px", fontWeight: 700, color: "#c8a84b", marginBottom: "4px" }}>{num}</div>
-                <div style={{ fontSize: "11px", color: "#2d4459", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+                <div style={{ fontSize: "11px", color: p.fgMuted, textTransform: "uppercase", letterSpacing: "0.08em", transition: "color 0.3s" }}>{label}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -161,7 +215,7 @@ export function LoginPage() {
           initial={{ scaleY: 0, opacity: 0 }}
           animate={{ scaleY: 1, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.3, ease }}
-          style={{ width: "1px", alignSelf: "stretch", margin: "0 52px", background: "linear-gradient(180deg, transparent, rgba(200,168,75,0.18) 25%, rgba(200,168,75,0.18) 75%, transparent)", flexShrink: 0, transformOrigin: "center" }}
+          style={{ width: "1px", alignSelf: "stretch", margin: "0 52px", background: `linear-gradient(180deg, transparent, ${p.divider} 25%, ${p.divider} 75%, transparent)`, flexShrink: 0, transformOrigin: "center" }}
         />
 
         {/* RIGHT: Form */}
@@ -171,7 +225,7 @@ export function LoginPage() {
           transition={{ duration: 0.7, delay: 0.3, ease }}
           style={{ flex: 1, maxWidth: "380px" }}
         >
-          <div style={{ fontSize: "11px", color: "#2d4459", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "36px" }}>
+          <div style={{ fontSize: "11px", color: p.fgMuted, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "36px", transition: "color 0.3s" }}>
             Sign in to your account
           </div>
 
@@ -193,7 +247,7 @@ export function LoginPage() {
               transition={{ duration: 0.45, delay: 0.42, ease }}
               style={{ marginBottom: "28px" }}
             >
-              <label style={{ display: "block", fontSize: "10px", fontWeight: 600, color: focusedField === "email" ? "#c8a84b" : "#3D5878", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px", transition: "color 0.2s" }}>
+              <label style={{ display: "block", fontSize: "10px", fontWeight: 600, color: focusedField === "email" ? "#c8a84b" : p.fgBody, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px", transition: "color 0.2s" }}>
                 Email address
               </label>
               <input
@@ -206,8 +260,8 @@ export function LoginPage() {
                 style={{
                   width: "100%", boxSizing: "border-box",
                   background: "transparent", border: "none",
-                  borderBottom: `1px solid ${focusedField === "email" ? "#c8a84b" : form.formState.errors.email ? "#F87171" : "rgba(255,255,255,0.1)"}`,
-                  padding: "10px 0", color: "#C8D8E8", fontSize: "15px", outline: "none", transition: "border-color 0.2s",
+                  borderBottom: `1px solid ${focusedField === "email" ? "#c8a84b" : form.formState.errors.email ? "#F87171" : p.inputBorder}`,
+                  padding: "10px 0", color: p.inputText, fontSize: "15px", outline: "none", transition: "border-color 0.2s, color 0.3s",
                 }}
               />
               {form.formState.errors.email && (
@@ -223,7 +277,7 @@ export function LoginPage() {
               style={{ marginBottom: "36px" }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                <label style={{ fontSize: "10px", fontWeight: 600, color: focusedField === "password" ? "#c8a84b" : "#3D5878", textTransform: "uppercase", letterSpacing: "0.1em", transition: "color 0.2s" }}>
+                <label style={{ fontSize: "10px", fontWeight: 600, color: focusedField === "password" ? "#c8a84b" : p.fgBody, textTransform: "uppercase", letterSpacing: "0.1em", transition: "color 0.2s" }}>
                   Password
                 </label>
                 <Link href="/forgot-password" style={{ fontSize: "12px", color: "#c8a84b", textDecoration: "none", opacity: 0.75 }}>
@@ -241,11 +295,11 @@ export function LoginPage() {
                   style={{
                     width: "100%", boxSizing: "border-box",
                     background: "transparent", border: "none",
-                    borderBottom: `1px solid ${focusedField === "password" ? "#c8a84b" : form.formState.errors.password ? "#F87171" : "rgba(255,255,255,0.1)"}`,
-                    padding: "10px 32px 10px 0", color: "#C8D8E8", fontSize: "15px", outline: "none", transition: "border-color 0.2s",
+                    borderBottom: `1px solid ${focusedField === "password" ? "#c8a84b" : form.formState.errors.password ? "#F87171" : p.inputBorder}`,
+                    padding: "10px 32px 10px 0", color: p.inputText, fontSize: "15px", outline: "none", transition: "border-color 0.2s, color 0.3s",
                   }}
                 />
-                <button type="button" onClick={() => setShowPassword(p => !p)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#3D5878", display: "flex", alignItems: "center", padding: 0 }}>
+                <button type="button" onClick={() => setShowPassword(v => !v)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: p.fgBody, display: "flex", alignItems: "center", padding: 0 }}>
                   {showPassword ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
                 </button>
               </div>
@@ -291,7 +345,7 @@ export function LoginPage() {
             transition={{ duration: 0.5, delay: 0.7, ease }}
             style={{ display: "flex", gap: "10px", marginBottom: "28px" }}
           >
-            <a href={`${BASE_URL}/api/auth/google`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "10px", fontSize: "13px", color: "#4e6b82", textDecoration: "none" }}>
+            <a href={`${BASE_URL}/api/auth/google`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: `1px solid ${p.oauthBorder}`, borderRadius: "4px", padding: "10px", fontSize: "13px", color: p.oauthText, textDecoration: "none", transition: "border-color 0.3s, color 0.3s" }}>
               <svg width="14" height="14" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -300,7 +354,7 @@ export function LoginPage() {
               </svg>
               Google
             </a>
-            <a href={`${BASE_URL}/api/auth/facebook`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "10px", fontSize: "13px", color: "#4e6b82", textDecoration: "none" }}>
+            <a href={`${BASE_URL}/api/auth/facebook`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: `1px solid ${p.oauthBorder}`, borderRadius: "4px", padding: "10px", fontSize: "13px", color: p.oauthText, textDecoration: "none", transition: "border-color 0.3s, color 0.3s" }}>
               <svg width="14" height="14" fill="#1877F2" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
@@ -312,7 +366,7 @@ export function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.75, ease }}
-            style={{ fontSize: "12.5px", color: "#2d4459" }}
+            style={{ fontSize: "12.5px", color: p.registerText, transition: "color 0.3s" }}
           >
             No account?{" "}
             <Link href="/register" style={{ color: "#c8a84b", textDecoration: "none", fontWeight: 500 }}>Request access</Link>

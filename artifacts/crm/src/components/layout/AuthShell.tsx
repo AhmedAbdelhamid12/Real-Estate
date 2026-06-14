@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Link } from "wouter";
-import { Building2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Building2, Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -10,22 +11,48 @@ interface AuthShellProps {
   maxWidth?: number;
 }
 
+function usePalette() {
+  const { resolvedTheme } = useTheme();
+  const dark = resolvedTheme !== "light";
+  return {
+    dark,
+    bg:          dark ? "#080f1c"               : "#EEF2F8",
+    card:        dark ? "rgba(13,26,46,0.7)"    : "rgba(255,255,255,0.85)",
+    cardBorder:  dark ? "rgba(200,168,75,0.12)" : "rgba(200,168,75,0.25)",
+    cardShadow:  dark ? "0 0 0 1px rgba(200,168,75,0.06), 0 20px 60px rgba(0,0,0,0.5)" : "0 0 0 1px rgba(200,168,75,0.12), 0 20px 60px rgba(0,0,0,0.1)",
+    brandText:   dark ? "#8BAFC7"               : "#4A6785",
+    premiumText: dark ? "#2d4459"               : "#8BAFC7",
+    iconBg:      dark ? "#080f1c"               : "#EEF2F8",
+    toggleBg:    dark ? "rgba(200,168,75,0.08)" : "rgba(200,168,75,0.12)",
+    toggleBorder:dark ? "rgba(200,168,75,0.2)"  : "rgba(200,168,75,0.3)",
+    gridOpacity: dark ? 0.03                    : 0.055,
+  };
+}
+
 export function AuthShell({ children, maxWidth = 440 }: AuthShellProps) {
+  const { setTheme, resolvedTheme } = useTheme();
+  const p = usePalette();
+
+  function toggleTheme() {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  }
+
   return (
     <div style={{
       minHeight: "100vh",
       width: "100%",
-      background: "#080f1c",
+      background: p.bg,
       fontFamily: "'Inter', system-ui, sans-serif",
       display: "flex",
       flexDirection: "column",
       position: "relative",
       overflow: "hidden",
+      transition: "background 0.3s ease",
     }}>
       {/* Architectural line pattern */}
       <svg
         aria-hidden
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.03, pointerEvents: "none" }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: p.gridOpacity, pointerEvents: "none" }}
         viewBox="0 0 1920 1080"
         preserveAspectRatio="none"
       >
@@ -73,15 +100,35 @@ export function AuthShell({ children, maxWidth = 440 }: AuthShellProps) {
             borderRadius: "10px",
             boxShadow: "0 4px 16px rgba(200,168,75,0.3)",
           }}>
-            <Building2 style={{ width: 16, height: 16, color: "#080f1c", strokeWidth: 2.5 }} />
+            <Building2 style={{ width: 16, height: 16, color: p.iconBg, strokeWidth: 2.5 }} />
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#8BAFC7", letterSpacing: "0.02em" }}>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: p.brandText, letterSpacing: "0.02em", transition: "color 0.3s" }}>
             TIL Real Estate Group
           </span>
         </Link>
-        <span style={{ fontSize: "10px", color: "#2d4459", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-          Premium CRM
-        </span>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 32, height: 32, borderRadius: "8px",
+              background: p.toggleBg,
+              border: `1px solid ${p.toggleBorder}`,
+              cursor: "pointer", color: "#c8a84b",
+              transition: "background 0.2s, border-color 0.2s",
+            }}
+          >
+            {p.dark
+              ? <Sun style={{ width: 14, height: 14 }} />
+              : <Moon style={{ width: 14, height: 14 }} />
+            }
+          </button>
+          <span style={{ fontSize: "10px", color: p.premiumText, letterSpacing: "0.12em", textTransform: "uppercase", transition: "color 0.3s" }}>
+            Premium CRM
+          </span>
+        </div>
       </motion.div>
 
       {/* Content area */}
@@ -101,13 +148,14 @@ export function AuthShell({ children, maxWidth = 440 }: AuthShellProps) {
           style={{
             width: "100%",
             maxWidth,
-            background: "rgba(13,26,46,0.7)",
-            border: "1px solid rgba(200,168,75,0.12)",
+            background: p.card,
+            border: `1px solid ${p.cardBorder}`,
             borderRadius: "12px",
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
             padding: "40px",
-            boxShadow: "0 0 0 1px rgba(200,168,75,0.06), 0 20px 60px rgba(0,0,0,0.5)",
+            boxShadow: p.cardShadow,
+            transition: "background 0.3s, border-color 0.3s, box-shadow 0.3s",
           }}
         >
           {children}
