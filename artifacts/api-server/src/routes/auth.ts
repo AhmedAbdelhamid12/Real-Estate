@@ -35,16 +35,20 @@ function getAppUrl(req: { headers: { host?: string } }): string {
 
 // GET /auth/team-leaders — public, for register form
 router.get("/auth/team-leaders", async (req, res): Promise<void> => {
-  const leaders = await db
-    .select({ id: usersTable.id, name: usersTable.name })
-    .from(usersTable)
-    .where(
-      and(
-        eq(usersTable.role, "team_leader"),
-        eq(usersTable.status, "active")
-      )
-    );
-  res.json(leaders);
+  try {
+    const leaders = await db
+      .select({ id: usersTable.id, name: usersTable.name })
+      .from(usersTable)
+      .where(
+        and(
+          eq(usersTable.role, "team_leader"),
+          eq(usersTable.status, "active")
+        )
+      );
+    res.json(leaders);
+  } catch {
+    res.json([]);
+  }
 });
 
 // POST /auth/register

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useListLeads, useCreateLead, getListLeadsQueryKey } from "@workspace/api-client-react";
 import { Link, useLocation } from "wouter";
+import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

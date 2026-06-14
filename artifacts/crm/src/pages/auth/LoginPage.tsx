@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Building2, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -20,6 +21,8 @@ const STATS = [
   { num: "EGP 2.4B+", label: "Sales managed" },
   { num: "38%", label: "Conversion lift" },
 ];
+
+const ease = [0.22, 1, 0.36, 1] as const;
 
 export function LoginPage() {
   const [, setLocation] = useLocation();
@@ -65,11 +68,21 @@ export function LoginPage() {
         ))}
       </svg>
 
-      {/* Gold top rule */}
-      <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, #c8a84b 20%, #e8d070 50%, #c8a84b 80%, transparent)", opacity: 0.6, flexShrink: 0 }} />
+      {/* Gold top rule — animate width */}
+      <motion.div
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        transition={{ duration: 1.2, ease }}
+        style={{ height: "1px", background: "linear-gradient(90deg, transparent, #c8a84b 20%, #e8d070 50%, #c8a84b 80%, transparent)", opacity: 0.6, flexShrink: 0, transformOrigin: "left" }}
+      />
 
       {/* Top bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 48px", position: "relative", zIndex: 10, flexShrink: 0 }}>
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15, ease }}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 48px", position: "relative", zIndex: 10, flexShrink: 0 }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ background: "linear-gradient(135deg, #c8a84b, #e8d070)", padding: "8px", borderRadius: "10px", boxShadow: "0 4px 16px rgba(200,168,75,0.3)" }}>
             <Building2 style={{ width: 18, height: 18, color: "#080f1c", strokeWidth: 2.5 }} />
@@ -77,56 +90,109 @@ export function LoginPage() {
           <span style={{ fontSize: "14px", fontWeight: 600, color: "#8BAFC7", letterSpacing: "0.02em" }}>TIL Real Estate Group</span>
         </div>
         <span style={{ fontSize: "11px", color: "#2d4459", letterSpacing: "0.12em", textTransform: "uppercase" }}>Premium CRM</span>
-      </div>
+      </motion.div>
 
       {/* Main layout */}
       <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "0 48px 48px", position: "relative", zIndex: 10, gap: "0", minHeight: 0 }}>
 
         {/* LEFT: Display headline */}
         <div style={{ flex: "0 0 52%", paddingRight: "72px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}>
+          <motion.div
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease }}
+            style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px" }}
+          >
             <div style={{ width: 28, height: "1px", background: "#c8a84b" }} />
             <span style={{ fontSize: "11px", fontWeight: 600, color: "#c8a84b", letterSpacing: "0.16em", textTransform: "uppercase" }}>Welcome back</span>
+          </motion.div>
+
+          <div style={{ overflow: "hidden", marginBottom: "28px" }}>
+            <motion.h1
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.75, delay: 0.25, ease }}
+              style={{ fontSize: "clamp(56px, 6vw, 88px)", fontWeight: 800, lineHeight: 0.95, letterSpacing: "-0.04em", color: "#E4EBF5", margin: 0 }}
+            >
+              Sign
+            </motion.h1>
+            <motion.div
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.75, delay: 0.38, ease }}
+              style={{ fontSize: "clamp(56px, 6vw, 88px)", fontWeight: 800, lineHeight: 0.95, letterSpacing: "-0.04em" }}
+            >
+              <span style={{ WebkitTextStroke: "2px #c8a84b", color: "transparent" }}>In</span>
+              <span style={{ color: "#c8a84b" }}>.</span>
+            </motion.div>
           </div>
 
-          <h1 style={{ fontSize: "clamp(56px, 6vw, 88px)", fontWeight: 800, lineHeight: 0.95, letterSpacing: "-0.04em", color: "#E4EBF5", margin: "0 0 28px" }}>
-            Sign<br />
-            <span style={{ WebkitTextStroke: "2px #c8a84b", color: "transparent" }}>In</span>
-            <span style={{ color: "#c8a84b" }}>.</span>
-          </h1>
-
-          <p style={{ fontSize: "15px", lineHeight: 1.75, color: "#3D5878", maxWidth: "400px", marginBottom: "0" }}>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5, ease }}
+            style={{ fontSize: "15px", lineHeight: 1.75, color: "#3D5878", maxWidth: "400px", marginBottom: "0" }}
+          >
             Egypt's most sophisticated real estate intelligence platform. Manage leads, close deals, and track performance across every asset class.
-          </p>
+          </motion.p>
 
-          <div style={{ display: "flex", gap: "40px", marginTop: "48px", borderTop: "1px solid rgba(200,168,75,0.12)", paddingTop: "28px" }}>
-            {STATS.map(({ num, label }) => (
-              <div key={label}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.65, ease }}
+            style={{ display: "flex", gap: "40px", marginTop: "48px", borderTop: "1px solid rgba(200,168,75,0.12)", paddingTop: "28px" }}
+          >
+            {STATS.map(({ num, label }, i) => (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, delay: 0.7 + i * 0.1, ease }}
+              >
                 <div style={{ fontSize: "20px", fontWeight: 700, color: "#c8a84b", marginBottom: "4px" }}>{num}</div>
                 <div style={{ fontSize: "11px", color: "#2d4459", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Vertical divider */}
-        <div style={{ width: "1px", alignSelf: "stretch", margin: "0 52px", background: "linear-gradient(180deg, transparent, rgba(200,168,75,0.18) 25%, rgba(200,168,75,0.18) 75%, transparent)", flexShrink: 0 }} />
+        <motion.div
+          initial={{ scaleY: 0, opacity: 0 }}
+          animate={{ scaleY: 1, opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.3, ease }}
+          style={{ width: "1px", alignSelf: "stretch", margin: "0 52px", background: "linear-gradient(180deg, transparent, rgba(200,168,75,0.18) 25%, rgba(200,168,75,0.18) 75%, transparent)", flexShrink: 0, transformOrigin: "center" }}
+        />
 
         {/* RIGHT: Form */}
-        <div style={{ flex: 1, maxWidth: "380px" }}>
+        <motion.div
+          initial={{ opacity: 0, x: 32 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, delay: 0.3, ease }}
+          style={{ flex: 1, maxWidth: "380px" }}
+        >
           <div style={{ fontSize: "11px", color: "#2d4459", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "36px" }}>
             Sign in to your account
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)}>
             {error && (
-              <div style={{ marginBottom: "20px", padding: "10px 14px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: "8px", fontSize: "13px", color: "#F87171" }}>
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{ marginBottom: "20px", padding: "10px 14px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: "8px", fontSize: "13px", color: "#F87171" }}
+              >
                 {error}
-              </div>
+              </motion.div>
             )}
 
             {/* Email */}
-            <div style={{ marginBottom: "28px" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.42, ease }}
+              style={{ marginBottom: "28px" }}
+            >
               <label style={{ display: "block", fontSize: "10px", fontWeight: 600, color: focusedField === "email" ? "#c8a84b" : "#3D5878", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "10px", transition: "color 0.2s" }}>
                 Email address
               </label>
@@ -147,10 +213,15 @@ export function LoginPage() {
               {form.formState.errors.email && (
                 <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>{form.formState.errors.email.message}</p>
               )}
-            </div>
+            </motion.div>
 
             {/* Password */}
-            <div style={{ marginBottom: "36px" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.52, ease }}
+              style={{ marginBottom: "36px" }}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                 <label style={{ fontSize: "10px", fontWeight: 600, color: focusedField === "password" ? "#c8a84b" : "#3D5878", textTransform: "uppercase", letterSpacing: "0.1em", transition: "color 0.2s" }}>
                   Password
@@ -181,32 +252,45 @@ export function LoginPage() {
               {form.formState.errors.password && (
                 <p style={{ fontSize: "11px", color: "#F87171", marginTop: "5px" }}>{form.formState.errors.password.message}</p>
               )}
-            </div>
+            </motion.div>
 
             {/* Sign in CTA */}
-            <button
-              type="submit"
-              disabled={login.isPending}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                width: "100%", background: "transparent",
-                border: "1px solid #c8a84b", borderRadius: "4px", padding: "13px 20px",
-                color: login.isPending ? "rgba(200,168,75,0.5)" : "#c8a84b",
-                fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
-                cursor: login.isPending ? "not-allowed" : "pointer", marginBottom: "24px",
-                transition: "all 0.2s",
-              }}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.6, ease }}
             >
-              <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {login.isPending && <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} />}
-                Sign in
-              </span>
-              <ArrowRight style={{ width: 15, height: 15 }} />
-            </button>
+              <motion.button
+                type="submit"
+                disabled={login.isPending}
+                whileHover={{ scale: login.isPending ? 1 : 1.015, backgroundColor: "rgba(200,168,75,0.08)" }}
+                whileTap={{ scale: login.isPending ? 1 : 0.98 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  width: "100%", background: "transparent",
+                  border: "1px solid #c8a84b", borderRadius: "4px", padding: "13px 20px",
+                  color: login.isPending ? "rgba(200,168,75,0.5)" : "#c8a84b",
+                  fontSize: "12px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
+                  cursor: login.isPending ? "not-allowed" : "pointer", marginBottom: "24px",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  {login.isPending && <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} />}
+                  Sign in
+                </span>
+                <ArrowRight style={{ width: 15, height: 15 }} />
+              </motion.button>
+            </motion.div>
           </form>
 
           {/* OAuth */}
-          <div style={{ display: "flex", gap: "10px", marginBottom: "28px" }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.7, ease }}
+            style={{ display: "flex", gap: "10px", marginBottom: "28px" }}
+          >
             <a href={`${BASE_URL}/api/auth/google`} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "4px", padding: "10px", fontSize: "13px", color: "#4e6b82", textDecoration: "none" }}>
               <svg width="14" height="14" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -222,13 +306,18 @@ export function LoginPage() {
               </svg>
               Facebook
             </a>
-          </div>
+          </motion.div>
 
-          <p style={{ fontSize: "12.5px", color: "#2d4459" }}>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.75, ease }}
+            style={{ fontSize: "12.5px", color: "#2d4459" }}
+          >
             No account?{" "}
             <Link href="/register" style={{ color: "#c8a84b", textDecoration: "none", fontWeight: 500 }}>Request access</Link>
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </div>
 
       {/* Gold bottom rule */}
