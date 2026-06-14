@@ -1,0 +1,370 @@
+🗂️ SECTION 3 — COMPLETE MONOREPO FILE STRUCTURE
+
+text
+
+crm-sales-os/
+│
+├── 📁 apps/
+│ │
+│ ├── 📁 web/ # Next.js 16 Web App
+│ │ ├── app/
+│ │ │ ├── [locale]/ # next-intl locale wrapper
+│ │ │ │ ├── (auth)/
+│ │ │ │ │ ├── login/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ ├── register/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ ├── verify-email/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ ├── pending-approval/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ ├── forgot-password/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ └── reset-password/
+│ │ │ │ │ └── page.tsx
+│ │ │ │ │
+│ │ │ │ ├── (dashboard)/
+│ │ │ │ │ ├── layout.tsx # Shell: sidebar + topbar
+│ │ │ │ │ │
+│ │ │ │ │ ├── home/
+│ │ │ │ │ │ └── page.tsx # Sales Home (floating cards)
+│ │ │ │ │ │
+│ │ │ │ │ ├── leads/
+│ │ │ │ │ │ ├── page.tsx # Leads overview (cards grid)
+│ │ │ │ │ │ ├── kanban/
+│ │ │ │ │ │ │ └── page.tsx # Kanban board
+│ │ │ │ │ │ └── [leadId]/
+│ │ │ │ │ │ └── page.tsx # Lead detail page
+│ │ │ │ │ │
+│ │ │ │ │ ├── clients/
+│ │ │ │ │ │ ├── page.tsx
+│ │ │ │ │ │ └── [clientId]/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ │
+│ │ │ │ │ ├── resale/
+│ │ │ │ │ │ ├── page.tsx # Resale market grid
+│ │ │ │ │ │ ├── add/
+│ │ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ │ └── [unitId]/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ │
+│ │ │ │ │ ├── projects/
+│ │ │ │ │ │ ├── page.tsx
+│ │ │ │ │ │ ├── add/
+│ │ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ │ └── [projectId]/
+│ │ │ │ │ │ └── page.tsx
+│ │ │ │ │ │
+│ │ │ │ │ ├── planner/
+│ │ │ │ │ │ └── page.tsx # Daily planner (Sales)
+│ │ │ │ │ │
+│ │ │ │ │ ├── profile/
+│ │ │ │ │ │ └── page.tsx # My profile card
+│ │ │ │ │ │
+│ │ │ │ │ ├── employees/
+│ │ │ │ │ │ ├── page.tsx # All employees grid
+│ │ │ │ │ │ ├── pending/
+│ │ │ │ │ │ │ └── page.tsx # Pending approvals
+│ │ │ │ │ │ └── [userId]/
+│ │ │ │ │ │ └── page.tsx # Employee detail + overrides
+│ │ │ │ │ │
+│ │ │ │ │ ├── permissions/
+│ │ │ │ │ │ └── page.tsx # Role permission matrix
+│ │ │ │ │ │
+│ │ │ │ │ ├── dashboard/
+│ │ │ │ │ │ └── page.tsx # Live admin dashboard
+│ │ │ │ │ │
+│ │ │ │ │ └── reports/
+│ │ │ │ │ └── page.tsx # CEO reports page
+│ │ │ │ │
+│ │ │ │ └── layout.tsx
+│ │ │ │
+│ │ │ ├── api/
+│ │ │ │ ├── auth/
+│ │ │ │ │ └── [...betterauth]/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── leads/
+│ │ │ │ │ ├── route.ts # GET list, POST create
+│ │ │ │ │ ├── bulk/
+│ │ │ │ │ │ └── route.ts # POST bulk import
+│ │ │ │ │ └── [leadId]/
+│ │ │ │ │ ├── route.ts # GET, PUT, DELETE
+│ │ │ │ │ ├── assign/
+│ │ │ │ │ │ └── route.ts
+│ │ │ │ │ ├── activities/
+│ │ │ │ │ │ └── route.ts
+│ │ │ │ │ ├── delay/
+│ │ │ │ │ │ └── route.ts
+│ │ │ │ │ └── status/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── users/
+│ │ │ │ │ ├── route.ts
+│ │ │ │ │ ├── pending/
+│ │ │ │ │ │ └── route.ts
+│ │ │ │ │ └── [userId]/
+│ │ │ │ │ ├── route.ts
+│ │ │ │ │ ├── approve/
+│ │ │ │ │ │ └── route.ts
+│ │ │ │ │ ├── reject/
+│ │ │ │ │ │ └── route.ts
+│ │ │ │ │ └── permissions/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── permissions/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── projects/
+│ │ │ │ │ ├── route.ts
+│ │ │ │ │ └── [projectId]/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── resale/
+│ │ │ │ │ ├── route.ts
+│ │ │ │ │ └── [unitId]/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── reports/
+│ │ │ │ │ ├── route.ts
+│ │ │ │ │ └── export/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── dashboard/
+│ │ │ │ │ └── route.ts
+│ │ │ │ ├── notifications/
+│ │ │ │ │ └── route.ts
+│ │ │ │ └── heartbeat/
+│ │ │ │ └── route.ts
+│ │ │ │
+│ │ │ ├── middleware.ts # Auth + i18n middleware
+│ │ │ └── globals.css
+│ │ │
+│ │ ├── components/
+│ │ │ ├── ui/ # shadcn base components
+│ │ │ ├── layout/
+│ │ │ │ ├── Sidebar.tsx
+│ │ │ │ ├── Topbar.tsx
+│ │ │ │ ├── ThemeToggle.tsx
+│ │ │ │ └── LanguageToggle.tsx
+│ │ │ ├── auth/
+│ │ │ │ ├── RegisterForm.tsx
+│ │ │ │ ├── LoginForm.tsx
+│ │ │ │ ├── OAuthButtons.tsx
+│ │ │ │ ├── VerificationInput.tsx
+│ │ │ │ └── ForgotPasswordForm.tsx
+│ │ │ ├── leads/
+│ │ │ │ ├── LeadCard.tsx
+│ │ │ │ ├── LeadPopup.tsx
+│ │ │ │ ├── LeadKanban.tsx
+│ │ │ │ ├── KanbanColumn.tsx
+│ │ │ │ ├── LeadActivityLog.tsx
+│ │ │ │ ├── AssignLeadModal.tsx
+│ │ │ │ ├── DelayRequestModal.tsx
+│ │ │ │ └── BulkImportModal.tsx
+│ │ │ ├── employees/
+│ │ │ │ ├── EmployeeCard.tsx
+│ │ │ │ ├── EmployeeDetail.tsx
+│ │ │ │ ├── PendingUserCard.tsx
+│ │ │ │ └── PermissionOverridePanel.tsx
+│ │ │ ├── permissions/
+│ │ │ │ ├── PermissionMatrix.tsx
+│ │ │ │ ├── PermissionToggle.tsx
+│ │ │ │ └── RoleSelector.tsx
+│ │ │ ├── resale/
+│ │ │ │ ├── UnitCard.tsx
+│ │ │ │ ├── UnitDetail.tsx
+│ │ │ │ └── UnitForm.tsx
+│ │ │ ├── projects/
+│ │ │ │ ├── ProjectCard.tsx
+│ │ │ │ ├── ProjectPreview.tsx
+│ │ │ │ └── ProjectForm.tsx
+│ │ │ ├── dashboard/
+│ │ │ │ ├── LiveStatCard.tsx
+│ │ │ │ ├── OnlineUsers.tsx
+│ │ │ │ └── PerformanceFeed.tsx
+│ │ │ ├── reports/
+│ │ │ │ ├── ReportFilters.tsx
+│ │ │ │ ├── FunnelChart.tsx
+│ │ │ │ ├── PerformanceHeatmap.tsx
+│ │ │ │ ├── TeamComparison.tsx
+│ │ │ │ └── ExportButton.tsx
+│ │ │ ├── planner/
+│ │ │ │ ├── DailyPlannerBoard.tsx
+│ │ │ │ └── PlannerTask.tsx
+│ │ │ ├── profile/
+│ │ │ │ └── SalesProfileCard.tsx
+│ │ │ └── shared/
+│ │ │ ├── AnimatedCard.tsx
+│ │ │ ├── FloatingCard.tsx
+│ │ │ ├── SkeletonLoader.tsx
+│ │ │ ├── ConfirmDialog.tsx
+│ │ │ ├── DataTable.tsx
+│ │ │ ├── StatusBadge.tsx
+│ │ │ └── EmptyState.tsx
+│ │ │
+│ │ ├── hooks/
+│ │ │ ├── usePermission.ts
+│ │ │ ├── useRealtime.ts
+│ │ │ ├── useHeartbeat.ts
+│ │ │ ├── useLeads.ts
+│ │ │ ├── useCurrentUser.ts
+│ │ │ └── useTheme.ts
+│ │ │
+│ │ ├── lib/
+│ │ │ ├── auth.ts # Better Auth config
+│ │ │ ├── realtime.ts # Supabase realtime client
+│ │ │ └── query-client.ts # TanStack Query config
+│ │ │
+│ │ ├── i18n/
+│ │ │ ├── routing.ts
+│ │ │ └── request.ts
+│ │ │
+│ │ ├── messages/
+│ │ │ ├── ar.json
+│ │ │ └── en.json
+│ │ │
+│ │ ├── middleware.ts
+│ │ ├── next.config.ts
+│ │ ├── tailwind.config.ts
+│ │ └── tsconfig.json
+│ │
+│ └── 📁 mobile/ # Expo React Native App
+│ ├── app/
+│ │ ├── (auth)/
+│ │ │ ├── login.tsx
+│ │ │ ├── register.tsx
+│ │ │ ├── verify.tsx
+│ │ │ └── reset-password.tsx
+│ │ ├── (tabs)/
+│ │ │ ├── index.tsx # Home
+│ │ │ ├── leads.tsx
+│ │ │ ├── resale.tsx
+│ │ │ ├── planner.tsx
+│ │ │ └── profile.tsx
+│ │ ├── leads/
+│ │ │ └── [id].tsx
+│ │ └── _layout.tsx
+│ ├── components/ # Mobile-specific components
+│ ├── hooks/
+│ ├── stores/
+│ ├── i18n/
+│ ├── app.json
+│ └── tsconfig.json
+│
+├── 📁 packages/
+│ │
+│ ├── 📁 db/ # Database layer
+│ │ ├── src/
+│ │ │ ├── schema/
+│ │ │ │ ├── index.ts # Export all schemas
+│ │ │ │ ├── users.ts
+│ │ │ │ ├── roles.ts
+│ │ │ │ ├── permissions.ts
+│ │ │ │ ├── role-permissions.ts
+│ │ │ │ ├── user-permission-overrides.ts
+│ │ │ │ ├── projects.ts
+│ │ │ │ ├── leads.ts
+│ │ │ │ ├── lead-activities.ts
+│ │ │ │ ├── lead-delays.ts
+│ │ │ │ ├── lead-assignments.ts
+│ │ │ │ ├── clients.ts
+│ │ │ │ ├── client-queue.ts
+│ │ │ │ ├── client-locks.ts
+│ │ │ │ ├── client-blocks.ts
+│ │ │ │ ├── feedback.ts
+│ │ │ │ ├── resale-units.ts
+│ │ │ │ ├── resale-assignments.ts
+│ │ │ │ ├── sales-targets.ts
+│ │ │ │ ├── notifications.ts
+│ │ │ │ ├── planner-tasks.ts
+│ │ │ │ └── audit-logs.ts
+│ │ │ ├── migrations/
+│ │ │ ├── seed/
+│ │ │ │ └── seed.ts # CEO default user seed
+│ │ │ ├── client.ts # Neon + Drizzle client
+│ │ │ └── index.ts
+│ │ ├── drizzle.config.ts
+│ │ └── package.json
+│ │
+│ ├── 📁 auth/ # Auth utilities
+│ │ ├── src/
+│ │ │ ├── config.ts # Better Auth full config
+│ │ │ ├── middleware.ts # Auth middleware
+│ │ │ ├── session.ts # Session helpers
+│ │ │ └── index.ts
+│ │ └── package.json
+│ │
+│ ├── 📁 permissions/ # Permission engine
+│ │ ├── src/
+│ │ │ ├── registry.ts # All permission definitions
+│ │ │ ├── resolver.ts # Permission resolver algorithm
+│ │ │ ├── middleware.ts # API permission middleware
+│ │ │ ├── field-mask.ts # Field visibility masking
+│ │ │ ├── cache.ts # Redis permission cache
+│ │ │ └── index.ts
+│ │ └── package.json
+│ │
+│ ├── 📁 shared/ # Shared types & validation
+│ │ ├── src/
+│ │ │ ├── types/
+│ │ │ │ ├── user.types.ts
+│ │ │ │ ├── lead.types.ts
+│ │ │ │ ├── client.types.ts
+│ │ │ │ ├── project.types.ts
+│ │ │ │ ├── resale.types.ts
+│ │ │ │ ├── permission.types.ts
+│ │ │ │ ├── report.types.ts
+│ │ │ │ └── api.types.ts
+│ │ │ ├── validation/
+│ │ │ │ ├── user.schema.ts
+│ │ │ │ ├── lead.schema.ts
+│ │ │ │ ├── project.schema.ts
+│ │ │ │ └── report.schema.ts
+│ │ │ ├── constants/
+│ │ │ │ ├── roles.ts
+│ │ │ │ ├── lead-statuses.ts
+│ │ │ │ └── permissions.ts
+│ │ │ └── index.ts
+│ │ └── package.json
+│ │
+│ ├── 📁 services/ # Business logic services
+│ │ ├── src/
+│ │ │ ├── leads/
+│ │ │ │ ├── lead.service.ts
+│ │ │ │ ├── assign.service.ts
+│ │ │ │ ├── distribution.service.ts # Round-robin algorithm
+│ │ │ │ └── lock.service.ts # Redis lock
+│ │ │ ├── users/
+│ │ │ │ ├── user.service.ts
+│ │ │ │ └── approval.service.ts
+│ │ │ ├── notifications/
+│ │ │ │ └── notification.service.ts
+│ │ │ ├── email/
+│ │ │ │ └── email.service.ts # Resend templates
+│ │ │ ├── export/
+│ │ │ │ ├── export.service.ts
+│ │ │ │ └── import.service.ts
+│ │ │ └── index.ts
+│ │ └── package.json
+│ │
+│ ├── 📁 analytics/ # Analytics & reporting
+│ │ ├── src/
+│ │ │ ├── stats.ts
+│ │ │ ├── reports.ts
+│ │ │ └── index.ts
+│ │ └── package.json
+│ │
+│ └── 📁 realtime/ # Realtime abstraction
+│ ├── src/
+│ │ ├── client.ts
+│ │ ├── channels.ts
+│ │ ├── presence.ts
+│ │ └── index.ts
+│ └── package.json
+│
+├── 📁 trigger/ # Background jobs (Trigger.dev)
+│ ├── jobs/
+│ │ ├── auto-reassign.ts # Cron: pull inactive leads
+│ │ ├── deadline-warning.ts # Cron: email before deadline
+│ │ ├── approval-reminder.ts # Remind admin of pending
+│ │ └── heartbeat-cleanup.ts # Clear stale online status
+│ └── trigger.config.ts
+│
+├── turbo.json
+├── pnpm-workspace.yaml
+├── .env.example
+└── package.json

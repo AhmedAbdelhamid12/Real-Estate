@@ -1,0 +1,203 @@
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/shared/UserAvatar";
+import { RoleBadge } from "@/components/shared/RoleBadge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  LayoutDashboard,
+  Users,
+  Building,
+  Kanban,
+  ListTodo,
+  FileText,
+  UserCircle,
+  Menu,
+  X,
+  Briefcase,
+  Users2,
+  Calendar,
+  Home,
+  Shield,
+} from "lucide-react";
+import { useState } from "react";
+import { useI18n } from "@/contexts/i18nContext";
+
+export function Sidebar() {
+  const { currentUser } = useAuth();
+  const { t } = useI18n();
+  const [location] = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  if (!currentUser) return null;
+
+  const isAdminOrHigher = ["ceo", "admin", "director"].includes(currentUser.role);
+  const isCeoOrAdmin = ["ceo", "admin"].includes(currentUser.role);
+
+  const navItems = [
+    {
+      title: "Overview",
+      items: [
+        { href: "/home", label: t("nav.home"), icon: Home },
+        { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
+      ],
+    },
+    {
+      title: "Pipeline",
+      items: [
+        { href: "/leads", label: t("nav.leads.list"), icon: ListTodo },
+        { href: "/leads/kanban", label: t("nav.leads.kanban"), icon: Kanban },
+      ],
+    },
+    {
+      title: "Inventory",
+      items: [
+        { href: "/projects", label: t("nav.projects"), icon: Building },
+        { href: "/resale", label: t("nav.resale"), icon: Briefcase },
+      ],
+    },
+    {
+      title: "Clients",
+      items: [
+        { href: "/clients", label: t("nav.clients"), icon: Users },
+      ],
+    },
+    {
+      title: "People",
+      items: [
+        { href: "/employees", label: t("nav.employees"), icon: Users2 },
+        ...(isAdminOrHigher
+          ? [{ href: "/employees/pending", label: t("nav.employees.pending"), icon: UserCircle }]
+          : []),
+      ],
+    },
+    {
+      title: "Tools",
+      items: [
+        { href: "/planner", label: t("nav.planner"), icon: Calendar },
+        ...(isAdminOrHigher ? [{ href: "/reports", label: t("nav.reports"), icon: FileText }] : []),
+        ...(isCeoOrAdmin ? [{ href: "/permissions", label: t("nav.permissions"), icon: Shield }] : []),
+      ],
+    },
+  ];
+
+  const sidebarContent = (
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+      <div className="flex h-16 shrink-0 items-center justify-between px-4 border-b border-sidebar-border">
+        {!isCollapsed && (
+          <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-sidebar-primary">
+            <div className="bg-primary text-primary-foreground p-1.5 rounded-md">
+              <Building className="h-5 w-5" />
+            </div>
+            PropOS
+          </div>
+        )}
+        {isCollapsed && (
+          <div className="mx-auto bg-primary text-primary-foreground p-1.5 rounded-md">
+            <Building className="h-5 w-5" />
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="hidden md:flex text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <ScrollArea className="flex-1 px-3 py-4">
+        {navItems.map((section, i) => (
+          <div key={i} className="mb-6">
+            {!isCollapsed && (
+              <h4 className="mb-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                {section.title}
+              </h4>
+            )}
+            <div className="space-y-1">
+              {section.items.map((item) => {
+                const isActive = location === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent/50",
+                      isCollapsed && "justify-center px-0"
+                    )}
+                    title={isCollapsed ? item.label : undefined}
+                  >
+                    <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
+                    {!isCollapsed && <span>{item.label}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </ScrollArea>
+
+      <div className="p-4 border-t border-sidebar-border">
+        <Link
+          href="/profile"
+          className={cn(
+            "flex items-center gap-3 rounded-md transition-colors hover:bg-sidebar-accent p-2 -mx-2",
+            isCollapsed && "justify-center"
+          )}
+        >
+          <UserAvatar name={currentUser.name} avatarUrl={currentUser.avatarUrl} />
+          {!isCollapsed && (
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-medium truncate">{currentUser.name}</span>
+              <RoleBadge role={currentUser.role} className="w-fit scale-75 origin-left mt-0.5" />
+            </div>
+          )}
+        </Link>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed top-3 left-4 z-50 md:hidden bg-background"
+        onClick={() => setIsMobileOpen(true)}
+      >
+        <Menu className="h-4 w-4" />
+      </Button>
+
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 transform bg-sidebar transition-transform duration-200 ease-in-out md:static md:translate-x-0",
+          isCollapsed ? "md:w-20" : "md:w-64",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-3 right-3 z-50 md:hidden text-sidebar-foreground hover:bg-sidebar-accent"
+          onClick={() => setIsMobileOpen(false)}
+        >
+          <X className="h-5 w-5" />
+        </Button>
+        {sidebarContent}
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,2144 @@
+🏗️ MASTER PROMPT — Real Estate CRM: Sales Operating System 2026
+🧠 SYSTEM IDENTITY
+text
+
+You are an elite senior software architect & full-stack engineer with 15+ years
+of experience building enterprise SaaS platforms, real estate tech products,
+and AI-ready sales operating systems.
+
+Your task: Design, architect, and implement a COMPLETE Real Estate CRM
+(Sales Operating System) that operates as:
+
+✅ Web App (Next.js 16 - App Router)
+✅ Android Native App
+✅ iOS Native App
+✅ Real-time bidirectional updates
+✅ Multi-language (Arabic RTL ↔ English LTR)
+✅ Dark / Light / System theme
+✅ Corporate Premium UI (Stripe-level aesthetic)
+✅ Enterprise-grade security
+✅ AI-ready modular architecture
+✅ Offline-first mobile experience
+
+This is NOT a simple CRM.
+This is a SALES OPERATING SYSTEM for elite real estate teams.
+Every pixel, every query, every permission must be intentional.
+📐 SECTION 1 — PROJECT PHILOSOPHY & CONSTRAINTS
+text
+
+PHILOSOPHY:
+- Build for scale from day 1 (10k+ concurrent users)
+- Every action must be tracked, audited, and reversible
+- Permissions are real-time, not cached stale rules
+- UI must feel like a $1B SaaS product — Stripe / Linear / Vercel level
+- Arabic-first design with perfect RTL layout engine
+- Mobile experience must equal web — no degradation
+- Security is non-negotiable: zero-trust model at every layer
+
+NON-NEGOTIABLE RULES:
+- No permission check skipped
+- No unvalidated input reaches the database
+- No action without audit trail
+- No sensitive data exposed beyond authorization
+- No feature built without mobile parity
+- No page without loading skeleton
+- No form without Zod validation
+- No API without rate limiting
+- No query without proper indexing consideration
+- TypeScript strict mode: ON — no `any` types ever
+🛠️ SECTION 2 — COMPLETE TECH STACK (2026 Production Grade)
+text
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌐 WEB FRONTEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Framework:       Next.js 16 (App Router, Partial Prerendering)
+Language:        TypeScript 5.5+ (strict: true, no implicit any)
+Styling:         Tailwind CSS v4
+Components:      shadcn/ui (Radix UI primitives)
+Animation:       Framer Motion 11 (spring physics, layout animations)
+i18n:            next-intl (AR/EN, RTL/LTR auto-switch)
+Forms:           React Hook Form + Zod
+State:           Zustand (client) + TanStack Query v5 (server state)
+Charts:          Recharts + custom D3 overlays
+Drag & Drop:     @dnd-kit/core (Kanban, lists)
+Tables:          TanStack Table v8
+Icons:           Lucide React + custom SVG system
+Fonts:           Inter (EN) + Cairo (AR) — variable fonts
+Theme:           next-themes (dark/light/system)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📱 MOBILE (Android + iOS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Framework:       React Native (Expo SDK 52)
+Language:        TypeScript 5.5+
+Styling:         NativeWind v4 (Tailwind for RN)
+Animation:       React Native Reanimated v3 + Moti
+Navigation:      Expo Router v4 (file-based)
+i18n:            i18next + react-i18next
+State:           Zustand + TanStack Query v5
+Storage:         expo-secure-store + MMKV
+Offline:         WatermelonDB (local SQLite sync)
+Gestures:        React Native Gesture Handler v2
+Camera:          expo-image-picker
+Notifications:   expo-notifications
+Build:           EAS Build + EAS Submit
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏗️ MONOREPO ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Manager:         Turborepo v2
+Package Manager: pnpm v9 (workspaces)
+Shared:          packages/shared (types, validation, constants)
+Build:           esbuild (packages), Next.js (web), EAS (mobile)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 BACKEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+API Layer:       Next.js Route Handlers (REST + streaming)
+Server Logic:    Next.js Server Actions (forms, mutations)
+Middleware:      Auth check → Permission check → Rate limit → Audit
+Validation:      Zod (input) + Drizzle (output)
+Background Jobs: Trigger.dev v3 (cron + event-driven)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🗄️ DATABASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Primary DB:      PostgreSQL 16 (Neon - serverless, auto-scaling)
+ORM:             Drizzle ORM (type-safe, zero overhead)
+Migrations:      Drizzle Kit
+Seeding:         Custom seed script (CEO default user)
+Connection:      Neon connection pooling (PgBouncer)
+Indexing:        Composite indexes on all hot query paths
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ REAL-TIME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Engine:          Supabase Realtime (channels + presence)
+Fallback:        Pusher Channels
+Heartbeat:       Custom WebSocket ping (30s interval)
+Online tracking: Redis SET with 35s TTL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔐 AUTHENTICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Library:         Better Auth v1
+Strategies:      Email/Password, Google OAuth, Facebook OAuth
+Verification:    Email OTP (6-digit code, 10min TTL)
+Reset:           Signed URL (15min TTL) → Reset page
+Sessions:        JWT (15min) + Refresh Token (30d) in httpOnly cookie
+Approval:        status: pending → active (Admin approves)
+2FA:             TOTP ready (optional per user)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧠 CACHE / LOCK / QUEUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cache:           Upstash Redis (permissions, sessions, stats)
+Lead Lock:       Redis SET NX with TTL (prevents double-assign)
+Rate Limit:      Upstash Ratelimit (sliding window)
+Queue:           Trigger.dev (lead distribution, email queue)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 STORAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Files:           Vercel Blob (images: projects, units, profiles)
+Max upload:      10MB per file, 5 images per unit
+Processing:      Sharp (resize + WebP conversion server-side)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📧 EMAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Provider:        Resend
+Templates:       React Email (beautiful HTML templates)
+Types:           verification OTP, approval notify,
+                 rejection notify, password reset,
+                 lead assignment, deadline warning
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 ANALYTICS & REPORTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Charts:          Recharts (bar, line, funnel, pie, radar)
+Export:          xlsx + papaparse (CSV)
+Import:          xlsx + Zod row validation
+PDF:             @react-pdf/renderer (report download)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 DEPLOYMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Web:             Vercel (Edge Functions + ISR)
+DB:              Neon (auto-pause dev, always-on prod)
+Mobile:          EAS Build → TestFlight + Play Console
+CI/CD:           GitHub Actions + Turbo Remote Cache
+Monitoring:      Sentry (errors) + Vercel Analytics
+🗂️ SECTION 3 — COMPLETE MONOREPO FILE STRUCTURE
+text
+
+crm-sales-os/
+│
+├── 📁 apps/
+│   │
+│   ├── 📁 web/                              # Next.js 16 Web App
+│   │   ├── app/
+│   │   │   ├── [locale]/                    # next-intl locale wrapper
+│   │   │   │   ├── (auth)/
+│   │   │   │   │   ├── login/
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── register/
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── verify-email/
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── pending-approval/
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── forgot-password/
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   └── reset-password/
+│   │   │   │   │       └── page.tsx
+│   │   │   │   │
+│   │   │   │   ├── (dashboard)/
+│   │   │   │   │   ├── layout.tsx           # Shell: sidebar + topbar
+│   │   │   │   │   │
+│   │   │   │   │   ├── home/
+│   │   │   │   │   │   └── page.tsx         # Sales Home (floating cards)
+│   │   │   │   │   │
+│   │   │   │   │   ├── leads/
+│   │   │   │   │   │   ├── page.tsx         # Leads overview (cards grid)
+│   │   │   │   │   │   ├── kanban/
+│   │   │   │   │   │   │   └── page.tsx     # Kanban board
+│   │   │   │   │   │   └── [leadId]/
+│   │   │   │   │   │       └── page.tsx     # Lead detail page
+│   │   │   │   │   │
+│   │   │   │   │   ├── clients/
+│   │   │   │   │   │   ├── page.tsx
+│   │   │   │   │   │   └── [clientId]/
+│   │   │   │   │   │       └── page.tsx
+│   │   │   │   │   │
+│   │   │   │   │   ├── resale/
+│   │   │   │   │   │   ├── page.tsx         # Resale market grid
+│   │   │   │   │   │   ├── add/
+│   │   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   │   └── [unitId]/
+│   │   │   │   │   │       └── page.tsx
+│   │   │   │   │   │
+│   │   │   │   │   ├── projects/
+│   │   │   │   │   │   ├── page.tsx
+│   │   │   │   │   │   ├── add/
+│   │   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   │   └── [projectId]/
+│   │   │   │   │   │       └── page.tsx
+│   │   │   │   │   │
+│   │   │   │   │   ├── planner/
+│   │   │   │   │   │   └── page.tsx         # Daily planner (Sales)
+│   │   │   │   │   │
+│   │   │   │   │   ├── profile/
+│   │   │   │   │   │   └── page.tsx         # My profile card
+│   │   │   │   │   │
+│   │   │   │   │   ├── employees/
+│   │   │   │   │   │   ├── page.tsx         # All employees grid
+│   │   │   │   │   │   ├── pending/
+│   │   │   │   │   │   │   └── page.tsx     # Pending approvals
+│   │   │   │   │   │   └── [userId]/
+│   │   │   │   │   │       └── page.tsx     # Employee detail + overrides
+│   │   │   │   │   │
+│   │   │   │   │   ├── permissions/
+│   │   │   │   │   │   └── page.tsx         # Role permission matrix
+│   │   │   │   │   │
+│   │   │   │   │   ├── dashboard/
+│   │   │   │   │   │   └── page.tsx         # Live admin dashboard
+│   │   │   │   │   │
+│   │   │   │   │   └── reports/
+│   │   │   │   │       └── page.tsx         # CEO reports page
+│   │   │   │   │
+│   │   │   │   └── layout.tsx
+│   │   │   │
+│   │   │   ├── api/
+│   │   │   │   ├── auth/
+│   │   │   │   │   └── [...betterauth]/
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── leads/
+│   │   │   │   │   ├── route.ts             # GET list, POST create
+│   │   │   │   │   ├── bulk/
+│   │   │   │   │   │   └── route.ts         # POST bulk import
+│   │   │   │   │   └── [leadId]/
+│   │   │   │   │       ├── route.ts         # GET, PUT, DELETE
+│   │   │   │   │       ├── assign/
+│   │   │   │   │       │   └── route.ts
+│   │   │   │   │       ├── activities/
+│   │   │   │   │       │   └── route.ts
+│   │   │   │   │       ├── delay/
+│   │   │   │   │       │   └── route.ts
+│   │   │   │   │       └── status/
+│   │   │   │   │           └── route.ts
+│   │   │   │   ├── users/
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   ├── pending/
+│   │   │   │   │   │   └── route.ts
+│   │   │   │   │   └── [userId]/
+│   │   │   │   │       ├── route.ts
+│   │   │   │   │       ├── approve/
+│   │   │   │   │       │   └── route.ts
+│   │   │   │   │       ├── reject/
+│   │   │   │   │       │   └── route.ts
+│   │   │   │   │       └── permissions/
+│   │   │   │   │           └── route.ts
+│   │   │   │   ├── permissions/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── projects/
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── [projectId]/
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── resale/
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── [unitId]/
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── reports/
+│   │   │   │   │   ├── route.ts
+│   │   │   │   │   └── export/
+│   │   │   │   │       └── route.ts
+│   │   │   │   ├── dashboard/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── notifications/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── heartbeat/
+│   │   │   │       └── route.ts
+│   │   │   │
+│   │   │   ├── middleware.ts                # Auth + i18n middleware
+│   │   │   └── globals.css
+│   │   │
+│   │   ├── components/
+│   │   │   ├── ui/                          # shadcn base components
+│   │   │   ├── layout/
+│   │   │   │   ├── Sidebar.tsx
+│   │   │   │   ├── Topbar.tsx
+│   │   │   │   ├── ThemeToggle.tsx
+│   │   │   │   └── LanguageToggle.tsx
+│   │   │   ├── auth/
+│   │   │   │   ├── RegisterForm.tsx
+│   │   │   │   ├── LoginForm.tsx
+│   │   │   │   ├── OAuthButtons.tsx
+│   │   │   │   ├── VerificationInput.tsx
+│   │   │   │   └── ForgotPasswordForm.tsx
+│   │   │   ├── leads/
+│   │   │   │   ├── LeadCard.tsx
+│   │   │   │   ├── LeadPopup.tsx
+│   │   │   │   ├── LeadKanban.tsx
+│   │   │   │   ├── KanbanColumn.tsx
+│   │   │   │   ├── LeadActivityLog.tsx
+│   │   │   │   ├── AssignLeadModal.tsx
+│   │   │   │   ├── DelayRequestModal.tsx
+│   │   │   │   └── BulkImportModal.tsx
+│   │   │   ├── employees/
+│   │   │   │   ├── EmployeeCard.tsx
+│   │   │   │   ├── EmployeeDetail.tsx
+│   │   │   │   ├── PendingUserCard.tsx
+│   │   │   │   └── PermissionOverridePanel.tsx
+│   │   │   ├── permissions/
+│   │   │   │   ├── PermissionMatrix.tsx
+│   │   │   │   ├── PermissionToggle.tsx
+│   │   │   │   └── RoleSelector.tsx
+│   │   │   ├── resale/
+│   │   │   │   ├── UnitCard.tsx
+│   │   │   │   ├── UnitDetail.tsx
+│   │   │   │   └── UnitForm.tsx
+│   │   │   ├── projects/
+│   │   │   │   ├── ProjectCard.tsx
+│   │   │   │   ├── ProjectPreview.tsx
+│   │   │   │   └── ProjectForm.tsx
+│   │   │   ├── dashboard/
+│   │   │   │   ├── LiveStatCard.tsx
+│   │   │   │   ├── OnlineUsers.tsx
+│   │   │   │   └── PerformanceFeed.tsx
+│   │   │   ├── reports/
+│   │   │   │   ├── ReportFilters.tsx
+│   │   │   │   ├── FunnelChart.tsx
+│   │   │   │   ├── PerformanceHeatmap.tsx
+│   │   │   │   ├── TeamComparison.tsx
+│   │   │   │   └── ExportButton.tsx
+│   │   │   ├── planner/
+│   │   │   │   ├── DailyPlannerBoard.tsx
+│   │   │   │   └── PlannerTask.tsx
+│   │   │   ├── profile/
+│   │   │   │   └── SalesProfileCard.tsx
+│   │   │   └── shared/
+│   │   │       ├── AnimatedCard.tsx
+│   │   │       ├── FloatingCard.tsx
+│   │   │       ├── SkeletonLoader.tsx
+│   │   │       ├── ConfirmDialog.tsx
+│   │   │       ├── DataTable.tsx
+│   │   │       ├── StatusBadge.tsx
+│   │   │       └── EmptyState.tsx
+│   │   │
+│   │   ├── hooks/
+│   │   │   ├── usePermission.ts
+│   │   │   ├── useRealtime.ts
+│   │   │   ├── useHeartbeat.ts
+│   │   │   ├── useLeads.ts
+│   │   │   ├── useCurrentUser.ts
+│   │   │   └── useTheme.ts
+│   │   │
+│   │   ├── lib/
+│   │   │   ├── auth.ts                      # Better Auth config
+│   │   │   ├── realtime.ts                  # Supabase realtime client
+│   │   │   └── query-client.ts              # TanStack Query config
+│   │   │
+│   │   ├── i18n/
+│   │   │   ├── routing.ts
+│   │   │   └── request.ts
+│   │   │
+│   │   ├── messages/
+│   │   │   ├── ar.json
+│   │   │   └── en.json
+│   │   │
+│   │   ├── middleware.ts
+│   │   ├── next.config.ts
+│   │   ├── tailwind.config.ts
+│   │   └── tsconfig.json
+│   │
+│   └── 📁 mobile/                           # Expo React Native App
+│       ├── app/
+│       │   ├── (auth)/
+│       │   │   ├── login.tsx
+│       │   │   ├── register.tsx
+│       │   │   ├── verify.tsx
+│       │   │   └── reset-password.tsx
+│       │   ├── (tabs)/
+│       │   │   ├── index.tsx                # Home
+│       │   │   ├── leads.tsx
+│       │   │   ├── resale.tsx
+│       │   │   ├── planner.tsx
+│       │   │   └── profile.tsx
+│       │   ├── leads/
+│       │   │   └── [id].tsx
+│       │   └── _layout.tsx
+│       ├── components/                      # Mobile-specific components
+│       ├── hooks/
+│       ├── stores/
+│       ├── i18n/
+│       ├── app.json
+│       └── tsconfig.json
+│
+├── 📁 packages/
+│   │
+│   ├── 📁 db/                               # Database layer
+│   │   ├── src/
+│   │   │   ├── schema/
+│   │   │   │   ├── index.ts                 # Export all schemas
+│   │   │   │   ├── users.ts
+│   │   │   │   ├── roles.ts
+│   │   │   │   ├── permissions.ts
+│   │   │   │   ├── role-permissions.ts
+│   │   │   │   ├── user-permission-overrides.ts
+│   │   │   │   ├── projects.ts
+│   │   │   │   ├── leads.ts
+│   │   │   │   ├── lead-activities.ts
+│   │   │   │   ├── lead-delays.ts
+│   │   │   │   ├── lead-assignments.ts
+│   │   │   │   ├── clients.ts
+│   │   │   │   ├── client-queue.ts
+│   │   │   │   ├── client-locks.ts
+│   │   │   │   ├── client-blocks.ts
+│   │   │   │   ├── feedback.ts
+│   │   │   │   ├── resale-units.ts
+│   │   │   │   ├── resale-assignments.ts
+│   │   │   │   ├── sales-targets.ts
+│   │   │   │   ├── notifications.ts
+│   │   │   │   ├── planner-tasks.ts
+│   │   │   │   └── audit-logs.ts
+│   │   │   ├── migrations/
+│   │   │   ├── seed/
+│   │   │   │   └── seed.ts                  # CEO default user seed
+│   │   │   ├── client.ts                    # Neon + Drizzle client
+│   │   │   └── index.ts
+│   │   ├── drizzle.config.ts
+│   │   └── package.json
+│   │
+│   ├── 📁 auth/                             # Auth utilities
+│   │   ├── src/
+│   │   │   ├── config.ts                    # Better Auth full config
+│   │   │   ├── middleware.ts                # Auth middleware
+│   │   │   ├── session.ts                   # Session helpers
+│   │   │   └── index.ts
+│   │   └── package.json
+│   │
+│   ├── 📁 permissions/                      # Permission engine
+│   │   ├── src/
+│   │   │   ├── registry.ts                  # All permission definitions
+│   │   │   ├── resolver.ts                  # Permission resolver algorithm
+│   │   │   ├── middleware.ts                # API permission middleware
+│   │   │   ├── field-mask.ts                # Field visibility masking
+│   │   │   ├── cache.ts                     # Redis permission cache
+│   │   │   └── index.ts
+│   │   └── package.json
+│   │
+│   ├── 📁 shared/                           # Shared types & validation
+│   │   ├── src/
+│   │   │   ├── types/
+│   │   │   │   ├── user.types.ts
+│   │   │   │   ├── lead.types.ts
+│   │   │   │   ├── client.types.ts
+│   │   │   │   ├── project.types.ts
+│   │   │   │   ├── resale.types.ts
+│   │   │   │   ├── permission.types.ts
+│   │   │   │   ├── report.types.ts
+│   │   │   │   └── api.types.ts
+│   │   │   ├── validation/
+│   │   │   │   ├── user.schema.ts
+│   │   │   │   ├── lead.schema.ts
+│   │   │   │   ├── project.schema.ts
+│   │   │   │   └── report.schema.ts
+│   │   │   ├── constants/
+│   │   │   │   ├── roles.ts
+│   │   │   │   ├── lead-statuses.ts
+│   │   │   │   └── permissions.ts
+│   │   │   └── index.ts
+│   │   └── package.json
+│   │
+│   ├── 📁 services/                         # Business logic services
+│   │   ├── src/
+│   │   │   ├── leads/
+│   │   │   │   ├── lead.service.ts
+│   │   │   │   ├── assign.service.ts
+│   │   │   │   ├── distribution.service.ts  # Round-robin algorithm
+│   │   │   │   └── lock.service.ts          # Redis lock
+│   │   │   ├── users/
+│   │   │   │   ├── user.service.ts
+│   │   │   │   └── approval.service.ts
+│   │   │   ├── notifications/
+│   │   │   │   └── notification.service.ts
+│   │   │   ├── email/
+│   │   │   │   └── email.service.ts         # Resend templates
+│   │   │   ├── export/
+│   │   │   │   ├── export.service.ts
+│   │   │   │   └── import.service.ts
+│   │   │   └── index.ts
+│   │   └── package.json
+│   │
+│   ├── 📁 analytics/                        # Analytics & reporting
+│   │   ├── src/
+│   │   │   ├── stats.ts
+│   │   │   ├── reports.ts
+│   │   │   └── index.ts
+│   │   └── package.json
+│   │
+│   └── 📁 realtime/                         # Realtime abstraction
+│       ├── src/
+│       │   ├── client.ts
+│       │   ├── channels.ts
+│       │   ├── presence.ts
+│       │   └── index.ts
+│       └── package.json
+│
+├── 📁 trigger/                              # Background jobs (Trigger.dev)
+│   ├── jobs/
+│   │   ├── auto-reassign.ts                 # Cron: pull inactive leads
+│   │   ├── deadline-warning.ts              # Cron: email before deadline
+│   │   ├── approval-reminder.ts             # Remind admin of pending
+│   │   └── heartbeat-cleanup.ts             # Clear stale online status
+│   └── trigger.config.ts
+│
+├── turbo.json
+├── pnpm-workspace.yaml
+├── .env.example
+└── package.json
+🗄️ SECTION 4 — COMPLETE DATABASE SCHEMA (Drizzle ORM)
+TypeScript
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/users.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 100 }).notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  passwordHash: text('password_hash'),
+  
+  // Role & Status
+  role: roleEnum('role').notNull().default('sales'),
+  status: statusEnum('status').notNull().default('pending'),
+  
+  // Profile
+  avatarUrl: text('avatar_url'),
+  title: varchar('title', { length: 100 }),
+  phone: varchar('phone', { length: 20 }),
+  facebookUrl: text('facebook_url'),
+  instagramUrl: text('instagram_url'),
+  bio: text('bio'),
+  
+  // Relations
+  teamLeaderId: uuid('team_leader_id').references(() => users.id),
+  
+  // Auth
+  emailVerified: boolean('email_verified').default(false),
+  googleId: text('google_id').unique(),
+  facebookId: text('facebook_id').unique(),
+  
+  // Tracking
+  isOnline: boolean('is_online').default(false),
+  lastActiveAt: timestamp('last_active_at'),
+  approvedBy: uuid('approved_by').references(() => users.id),
+  approvedAt: timestamp('approved_at'),
+  rejectedAt: timestamp('rejected_at'),
+  rejectionReason: text('rejection_reason'),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  roleIdx: index('users_role_idx').on(table.role),
+  statusIdx: index('users_status_idx').on(table.status),
+  teamLeaderIdx: index('users_team_leader_idx').on(table.teamLeaderId),
+}));
+
+// Enums
+export const roleEnum = pgEnum('role', [
+  'ceo', 'admin', 'director', 'team_leader', 'sales'
+]);
+
+export const statusEnum = pgEnum('status', [
+  'pending', 'active', 'rejected', 'suspended'
+]);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/permissions.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const permissions = pgTable('permissions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  key: varchar('key', { length: 100 }).notNull().unique(),
+  labelAr: varchar('label_ar', { length: 200 }).notNull(),
+  labelEn: varchar('label_en', { length: 200 }).notNull(),
+  category: varchar('category', { length: 50 }).notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const rolePermissions = pgTable('role_permissions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  role: roleEnum('role').notNull(),
+  permissionKey: varchar('permission_key', { length: 100 })
+    .notNull()
+    .references(() => permissions.key),
+  isEnabled: boolean('is_enabled').notNull().default(false),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedBy: uuid('updated_by').references(() => users.id),
+}, (table) => ({
+  rolePermIdx: uniqueIndex('role_perm_unique').on(
+    table.role, table.permissionKey
+  ),
+}));
+
+export const userPermissionOverrides = pgTable('user_permission_overrides', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  permissionKey: varchar('permission_key', { length: 100 })
+    .notNull()
+    .references(() => permissions.key),
+  override: overrideEnum('override').notNull(),
+  reason: text('reason'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  createdBy: uuid('created_by').references(() => users.id),
+}, (table) => ({
+  userPermOverrideIdx: uniqueIndex('user_perm_override_unique').on(
+    table.userId, table.permissionKey
+  ),
+}));
+
+export const overrideEnum = pgEnum('override', ['allow', 'deny']);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/projects.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const projects = pgTable('projects', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 200 }).notNull(),
+  ownerName: varchar('owner_name', { length: 200 }),
+  location: text('location'),
+  description: text('description'),
+  features: text('features').array(),
+  avgPrice: numeric('avg_price', { precision: 15, scale: 2 }),
+  unitTypes: text('unit_types').array(),
+  imageUrl: text('image_url'),
+  isActive: boolean('is_active').default(true),
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/leads.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const leads = pgTable('leads', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  
+  // Basic Info
+  name: varchar('name', { length: 200 }).notNull(),
+  phone: varchar('phone', { length: 30 }),
+  email: varchar('email', { length: 255 }),
+  source: leadSourceEnum('source').default('manual'),
+  
+  // Status & Pipeline
+  status: leadStatusEnum('status').notNull().default('new'),
+  
+  // Relations
+  projectId: uuid('project_id').references(() => projects.id),
+  primarySalesId: uuid('primary_sales_id').references(() => users.id),
+  
+  // Admin controls
+  isPhoneHidden: boolean('is_phone_hidden').default(false),
+  isEmailHidden: boolean('is_email_hidden').default(false),
+  isNotesHidden: boolean('is_notes_hidden').default(false),
+  
+  // Timing
+  deadline: timestamp('deadline'),
+  delayedUntil: timestamp('delayed_until'),
+  lastActionAt: timestamp('last_action_at'),
+  
+  // Content
+  notes: text('notes'),
+  outcome: text('outcome'),
+  nextAction: text('next_action'),
+  nextActionAt: timestamp('next_action_at'),
+  
+  // Tracking
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  statusIdx: index('leads_status_idx').on(table.status),
+  projectIdx: index('leads_project_idx').on(table.projectId),
+  primarySalesIdx: index('leads_primary_sales_idx').on(table.primarySalesId),
+  deadlineIdx: index('leads_deadline_idx').on(table.deadline),
+  createdAtIdx: index('leads_created_at_idx').on(table.createdAt),
+}));
+
+export const leadStatusEnum = pgEnum('lead_status', [
+  'new', 'called', 'qualified', 'proposal', 
+  'negotiation', 'won', 'lost'
+]);
+
+export const leadSourceEnum = pgEnum('lead_source', [
+  'manual', 'import', 'campaign', 'referral', 'website', 'social'
+]);
+
+export const leadAssignments = pgTable('lead_assignments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id),
+  salesId: uuid('sales_id').notNull().references(() => users.id),
+  isShared: boolean('is_shared').default(false),
+  isPrimary: boolean('is_primary').default(false),
+  hiddenFields: text('hidden_fields').array().default([]),
+  assignedBy: uuid('assigned_by').references(() => users.id),
+  assignedAt: timestamp('assigned_at').defaultNow().notNull(),
+  removedAt: timestamp('removed_at'),
+}, (table) => ({
+  leadSalesIdx: index('lead_assignments_lead_sales_idx').on(
+    table.leadId, table.salesId
+  ),
+  activeIdx: index('lead_assignments_active_idx').on(
+    table.leadId, table.removedAt
+  ),
+}));
+
+export const leadActivities = pgTable('lead_activities', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  type: activityTypeEnum('type').notNull(),
+  notes: text('notes'),
+  outcome: text('outcome'),
+  nextAction: text('next_action'),
+  nextActionAt: timestamp('next_action_at'),
+  duration: integer('duration'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  leadIdx: index('lead_activities_lead_idx').on(table.leadId),
+  userIdx: index('lead_activities_user_idx').on(table.userId),
+  createdAtIdx: index('lead_activities_created_at_idx').on(table.createdAt),
+}));
+
+export const activityTypeEnum = pgEnum('activity_type', [
+  'call', 'message', 'meeting', 'email', 'note', 'status_change'
+]);
+
+export const leadDelays = pgTable('lead_delays', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id),
+  salesId: uuid('sales_id').notNull().references(() => users.id),
+  reason: text('reason').notNull(),
+  delayUntil: timestamp('delay_until').notNull(),
+  approvedBy: uuid('approved_by').references(() => users.id),
+  status: delayStatusEnum('status').default('pending'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const delayStatusEnum = pgEnum('delay_status', [
+  'pending', 'approved', 'rejected'
+]);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/resale-units.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const resaleUnits = pgTable('resale_units', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id').references(() => projects.id),
+  projectName: varchar('project_name', { length: 200 }).notNull(),
+  area: numeric('area', { precision: 10, scale: 2 }),
+  price: numeric('price', { precision: 15, scale: 2 }),
+  floor: integer('floor'),
+  unitType: varchar('unit_type', { length: 100 }),
+  description: text('description'),
+  images: text('images').array().default([]),
+  
+  // Owner info
+  ownerName: varchar('owner_name', { length: 200 }),
+  ownerPhone: varchar('owner_phone', { length: 30 }),
+  ownerEmail: varchar('owner_email', { length: 255 }),
+  ownerNotes: text('owner_notes'),
+  
+  // Visibility controls
+  isOwnerPhoneHidden: boolean('is_owner_phone_hidden').default(false),
+  isOwnerEmailHidden: boolean('is_owner_email_hidden').default(false),
+  isOwnerNameHidden: boolean('is_owner_name_hidden').default(false),
+  
+  isActive: boolean('is_active').default(true),
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const resaleAssignments = pgTable('resale_assignments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  unitId: uuid('unit_id').notNull().references(() => resaleUnits.id),
+  salesId: uuid('sales_id').notNull().references(() => users.id),
+  hiddenFields: text('hidden_fields').array().default([]),
+  assignedBy: uuid('assigned_by').references(() => users.id),
+  assignedAt: timestamp('assigned_at').defaultNow().notNull(),
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/clients.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const clients = pgTable('clients', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').references(() => leads.id),
+  name: varchar('name', { length: 200 }).notNull(),
+  phone: varchar('phone', { length: 30 }),
+  email: varchar('email', { length: 255 }),
+  dealValue: numeric('deal_value', { precision: 15, scale: 2 }),
+  projectId: uuid('project_id').references(() => projects.id),
+  assignedSalesId: uuid('assigned_sales_id').references(() => users.id),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/sales-targets.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const salesTargets = pgTable('sales_targets', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  month: integer('month').notNull(),
+  year: integer('year').notNull(),
+  targetCalls: integer('target_calls').default(0),
+  targetMeetings: integer('target_meetings').default(0),
+  targetDeals: integer('target_deals').default(0),
+  targetRevenue: numeric('target_revenue', { precision: 15, scale: 2 }),
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userMonthIdx: uniqueIndex('sales_targets_user_month_unique').on(
+    table.userId, table.month, table.year
+  ),
+}));
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/audit-logs.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const auditLogs = pgTable('audit_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id),
+  action: varchar('action', { length: 100 }).notNull(),
+  entityType: varchar('entity_type', { length: 50 }).notNull(),
+  entityId: uuid('entity_id'),
+  before: jsonb('before'),
+  after: jsonb('after'),
+  metadata: jsonb('metadata'),
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: text('user_agent'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('audit_logs_user_idx').on(table.userId),
+  entityIdx: index('audit_logs_entity_idx').on(
+    table.entityType, table.entityId
+  ),
+  createdAtIdx: index('audit_logs_created_at_idx').on(table.createdAt),
+}));
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/notifications.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  type: varchar('type', { length: 100 }).notNull(),
+  titleAr: varchar('title_ar', { length: 200 }).notNull(),
+  titleEn: varchar('title_en', { length: 200 }).notNull(),
+  bodyAr: text('body_ar'),
+  bodyEn: text('body_en'),
+  link: text('link'),
+  isRead: boolean('is_read').default(false),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userReadIdx: index('notifications_user_read_idx').on(
+    table.userId, table.isRead
+  ),
+}));
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// packages/db/src/schema/planner-tasks.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const plannerTasks = pgTable('planner_tasks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  date: date('date').notNull(),
+  title: varchar('title', { length: 300 }).notNull(),
+  notes: text('notes'),
+  isDone: boolean('is_done').default(false),
+  priority: priorityEnum('priority').default('medium'),
+  position: integer('position').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  userDateIdx: index('planner_tasks_user_date_idx').on(
+    table.userId, table.date
+  ),
+}));
+
+export const priorityEnum = pgEnum('priority', ['low', 'medium', 'high']);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Additional: clientLocks, clientBlocks
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const clientLocks = pgTable('client_locks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id).unique(),
+  lockedBy: uuid('locked_by').notNull().references(() => users.id),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const clientBlocks = pgTable('client_blocks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id),
+  blockedUserId: uuid('blocked_user_id').notNull().references(() => users.id),
+  reason: text('reason'),
+  createdBy: uuid('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const feedback = pgTable('feedback', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id),
+  salesId: uuid('sales_id').notNull().references(() => users.id),
+  rating: integer('rating'),
+  comment: text('comment'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const clientQueue = pgTable('client_queue', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  leadId: uuid('lead_id').notNull().references(() => leads.id),
+  priority: integer('priority').default(0),
+  reason: text('reason'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+🔐 SECTION 5 — COMPLETE PERMISSION REGISTRY
+TypeScript
+
+// packages/permissions/src/registry.ts
+
+export const PERMISSIONS = {
+  // ── LEADS ──────────────────────────
+  LEADS_VIEW:           'leads.view',
+  LEADS_CREATE:         'leads.create',
+  LEADS_EDIT:           'leads.edit',
+  LEADS_DELETE:         'leads.delete',
+  LEADS_ASSIGN:         'leads.assign',
+  LEADS_REASSIGN:       'leads.reassign',
+  LEADS_SHARE:          'leads.share',
+  LEADS_SEE_PHONE:      'leads.see_phone',
+  LEADS_SEE_EMAIL:      'leads.see_email',
+  LEADS_SEE_NOTES:      'leads.see_notes',
+  LEADS_IMPORT:         'leads.import',
+  LEADS_EXPORT:         'leads.export',
+  LEADS_SET_DEADLINE:   'leads.set_deadline',
+  LEADS_DELAY:          'leads.delay',
+  LEADS_ALL_SALES:      'leads.see_all_sales_leads',
+
+  // ── CLIENTS ────────────────────────
+  CLIENTS_VIEW:         'clients.view',
+  CLIENTS_EDIT:         'clients.edit',
+  CLIENTS_DELETE:       'clients.delete',
+
+  // ── RESALE ─────────────────────────
+  RESALE_VIEW:          'resale.view',
+  RESALE_CREATE:        'resale.create',
+  RESALE_EDIT:          'resale.edit',
+  RESALE_DELETE:        'resale.delete',
+  RESALE_SEE_OWNER:     'resale.see_owner_info',
+  RESALE_ASSIGN:        'resale.assign',
+
+  // ── PROJECTS ───────────────────────
+  PROJECTS_VIEW:        'projects.view',
+  PROJECTS_MANAGE:      'projects.manage',
+
+  // ── EMPLOYEES ──────────────────────
+  EMPLOYEES_VIEW:       'employees.view',
+  EMPLOYEES_EDIT:       'employees.edit',
+  EMPLOYEES_DELETE:     'employees.delete',
+  EMPLOYEES_APPROVE:    'employees.approve',
+
+  // ── PERMISSIONS ────────────────────
+  PERMISSIONS_MANAGE:   'permissions.manage',
+
+  // ── REPORTS ────────────────────────
+  REPORTS_VIEW:         'reports.view',
+  REPORTS_EXPORT:       'reports.export',
+
+  // ── DASHBOARD ──────────────────────
+  DASHBOARD_LIVE:       'dashboard.live',
+  DASHBOARD_TRACKING:   'dashboard.tracking',
+
+  // ── NOTIFICATIONS ──────────────────
+  NOTIFICATIONS_VIEW:   'notifications.view',
+
+  // ── PLANNER ────────────────────────
+  PLANNER_VIEW:         'planner.view',
+  PLANNER_EDIT:         'planner.edit',
+
+  // ── PROFILE ────────────────────────
+  PROFILE_EDIT:         'profile.edit',
+} as const;
+
+// Default role permissions matrix
+export const DEFAULT_ROLE_PERMISSIONS: Record<
+  string, 
+  Record<string, boolean>
+> = {
+  ceo: {
+    // Full access - everything true
+    ...Object.fromEntries(
+      Object.values(PERMISSIONS).map(p => [p, true])
+    ),
+  },
+  admin: {
+    ...Object.fromEntries(
+      Object.values(PERMISSIONS).map(p => [p, true])
+    ),
+  },
+  director: {
+    'leads.view': true,
+    'leads.see_all_sales_leads': true,
+    'leads.assign': false,
+    'leads.reassign': true,
+    'clients.view': true,
+    'resale.view': true,
+    'resale.see_owner_info': true,
+    'projects.view': true,
+    'projects.manage': false,
+    'employees.view': true,
+    'employees.edit': false,
+    'reports.view': true,
+    'reports.export': true,
+    'dashboard.live': true,
+    'notifications.view': true,
+    'planner.view': true,
+    'profile.edit': true,
+  },
+  team_leader: {
+    'leads.view': true,
+    'leads.create': true,
+    'leads.see_phone': true,
+    'leads.see_email': true,
+    'leads.see_notes': true,
+    'leads.assign': true,
+    'leads.reassign': false,
+    'clients.view': true,
+    'resale.view': true,
+    'employees.view': true,
+    'reports.view': true,
+    'dashboard.live': false,
+    'notifications.view': true,
+    'planner.view': true,
+    'planner.edit': true,
+    'profile.edit': true,
+  },
+  sales: {
+    'leads.view': true,
+    'leads.create': false,
+    'leads.edit': true,
+    'leads.see_phone': true,
+    'leads.see_email': false,
+    'leads.delay': true,
+    'clients.view': false,
+    'resale.view': true,
+    'resale.see_owner_info': false,
+    'projects.view': true,
+    'reports.view': false,
+    'dashboard.live': false,
+    'notifications.view': true,
+    'planner.view': true,
+    'planner.edit': true,
+    'profile.edit': true,
+  },
+};
+🧠 SECTION 6 — CORE ALGORITHMS
+TypeScript
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALGORITHM 1: Permission Resolver
+// packages/permissions/src/resolver.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * Resolution Priority:
+ * 1. User DENY override   → DENY (highest priority)
+ * 2. User ALLOW override  → ALLOW
+ * 3. Role default         → role permission value
+ * 4. Fallback             → DENY
+ *
+ * Changes to role permissions apply instantly
+ * via Redis cache invalidation + realtime broadcast
+ */
+
+async function resolvePermission(
+  userId: string,
+  permissionKey: string
+): Promise<boolean> {
+  // Step 1: Check Redis cache
+  const cacheKey = `perm:${userId}:${permissionKey}`;
+  const cached = await redis.get(cacheKey);
+  if (cached !== null) return cached === '1';
+
+  // Step 2: Get user with role
+  const user = await getUserWithRole(userId);
+  if (!user || user.status !== 'active') return false;
+
+  // Step 3: Check user override
+  const override = await getUserOverride(userId, permissionKey);
+  let result: boolean;
+
+  if (override?.override === 'deny') {
+    result = false;
+  } else if (override?.override === 'allow') {
+    result = true;
+  } else {
+    // Step 4: Fall back to role permission
+    const rolePermission = await getRolePermission(user.role, permissionKey);
+    result = rolePermission?.isEnabled ?? false;
+  }
+
+  // Step 5: Cache for 5 minutes
+  await redis.setex(cacheKey, 300, result ? '1' : '0');
+  return result;
+}
+
+// Invalidate all users of a role when role permission changes
+async function invalidateRolePermissions(role: string): Promise<void> {
+  const users = await getUsersByRole(role);
+  const pipeline = redis.pipeline();
+  for (const user of users) {
+    pipeline.del(`perm:${user.id}:*`);
+  }
+  await pipeline.exec();
+  
+  // Broadcast real-time permission update
+  await realtimeClient.broadcast('permissions', {
+    type: 'ROLE_PERMISSION_UPDATED',
+    role,
+  });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALGORITHM 2: Lead Distribution
+// packages/services/src/leads/distribution.service.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * Weighted Round Robin Distribution:
+ * - Weight based on: current lead count (inverse) + performance score
+ * - Sales with fewer leads get higher weight
+ * - Top performers get slight priority boost
+ * - Blocked sales are excluded
+ * - Inactive (offline >24h) get lower weight
+ */
+
+async function distributeLead(leadId: string, teamId?: string): Promise<string> {
+  const activeSales = await getActiveSalesTeam(teamId);
+  
+  const weights = await Promise.all(
+    activeSales.map(async (sales) => {
+      const leadCount = await getCurrentLeadCount(sales.id);
+      const perfScore = await getPerformanceScore(sales.id);
+      const isOnline = await checkOnlineStatus(sales.id);
+      
+      // Inverse weight: fewer leads = higher weight
+      const loadWeight = Math.max(0, 100 - leadCount * 5);
+      const performanceBoost = perfScore * 10;
+      const onlineBoost = isOnline ? 20 : 0;
+      
+      return {
+        salesId: sales.id,
+        weight: loadWeight + performanceBoost + onlineBoost,
+      };
+    })
+  );
+  
+  // Weighted random selection
+  const totalWeight = weights.reduce((sum, w) => sum + w.weight, 0);
+  let random = Math.random() * totalWeight;
+  
+  for (const { salesId, weight } of weights) {
+    random -= weight;
+    if (random <= 0) {
+      return salesId;
+    }
+  }
+  
+  return weights[0].salesId;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALGORITHM 3: Redis Lead Lock
+// packages/services/src/leads/lock.service.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/**
+ * Prevents race conditions in lead assignment
+ * Uses Redis SET NX (atomic operation)
+ * TTL: 30 seconds (operation timeout)
+ */
+
+async function acquireLeadLock(
+  leadId: string, 
+  userId: string,
+  ttlSeconds = 30
+): Promise<boolean> {
+  const lockKey = `lead_lock:${leadId}`;
+  const lockValue = `${userId}:${Date.now()}`;
+  
+  const result = await redis.set(lockKey, lockValue, {
+    nx: true,    // Only set if not exists
+    ex: ttlSeconds,
+  });
+  
+  return result === 'OK';
+}
+
+async function releaseLeadLock(leadId: string, userId: string): Promise<void> {
+  const lockKey = `lead_lock:${leadId}`;
+  const currentValue = await redis.get(lockKey);
+  
+  // Only release if WE own the lock (prevent releasing others' locks)
+  if (currentValue?.startsWith(userId)) {
+    await redis.del(lockKey);
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALGORITHM 4: Field Masking
+// packages/permissions/src/field-mask.ts
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+async function maskLeadFields<T extends Record<string, unknown>>(
+  lead: T,
+  userId: string,
+  assignmentHiddenFields: string[]
+): Promise<Partial<T>> {
+  const canSeePhone = await resolvePermission(userId, 'leads.see_phone');
+  const canSeeEmail = await resolvePermission(userId, 'leads.see_email');
+  const canSeeNotes = await resolvePermission(userId, 'leads.see_notes');
+  
+  const masked = { ...lead };
+  
+  if (!canSeePhone || lead.isPhoneHidden || assignmentHiddenFields.includes('phone')) {
+    delete masked.phone;
+  }
+  if (!canSeeEmail || lead.isEmailHidden || assignmentHiddenFields.includes('email')) {
+    delete masked.email;
+  }
+  if (!canSeeNotes || lead.isNotesHidden || assignmentHiddenFields.includes('notes')) {
+    delete masked.notes;
+  }
+  
+  return masked;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALGORITHM 5: Online Heartbeat
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Client sends heartbeat every 30 seconds
+// Server sets Redis key with 35 second TTL
+// If key expires → user is offline
+// Background job checks DB sync every 5 minutes
+
+async function recordHeartbeat(userId: string): Promise<void> {
+  const key = `online:${userId}`;
+  await redis.setex(key, 35, Date.now().toString());
+  
+  // Update DB periodically (not every heartbeat to reduce DB load)
+  const lastDbUpdate = await redis.get(`heartbeat_db:${userId}`);
+  if (!lastDbUpdate || Date.now() - parseInt(lastDbUpdate) > 300000) {
+    await db.update(users)
+      .set({ isOnline: true, lastActiveAt: new Date() })
+      .where(eq(users.id, userId));
+    await redis.setex(`heartbeat_db:${userId}`, 300, Date.now().toString());
+  }
+}
+
+async function isUserOnline(userId: string): Promise<boolean> {
+  const key = `online:${userId}`;
+  return (await redis.exists(key)) === 1;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALGORITHM 6: Audit Logger
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+async function auditLog<T>(params: {
+  userId: string;
+  action: string;
+  entityType: string;
+  entityId?: string;
+  before?: T;
+  after?: T;
+  metadata?: Record<string, unknown>;
+  request?: Request;
+}): Promise<void> {
+  await db.insert(auditLogs).values({
+    userId: params.userId,
+    action: params.action,
+    entityType: params.entityType,
+    entityId: params.entityId,
+    before: params.before ? JSON.parse(JSON.stringify(params.before)) : null,
+    after: params.after ? JSON.parse(JSON.stringify(params.after)) : null,
+    metadata: params.metadata,
+    ipAddress: params.request?.headers.get('x-forwarded-for') ?? null,
+    userAgent: params.request?.headers.get('user-agent') ?? null,
+  });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALGORITHM 7: Auto Reassign (Trigger.dev Cron)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Runs every hour
+// Checks leads where: deadline passed AND no activity in 48h
+// Pulls from inactive sales → adds to clientQueue
+// Admin gets notification
+
+export const autoReassignJob = trigger.scheduleTask({
+  id: 'auto-reassign-inactive-leads',
+  cron: '0 * * * *',
+  run: async () => {
+    const staleLeads = await db.query.leads.findMany({
+      where: and(
+        lt(leads.lastActionAt, sql`NOW() - INTERVAL '48 hours'`),
+        notInArray(leads.status, ['won', 'lost']),
+      ),
+      with: { primarySales: true },
+    });
+
+    for (const lead of staleLeads) {
+      await db.insert(clientQueue).values({
+        leadId: lead.id,
+        reason: 'auto_reassign_inactive',
+        priority: 1,
+      });
+      
+      await notificationService.notifyAdmin({
+        type: 'LEAD_AUTO_QUEUED',
+        leadId: lead.id,
+        salesId: lead.primarySalesId,
+      });
+    }
+  },
+});
+🔐 SECTION 7 — AUTH FLOW (Complete)
+TypeScript
+
+// packages/auth/src/config.ts
+// Better Auth Configuration
+
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: 'pg',
+    schema: { users, sessions, accounts, verifications },
+  }),
+  
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      await emailService.sendPasswordReset({
+        to: user.email,
+        name: user.name,
+        resetUrl: url,
+        expiresIn: '15 minutes',
+      });
+    },
+  },
+  
+  emailVerification: {
+    sendVerificationEmail: async ({ user, token }) => {
+      await emailService.sendVerificationOTP({
+        to: user.email,
+        name: user.name,
+        otp: token,        // 6-digit OTP
+        expiresIn: '10 minutes',
+      });
+    },
+    sendOnSignUp: true,
+    autoSignInAfterVerification: false,  // Wait for admin approval
+  },
+  
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+    facebook: {
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+    },
+  },
+  
+  session: {
+    expiresIn: 60 * 60 * 24 * 30,         // 30 days
+    updateAge: 60 * 60 * 24,              // Refresh daily
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5,                     // 5 minutes
+    },
+  },
+  
+  plugins: [
+    // Custom: Block login if status != active
+    {
+      id: 'approval-gate',
+      hooks: {
+        after: [
+          {
+            matcher: (ctx) => ctx.path === '/sign-in/email',
+            handler: async (ctx) => {
+              const user = ctx.context.user;
+              if (user.status === 'pending') {
+                throw new Error('PENDING_APPROVAL');
+              }
+              if (user.status === 'rejected') {
+                throw new Error('ACCOUNT_REJECTED');
+              }
+              if (user.status === 'suspended') {
+                throw new Error('ACCOUNT_SUSPENDED');
+              }
+            },
+          },
+        ],
+      },
+    },
+  ],
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Registration Flow
+// apps/web/app/[locale]/(auth)/register/page.tsx
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/*
+STEP 1: User fills form
+  ├── Name (unique check real-time)
+  ├── Email (unique check real-time)  
+  ├── Password (strength indicator)
+  ├── Confirm Password
+  ├── Role dropdown (ceo hidden, admin/director/team_leader/sales)
+  └── If role === 'sales': Show "Select Team Leader" dropdown
+
+STEP 2: OAuth option
+  ├── Google button
+  └── Facebook button
+      → If OAuth: Skip to step 3 with email pre-filled
+      → Still needs role selection
+
+STEP 3: Submit
+  → Create user with status: 'pending', emailVerified: false
+  → Send 6-digit OTP to email
+
+STEP 4: Verify Email (/verify-email)
+  → User enters 6-digit code
+  → On success: status remains 'pending'
+  → Show: "Account created! Waiting for admin approval."
+  → Admin gets in-app + email notification
+
+STEP 5: Admin Approval (/employees/pending)
+  → Admin sees pending user card
+  → Can: Approve / Reject / Edit fields
+  → On Approve: status = 'active', send welcome email
+  → On Reject: status = 'rejected', send rejection email with reason
+
+STEP 6: User Login
+  → Now status === 'active' → can login
+*/
+
+// Seed: CEO default user
+// packages/db/src/seed/seed.ts
+
+await db.insert(users).values({
+  id: 'ceo-default-id',
+  name: 'CEO',
+  email: process.env.CEO_EMAIL ?? 'ceo@company.com',
+  passwordHash: await hashPassword(process.env.CEO_PASSWORD ?? 'Change@Me2026!'),
+  role: 'ceo',
+  status: 'active',
+  emailVerified: true,
+}).onConflictDoNothing();
+🎨 SECTION 8 — UI/UX DESIGN SYSTEM
+text
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COLOR PALETTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Primary:        #4F46E5  (Indigo 600)
+Primary Dark:   #4338CA  (Indigo 700)
+Primary Light:  #6366F1  (Indigo 500)
+
+Accent:         #06B6D4  (Cyan 500)
+Success:        #10B981  (Emerald 500)
+Warning:        #F59E0B  (Amber 500)
+Danger:         #EF4444  (Red 500)
+
+Dark BG:        #0A0A0F  (near black)
+Dark Surface:   #111118  
+Dark Card:      #16161E
+Dark Border:    #1E1E2E
+
+Light BG:       #F8F9FC
+Light Surface:  #FFFFFF
+Light Card:     #FFFFFF
+Light Border:   #E2E8F0
+
+Text Primary:   #0F172A  (light) / #F8FAFC  (dark)
+Text Secondary: #64748B  (both modes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPOGRAPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+English:  Inter Variable (400, 500, 600, 700)
+Arabic:   Cairo Variable (400, 500, 600, 700)
+Mono:     JetBrains Mono (code, numbers)
+
+Scale:
+  xs:   12px / 1.4 lh
+  sm:   14px / 1.5 lh
+  base: 16px / 1.6 lh
+  lg:   18px / 1.6 lh
+  xl:   20px / 1.5 lh
+  2xl:  24px / 1.4 lh
+  3xl:  30px / 1.3 lh
+  4xl:  36px / 1.2 lh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SPACING SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Base unit: 4px
+Scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BORDER RADIUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+sm:   6px    (inputs, small elements)
+md:   10px   (cards, modals)
+lg:   14px   (large cards)
+xl:   18px   (floating cards)
+full: 9999px (badges, avatars)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SHADOW ELEVATION SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+E1: 0 1px 3px rgba(0,0,0,0.08)
+E2: 0 4px 12px rgba(0,0,0,0.10)
+E3: 0 8px 24px rgba(0,0,0,0.12)
+E4: 0 16px 40px rgba(0,0,0,0.16)
+E5: 0 32px 64px rgba(0,0,0,0.24)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ANIMATION CONSTANTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Fast:     150ms  ease-out     (hover states)
+Normal:   250ms  ease-in-out  (transitions)
+Smooth:   350ms  spring       (cards, modals)
+Slow:     500ms  spring       (page transitions)
+
+Spring config:
+  stiffness: 300, damping: 30 (snappy)
+  stiffness: 200, damping: 25 (smooth)
+  stiffness: 100, damping: 20 (bouncy)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FLOATING CARD SPECS (Sales Home)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Framer Motion: animate y with sin wave
+- Period: 3-4 seconds (each card different offset)
+- Amplitude: 8-12px vertical
+- Rotation: subtle ±2deg on hover
+- Scale: 1 → 1.04 on hover
+- Shadow: E2 → E4 on hover
+- Glass morphism background (subtle blur)
+- Gradient border (2px, 10% opacity)
+- Popup: scale from 0.9 + fade (200ms)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KANBAN BOARD SPECS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- @dnd-kit/core + @dnd-kit/sortable
+- Drag overlay with ghost card
+- Magnetic snap to nearest column
+- Column counter animates (Framer layout)
+- Card drag: rotation ±3deg + scale 1.05
+- Drop zone: highlight pulse animation
+- Real-time: other users' moves reflected instantly
+- Won column: confetti burst (canvas-confetti)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LEAD CARD POPUP SPECS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Trigger: hover (250ms delay) OR click
+- Animation: scale 0.95→1 + opacity 0→1
+- Position: smart (flip if near viewport edge)
+- Backdrop: subtle blur overlay
+- Content: name, phone (if allowed), status chip,
+           last activity, next action, sales name
+- Actions: quick buttons (Call, Note, Reassign)
+- Close: click outside or ESC
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SALES PROFILE CARD SPECS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- 3D tilt effect on hover (react-tilt or CSS)
+- Avatar ring: gradient animation
+- Stats: animated number counters
+- Social links: smooth reveal on hover
+- Background: personalized gradient per user
+- Editable: click to edit mode (smooth transition)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESALE MARKET SPECS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Grid: masonry-style responsive
+- Unit card: image carousel (swipe on mobile)
+- Price badge: prominent, gradient
+- Owner info: blurred if hidden (not removed - just blurred with lock icon)
+- Hover: image zoom + overlay actions
+- Filter bar: sticky top, pill-style filters
+📊 SECTION 9 — ANALYTICS & REPORTS ENGINE
+TypeScript
+
+// packages/analytics/src/stats.ts
+
+export async function getLeadStats(filters: LeadStatsFilters) {
+  const { userId, dateFrom, dateTo, projectId } = filters;
+  
+  return await db.execute(sql`
+    SELECT
+      COUNT(*) FILTER (WHERE status = 'new') as new_leads,
+      COUNT(*) FILTER (WHERE status = 'called') as called_leads,
+      COUNT(*) FILTER (WHERE status = 'qualified') as qualified_leads,
+      COUNT(*) FILTER (WHERE status = 'proposal') as proposal_leads,
+      COUNT(*) FILTER (WHERE status = 'negotiation') as negotiation_leads,
+      COUNT(*) FILTER (WHERE status = 'won') as won_leads,
+      COUNT(*) FILTER (WHERE status = 'lost') as lost_leads,
+      COUNT(*) FILTER (
+        WHERE created_at::date = CURRENT_DATE
+      ) as new_today,
+      ROUND(
+        COUNT(*) FILTER (WHERE status = 'won')::numeric / 
+        NULLIF(COUNT(*), 0) * 100, 
+        2
+      ) as conversion_rate
+    FROM leads
+    WHERE
+      (${userId}::uuid IS NULL OR primary_sales_id = ${userId}::uuid)
+      AND (${dateFrom}::date IS NULL OR created_at >= ${dateFrom}::date)
+      AND (${dateTo}::date IS NULL OR created_at <= ${dateTo}::date)
+      AND (${projectId}::uuid IS NULL OR project_id = ${projectId}::uuid)
+  `);
+}
+
+export async function getActivityStats(filters: ActivityStatsFilters) {
+  return await db.execute(sql`
+    SELECT
+      u.id,
+      u.name,
+      u.avatar_url,
+      COUNT(la.id) FILTER (WHERE la.type = 'call') as total_calls,
+      COUNT(la.id) FILTER (WHERE la.type = 'meeting') as total_meetings,
+      COUNT(la.id) FILTER (WHERE la.type = 'message') as total_messages,
+      COUNT(la.id) as total_activities,
+      COUNT(DISTINCT la.lead_id) as unique_leads_touched,
+      COUNT(l.id) FILTER (WHERE l.status = 'won') as deals_won,
+      SUM(c.deal_value) FILTER (WHERE l.status = 'won') as total_revenue,
+      ROUND(
+        AVG(EXTRACT(EPOCH FROM (la.created_at - l.created_at))/3600)
+        , 2
+      ) as avg_response_hours
+    FROM users u
+    LEFT JOIN lead_activities la ON la.user_id = u.id
+      AND la.created_at BETWEEN ${filters.dateFrom} AND ${filters.dateTo}
+    LEFT JOIN leads l ON la.lead_id = l.id
+    LEFT JOIN clients c ON c.lead_id = l.id
+    WHERE u.role = 'sales' AND u.status = 'active'
+    GROUP BY u.id, u.name, u.avatar_url
+    ORDER BY deals_won DESC, total_activities DESC
+  `);
+}
+
+export async function getTeamStats(teamLeaderId: string) {
+  return await db.execute(sql`
+    WITH team_members AS (
+      SELECT id FROM users WHERE team_leader_id = ${teamLeaderId}
+    ),
+    member_stats AS (
+      SELECT
+        u.id,
+        u.name,
+        COUNT(l.id) as total_leads,
+        COUNT(l.id) FILTER (WHERE l.status = 'won') as won,
+        COUNT(la.id) as activities,
+        BOOL_OR(u.is_online) as is_online
+      FROM team_members tm
+      JOIN users u ON u.id = tm.id
+      LEFT JOIN lead_assignments la2 ON la2.sales_id = u.id
+      LEFT JOIN leads l ON l.id = la2.lead_id
+      LEFT JOIN lead_activities la ON la.user_id = u.id
+      GROUP BY u.id, u.name
+    )
+    SELECT *, 
+      RANK() OVER (ORDER BY won DESC, activities DESC) as rank
+    FROM member_stats
+  `);
+}
+
+// packages/analytics/src/reports.ts
+
+export async function generateReport(params: ReportParams) {
+  const {
+    type,           // 'daily' | 'weekly' | 'monthly' | 'custom'
+    dateFrom,
+    dateTo,
+    userIds,        // filter by specific users
+    projectIds,     // filter by projects
+    statuses,       // filter by lead statuses
+    groupBy,        // 'user' | 'project' | 'status' | 'date'
+    format,         // 'json' | 'csv' | 'excel' | 'pdf'
+  } = params;
+  
+  const [leadStats, activityStats, resaleStats, teamStats] = await Promise.all([
+    getLeadStats({ dateFrom, dateTo, ...filters }),
+    getActivityStats({ dateFrom, dateTo, ...filters }),
+    getResaleStats({ dateFrom, dateTo }),
+    getTeamStats({ dateFrom, dateTo }),
+  ]);
+  
+  const report = {
+    meta: {
+      generatedAt: new Date(),
+      period: { from: dateFrom, to: dateTo },
+      type,
+    },
+    summary: {
+      totalLeads: leadStats.total,
+      conversionRate: leadStats.conversion_rate,
+      totalRevenue: activityStats.total_revenue,
+      topPerformer: activityStats[0],
+      avgResponseTime: activityStats.avg_response_hours,
+    },
+    byEmployee: activityStats,
+    byProject: projectStats,
+    funnel: leadStats,
+    timeline: timelineData,
+  };
+  
+  if (format === 'excel') return exportToExcel(report);
+  if (format === 'csv') return exportToCSV(report);
+  if (format === 'pdf') return exportToPDF(report);
+  return report;
+}
+
+// Import bulk leads from Excel/CSV
+export async function importLeads(
+  file: File,
+  assignedBy: string,
+  defaultProjectId?: string
+): Promise<ImportResult> {
+  const workbook = read(await file.arrayBuffer());
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = utils.sheet_to_json(sheet);
+  
+  const results = {
+    success: 0,
+    failed: 0,
+    errors: [] as ImportError[],
+  };
+  
+  // Validate each row with Zod
+  for (const [index, row] of rows.entries()) {
+    const parsed = BulkLeadSchema.safeParse(row);
+    
+    if (!parsed.success) {
+      results.failed++;
+      results.errors.push({
+        row: index + 2,
+        field: parsed.error.issues[0].path[0],
+        message: parsed.error.issues[0].message,
+      });
+      continue;
+    }
+    
+    await db.insert(leads).values({
+      ...parsed.data,
+      projectId: parsed.data.projectId ?? defaultProjectId,
+      source: 'import',
+      createdBy: assignedBy,
+    });
+    
+    results.success++;
+  }
+  
+  await auditLog({
+    userId: assignedBy,
+    action: 'BULK_IMPORT_LEADS',
+    entityType: 'leads',
+    metadata: { total: rows.length, ...results },
+  });
+  
+  return results;
+}
+⚡ SECTION 10 — REALTIME ARCHITECTURE
+TypeScript
+
+// packages/realtime/src/channels.ts
+
+export const CHANNELS = {
+  // System-wide
+  PERMISSIONS:     'permissions',       // Role permission changes
+  NOTIFICATIONS:   'notifications',     // User notifications
+  
+  // Admin channels
+  ADMIN_DASHBOARD: 'admin:dashboard',   // Live stats
+  ONLINE_PRESENCE: 'presence:online',  // Who's online
+  
+  // Lead channels
+  LEAD:            (id: string) => `lead:${id}`,
+  LEADS_BOARD:     'leads:kanban',      // Kanban updates
+  
+  // User-specific
+  USER:            (id: string) => `user:${id}`,
+} as const;
+
+// Event types
+export type RealtimeEvent =
+  | { type: 'LEAD_STATUS_CHANGED';    leadId: string; from: string; to: string; by: string }
+  | { type: 'LEAD_ASSIGNED';          leadId: string; toUserId: string; by: string }
+  | { type: 'LEAD_REASSIGNED';        leadId: string; fromUserId: string; toUserId: string }
+  | { type: 'ACTIVITY_ADDED';         leadId: string; activityId: string }
+  | { type: 'USER_APPROVED';          userId: string }
+  | { type: 'USER_REJECTED';          userId: string }
+  | { type: 'PERMISSION_CHANGED';     role: string; permissionKey: string; value: boolean }
+  | { type: 'DASHBOARD_STATS_UPDATE'; stats: DashboardStats }
+  | { type: 'USER_ONLINE';            userId: string }
+  | { type: 'USER_OFFLINE';           userId: string }
+  | { type: 'NOTIFICATION';           notification: Notification };
+
+// Server-side broadcast
+export async function broadcast(
+  channel: string, 
+  event: RealtimeEvent
+): Promise<void> {
+  await supabaseAdmin.realtime.broadcast(channel, {
+    type: 'broadcast',
+    event: event.type,
+    payload: event,
+  });
+}
+
+// Client hook (React)
+export function useRealtimeChannel(
+  channel: string,
+  handler: (event: RealtimeEvent) => void
+): void {
+  useEffect(() => {
+    const subscription = supabaseClient
+      .channel(channel)
+      .on('broadcast', { event: '*' }, ({ payload }) => {
+        handler(payload as RealtimeEvent);
+      })
+      .subscribe();
+    
+    return () => { supabaseClient.removeChannel(subscription); };
+  }, [channel]);
+}
+🌐 SECTION 11 — I18N ARCHITECTURE
+TypeScript
+
+// apps/web/messages/ar.json (sample structure)
+{
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "name": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "role": "الدور الوظيفي",
+    "teamLeader": "التيم ليدر",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "pendingApproval": "حسابك في انتظار موافقة المدير",
+    "verifyEmail": "تحقق من بريدك الإلكتروني",
+    "roles": {
+      "admin": "مدير النظام",
+      "director": "مدير",
+      "team_leader": "تيم ليدر",
+      "sales": "مبيعات"
+    }
+  },
+  "leads": {
+    "title": "العملاء المتوقعين",
+    "statuses": {
+      "new": "جديد",
+      "called": "تم الاتصال",
+      "qualified": "مؤهل",
+      "proposal": "عرض سعر",
+      "negotiation": "تفاوض",
+      "won": "تم البيع ✅",
+      "lost": "خسارة ❌"
+    }
+  }
+}
+
+// RTL Configuration
+// next.config.ts
+module.exports = {
+  i18n: { locales: ['ar', 'en'], defaultLocale: 'ar' }
+};
+
+// Tailwind RTL (automatic via [dir="rtl"] selector)
+// Arabic: text-right, margin mirroring, flex-row-reverse
+// Using: @radix-ui/react-direction + next-intl
+🚀 SECTION 12 — API MIDDLEWARE CHAIN
+TypeScript
+
+// apps/web/middleware.ts
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  
+  // 1. i18n routing
+  const locale = detectLocale(request);
+  
+  // 2. Public routes bypass
+  if (isPublicRoute(pathname)) {
+    return intlMiddleware(request);
+  }
+  
+  // 3. Auth check
+  const session = await getSession(request);
+  if (!session) {
+    return redirectToLogin(request, locale);
+  }
+  
+  // 4. Status check
+  if (session.user.status !== 'active') {
+    return redirectToPending(request, locale);
+  }
+  
+  // 5. Rate limiting
+  const rateLimitResult = await rateLimit(session.user.id, pathname);
+  if (!rateLimitResult.success) {
+    return new NextResponse('Too Many Requests', { status: 429 });
+  }
+  
+  // 6. Attach user to headers for Route Handlers
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-user-id', session.user.id);
+  requestHeaders.set('x-user-role', session.user.role);
+  
+  return intlMiddleware(request, { requestHeaders });
+}
+
+// Route Handler middleware pattern
+export function withPermission(
+  permissionKey: string,
+  handler: (req: Request, ctx: RouteContext) => Promise<Response>
+) {
+  return async (req: Request, ctx: RouteContext) => {
+    const userId = req.headers.get('x-user-id');
+    if (!userId) return unauthorized();
+    
+    const hasPermission = await resolvePermission(userId, permissionKey);
+    if (!hasPermission) return forbidden();
+    
+    // Log the API call to audit
+    const response = await handler(req, ctx);
+    
+    return response;
+  };
+}
+📱 SECTION 13 — MOBILE SPECIFIC ARCHITECTURE
+TypeScript
+
+// apps/mobile/app/(tabs)/leads.tsx
+
+// Offline-first: WatermelonDB syncs when online
+// Optimistic updates: UI updates before API confirms
+// Pull-to-refresh: native gesture
+// Infinite scroll: virtualized list (FlashList)
+// Push notifications: expo-notifications
+// Biometric auth: expo-local-authentication
+
+// Mobile-specific components:
+// - BottomSheet (leads detail)
+// - SwipeAction (swipe to call, swipe to update)
+// - PinchZoom (unit images)
+// - HapticFeedback on interactions
+
+// Navigation structure:
+// (tabs):
+//   index      → Home (role-adaptive)
+//   leads      → Leads list + Kanban toggle
+//   resale     → Resale market
+//   planner    → Daily planner
+//   profile    → Profile + settings
+// leads/[id]   → Lead detail
+// modals/      → Sheets (assign, delay, activity)
+🔒 SECTION 14 — SECURITY CHECKLIST
+text
+
+✅ Input Validation:     Zod on ALL inputs (client + server)
+✅ SQL Injection:        Drizzle parameterized queries only
+✅ XSS:                 React DOM escaping + CSP headers
+✅ CSRF:                SameSite cookies + Origin check
+✅ Rate Limiting:        Upstash per-user + per-IP sliding window
+✅ Auth:                JWT httpOnly cookies (not localStorage)
+✅ Session:             Refresh token rotation
+✅ Permissions:         Checked at middleware + service + query
+✅ Audit Trail:         Every mutation logged with before/after
+✅ File Upload:         Type check + size limit + virus scan hook
+✅ Secrets:             Environment variables only (never committed)
+✅ Headers:             Strict CSP, HSTS, X-Frame-Options
+✅ Redis Lock:          Prevents race conditions in assignment
+✅ Data Masking:        Field-level masking per permission
+✅ Sensitive Log:       Never log passwords/tokens/PII
+📦 SECTION 15 — DEPLOYMENT GUIDE
+YAML
+
+# .env.example
+DATABASE_URL=postgresql://...neon.tech/crm_db
+REDIS_URL=rediss://...upstash.io
+BETTER_AUTH_SECRET=<32-char-random>
+BETTER_AUTH_URL=https://yourapp.com
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+
+RESEND_API_KEY=re_...
+FROM_EMAIL=noreply@yourapp.com
+
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_KEY=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+BLOB_READ_WRITE_TOKEN=vercel_blob_...
+TRIGGER_SECRET_KEY=tr_...
+
+CEO_EMAIL=ceo@yourcompany.com
+CEO_PASSWORD=Change@Me2026!
+
+# Production setup:
+# 1. Neon DB: Create project, copy DATABASE_URL
+# 2. Upstash: Create Redis, copy REDIS_URL  
+# 3. Vercel: Deploy web app, add env vars
+# 4. Supabase: Enable Realtime, create project
+# 5. Resend: Add domain, get API key
+# 6. Run: pnpm db:migrate && pnpm db:seed
+# 7. EAS: eas build --platform all --profile production
+🎯 FINAL EXECUTION DIRECTIVE
+text
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHEN IMPLEMENTING THIS SYSTEM:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+START WITH:
+  1. Database schema (packages/db)
+  2. Permission registry + resolver
+  3. Auth configuration + CEO seed
+  4. API middleware chain
+  5. Core entities CRUD (leads, users, projects)
+  6. Permission engine wiring
+  7. Realtime setup
+  8. Web UI (page by page, mobile-first)
+  9. Mobile app (feature parity)
+  10. Reports & analytics
+  11. Import/Export
+  12. Deployment
+
+EVERY FILE MUST:
+  ✦ Use TypeScript strict mode
+  ✦ Export proper types
+  ✦ Include JSDoc for algorithms
+  ✦ Handle errors gracefully
+  ✦ Support RTL layout
+  ✦ Have skeleton loading state
+  ✦ Respect permission system
+
+EVERY API ROUTE MUST:
+  ✦ Validate input with Zod
+  ✦ Check authentication
+  ✦ Check permissions
+  ✦ Rate limit
+  ✦ Write audit log
+  ✦ Return typed response
+  ✦ Handle errors with proper status codes
+
+EVERY UI COMPONENT MUST:
+  ✦ Support dark/light mode
+  ✦ Support AR/EN with RTL
+  ✦ Have loading state
+  ✦ Have empty state
+  ✦ Have error state
+  ✦ Be accessible (ARIA)
+  ✦ Animate meaningfully (not gratuitously)
+
+THE FINAL PRODUCT MUST FEEL LIKE:
+  A $1B global SaaS platform built by
+  an elite team of 50 engineers.
+  Every interaction deliberate.
+  Every pixel intentional.
+  Every security layer impenetrable.
+  
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUILD IT AS IF YOUR REPUTATION DEPENDS ON IT.
+BECAUSE IT DOES.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

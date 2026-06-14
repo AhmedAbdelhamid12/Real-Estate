@@ -1,0 +1,129 @@
+ stallwart: failed ping 1
+ 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+   ///////////////////////////
+      /////////////////////
+      
+ Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+ [LaunchDarkly] LaunchDarkly client initialized
+cdn.segment.com/v1/projects/dMePKGC4BqfBivpe0Hvl8IoPpzSHgjdX/settings:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+ Failed to fetch
+ [analytics.js] Failed to load Analytics.js 
+api.segment.io/v1/m:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+ Error sending segment performance metrics 
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=3d0ea3c6-69d9-4233-a18b-898f4adc79a6:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=1b20ac38-210b-4b4c-8729-f04303606903:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=858d4b29-d663-42db-9bce-fe5438d60768:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=5811fe2b-38cb-475b-991e-98d0382e551d:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=eaea7a30-78a0-4b28-8881-10855e47274c:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=7dd136f7-c7ba-45eb-91eb-074a43cd8d70:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+Real-Estate:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=7869f99e-3f2d-4f53-8c52-f4491a1611ba:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=d0cc0e61-a1df-4ca0-8d3e-f611e117850e:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=1f2fdc7b-8a07-4d63-a5dd-92705a77c965:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=06d6b32a-6929-41ae-b501-e93375072ebe:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=135024e9-3f38-4009-9d46-3728a5f8b3c2:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=4b207961-d6c1-49a1-b769-6ff2bf2f0920:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=f6ba75c5-df3d-4298-bb1b-929f6a342017:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=137ca198-7b98-45af-88d2-a7d8577b9694:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+ Unrecognized feature: 'ambient-light-sensor'.
+ Unrecognized feature: 'battery'.
+ Unrecognized feature: 'execution-while-not-rendered'.
+ Unrecognized feature: 'execution-while-out-of-viewport'.
+ Unrecognized feature: 'layout-animations'.
+ Unrecognized feature: 'legacy-image-formats'.
+ Unrecognized feature: 'navigation-override'.
+ Unrecognized feature: 'oversized-images'.
+ Unrecognized feature: 'publickey-credentials'.
+ Unrecognized feature: 'speaker-selection'.
+ Unrecognized feature: 'unoptimized-images'.
+ Unrecognized feature: 'unsized-media'.
+ Unrecognized feature: 'pointer-lock'.
+ Allow attribute will take precedence over 'allowfullscreen'.
+ Allow attribute will take precedence over 'allowpaymentrequest'.
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('<URL>') does not match the recipient window's origin ('<URL>').
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html?initialPath=%2F&id=artifacts%2Fmobile:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=cba514ba-df93-4837-8b5d-990d53f265a5:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=965eb1b7-b62d-4a9d-9ba5-d86370d2c81d:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=8bd85fef-ab4e-42e0-9832-c60ed77b390e:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=7f2178ff-1411-4164-bba0-ed45b569f1ad:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=1368994e-b5dc-4b42-a758-737ffd1e5ba4:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=a50f146a-1940-4266-ab73-7c8c814f70c2:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Abeacon%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=c464f433-a723-4a5c-88e7-19d952629740:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=13f4d897-2ed9-4f26-a1bc-2c6233b3f108:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Axhr%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ae3fc70d0&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=19fdce8f-6b5b-4d69-8cb3-74b9dd710119:1  Failed to load resource: net::ERR_ADDRESS_INVALID
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/login:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
+5e5ea359-5fc7-4dcd-8286-9ab1170de867-00-3gfl1mq2ngm6y.janeway.replit.dev/api/auth/login:1  Failed to load resource: the server responded with a status of 502 (Bad Gateway)
