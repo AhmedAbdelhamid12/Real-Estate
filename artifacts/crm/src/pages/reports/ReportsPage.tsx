@@ -94,7 +94,7 @@ export function ReportsPage() {
   function exportFullReport() {
     const rangeLabel = `${fromDate ?? "start"}_to_${toDate ?? "end"}`;
     const rows: string[][] = [
-      [`PropOS CRM — Full Report (${fromDate} → ${toDate})`],
+      [`TIL Real Estate Group — Full Report (${fromDate} → ${toDate})`],
       [],
       ["=== SALES PERFORMANCE ==="],
       ["Team Member", "Total", "Won", "Lost", "In Progress", "Conv. Rate (%)"],

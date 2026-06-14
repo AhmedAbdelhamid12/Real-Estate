@@ -69,58 +69,62 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* Light Theme - Clean, high contrast, authoritative */
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
-  
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 222 47% 11%;
+  /* TIL Real Estate Group — Light Theme */
+  /* Navy: #0F2D52 = hsl(213, 73%, 19%) */
+  /* Gold: #C9A84C = hsl(42, 52%, 54%)  */
+
+  --background: 220 33% 98%;       /* #F8F9FC off-white */
+  --foreground: 213 73% 19%;       /* #0F2D52 navy */
+
+  --border: 220 13% 91%;           /* #E5E7EB */
+  --input: 220 13% 91%;
+  --ring: 42 52% 54%;              /* gold focus ring */
 
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 214 32% 91%;
+  --card-foreground: 213 73% 19%;
+  --card-border: 220 13% 91%;
 
-  --sidebar: 210 40% 96%;
-  --sidebar-foreground: 222 47% 11%;
-  --sidebar-border: 214 32% 91%;
-  --sidebar-primary: 222 47% 11%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 214 32% 91%;
-  --sidebar-accent-foreground: 222 47% 11%;
-  --sidebar-ring: 222 47% 11%;
+  /* Sidebar — always dark navy */
+  --sidebar: 213 75% 13%;          /* #0A1E38 dark navy */
+  --sidebar-foreground: 0 0% 92%;  /* near-white text */
+  --sidebar-border: 213 55% 20%;   /* subtle navy border */
+  --sidebar-primary: 42 52% 54%;   /* gold — active bg */
+  --sidebar-primary-foreground: 213 75% 13%;  /* navy text on gold */
+  --sidebar-accent: 213 55% 22%;   /* lighter navy — hover bg */
+  --sidebar-accent-foreground: 0 0% 95%;      /* white text on hover */
+  --sidebar-ring: 42 52% 54%;      /* gold */
 
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 214 32% 91%;
+  --popover-foreground: 213 73% 19%;
+  --popover-border: 220 13% 91%;
 
-  --primary: 222 47% 11%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 213 73% 19%;          /* #0F2D52 navy */
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222 47% 11.2%;
+  --secondary: 220 20% 95%;
+  --secondary-foreground: 213 73% 19%;
 
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted: 220 20% 96%;
+  --muted-foreground: 220 9% 46%;  /* #6B7280 */
 
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --accent: 42 52% 54%;            /* #C9A84C gold */
+  --accent-foreground: 213 73% 19%;
 
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 72% 51%;        /* #DC2626 */
+  --destructive-foreground: 0 0% 100%;
 
-  --chart-1: 221 83% 53%;
-  --chart-2: 43 74% 66%;
-  --chart-3: 142 71% 45%;
-  --chart-4: 283 39% 53%;
-  --chart-5: 0 84% 60%;
+  --chart-1: 213 73% 35%;          /* navy mid */
+  --chart-2: 42 52% 54%;           /* gold */
+  --chart-3: 142 76% 36%;          /* green */
+  --chart-4: 38 92% 50%;           /* amber */
+  --chart-5: 0 72% 51%;            /* red */
 
   --app-font-sans: 'Inter', system-ui, sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  
+
   --radius: 0.5rem;
-  
+
   --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.05);
   --shadow-xs: 0px 1px 2px 0px rgba(0,0,0,0.05);
   --shadow-sm: 0px 1px 3px 0px rgba(0,0,0,0.1), 0px 1px 2px -1px rgba(0,0,0,0.1);
@@ -146,51 +150,52 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* Dark Theme - Deep slate with premium contrast */
-  --background: 222 47% 6%;
-  --foreground: 210 40% 98%;
+  /* TIL Real Estate Group — Dark Theme */
+  --background: 213 60% 7%;        /* very deep navy */
+  --foreground: 0 0% 95%;
 
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
-  --ring: 213 31% 91%;
+  --border: 213 40% 18%;
+  --input: 213 40% 18%;
+  --ring: 42 52% 54%;              /* gold ring */
 
-  --card: 222 47% 8%;
-  --card-foreground: 210 40% 98%;
-  --card-border: 217 33% 17%;
+  --card: 213 60% 10%;
+  --card-foreground: 0 0% 95%;
+  --card-border: 213 40% 18%;
 
-  --sidebar: 222 47% 6%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-border: 217 33% 17%;
-  --sidebar-primary: 210 40% 98%;
-  --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 33% 17%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-ring: 213 31% 91%;
+  /* Sidebar — deeper dark in dark mode */
+  --sidebar: 213 75% 6%;           /* deepest navy */
+  --sidebar-foreground: 0 0% 90%;
+  --sidebar-border: 213 50% 14%;
+  --sidebar-primary: 42 52% 54%;   /* gold active */
+  --sidebar-primary-foreground: 213 75% 10%;
+  --sidebar-accent: 213 55% 16%;   /* hover bg */
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-ring: 42 52% 54%;
 
-  --popover: 222 47% 8%;
-  --popover-foreground: 210 40% 98%;
-  --popover-border: 217 33% 17%;
+  --popover: 213 60% 10%;
+  --popover-foreground: 0 0% 95%;
+  --popover-border: 213 40% 18%;
 
-  --primary: 210 40% 98%;
-  --primary-foreground: 222 47% 11.2%;
+  --primary: 42 52% 54%;           /* gold becomes primary in dark */
+  --primary-foreground: 213 75% 10%;
 
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 213 40% 18%;
+  --secondary-foreground: 0 0% 95%;
 
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
+  --muted: 213 40% 15%;
+  --muted-foreground: 215 20% 60%;
 
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
+  --accent: 42 52% 54%;            /* gold */
+  --accent-foreground: 213 75% 10%;
 
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 42%;
+  --destructive-foreground: 0 0% 100%;
 
-  --chart-1: 221 83% 53%;
-  --chart-2: 43 74% 66%;
-  --chart-3: 142 71% 45%;
-  --chart-4: 283 39% 53%;
-  --chart-5: 0 84% 60%;
+  --chart-1: 42 52% 54%;           /* gold */
+  --chart-2: 213 60% 55%;          /* light navy */
+  --chart-3: 142 71% 45%;          /* green */
+  --chart-4: 38 92% 55%;           /* amber */
+  --chart-5: 0 72% 55%;            /* red */
 }
 
 @layer base {

@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   LayoutDashboard,
   Users,
-  Building,
+  Building2,
   Kanban,
   ListTodo,
   FileText,
@@ -54,7 +54,7 @@ export function Sidebar() {
     {
       title: "Inventory",
       items: [
-        { href: "/projects", label: t("nav.projects"), icon: Building },
+        { href: "/projects", label: t("nav.projects"), icon: Building2 },
         { href: "/resale", label: t("nav.resale"), icon: Briefcase },
       ],
     },
@@ -85,39 +85,55 @@ export function Sidebar() {
 
   const sidebarContent = (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+      {/* Logo */}
       <div className="flex h-16 shrink-0 items-center justify-between px-4 border-b border-sidebar-border">
         {!isCollapsed && (
-          <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-sidebar-primary">
-            <div className="bg-primary text-primary-foreground p-1.5 rounded-md">
-              <Building className="h-5 w-5" />
+          <div className="flex items-center gap-2.5">
+            <div
+              className="flex items-center justify-center rounded-md p-1.5"
+              style={{ backgroundColor: "hsl(42 52% 54%)" }}
+            >
+              <Building2 className="h-5 w-5" style={{ color: "hsl(213 75% 13%)" }} />
             </div>
-            PropOS
+            <div className="flex flex-col leading-none">
+              <span className="text-sm font-bold tracking-tight" style={{ color: "hsl(42 52% 54%)" }}>
+                TIL Group
+              </span>
+              <span className="text-[10px] uppercase tracking-widest opacity-50">
+                Real Estate
+              </span>
+            </div>
           </div>
         )}
         {isCollapsed && (
-          <div className="mx-auto bg-primary text-primary-foreground p-1.5 rounded-md">
-            <Building className="h-5 w-5" />
+          <div
+            className="mx-auto flex items-center justify-center rounded-md p-1.5"
+            style={{ backgroundColor: "hsl(42 52% 54%)" }}
+          >
+            <Building2 className="h-5 w-5" style={{ color: "hsl(213 75% 13%)" }} />
           </div>
         )}
         <Button
           variant="ghost"
           size="icon"
-          className="hidden md:flex text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          className="hidden md:flex hover:bg-sidebar-accent"
+          style={{ color: "hsl(0 0% 70%)" }}
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
           <Menu className="h-4 w-4" />
         </Button>
       </div>
 
+      {/* Nav */}
       <ScrollArea className="flex-1 px-3 py-4">
         {navItems.map((section, i) => (
           <div key={i} className="mb-6">
             {!isCollapsed && (
-              <h4 className="mb-2 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <h4 className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest opacity-40">
                 {section.title}
               </h4>
             )}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {section.items.map((item) => {
                 const isActive = location === item.href;
                 return (
@@ -125,15 +141,22 @@ export function Sidebar() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-150",
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent/50",
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       isCollapsed && "justify-center px-0"
                     )}
                     title={isCollapsed ? item.label : undefined}
                   >
-                    <item.icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
+                    <item.icon
+                      className={cn("h-4 w-4 shrink-0")}
+                      style={
+                        isActive
+                          ? { color: "hsl(213 75% 13%)" }
+                          : { color: "hsl(0 0% 65%)" }
+                      }
+                    />
                     {!isCollapsed && <span>{item.label}</span>}
                   </Link>
                 );
@@ -143,6 +166,7 @@ export function Sidebar() {
         ))}
       </ScrollArea>
 
+      {/* User profile */}
       <div className="p-4 border-t border-sidebar-border">
         <Link
           href="/profile"
@@ -154,7 +178,9 @@ export function Sidebar() {
           <UserAvatar name={currentUser.name} avatarUrl={currentUser.avatarUrl} />
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium truncate">{currentUser.name}</span>
+              <span className="text-sm font-medium truncate text-sidebar-foreground">
+                {currentUser.name}
+              </span>
               <RoleBadge role={currentUser.role} className="w-fit scale-75 origin-left mt-0.5" />
             </div>
           )}
@@ -191,7 +217,8 @@ export function Sidebar() {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-3 right-3 z-50 md:hidden text-sidebar-foreground hover:bg-sidebar-accent"
+          className="absolute top-3 right-3 z-50 md:hidden hover:bg-sidebar-accent"
+          style={{ color: "hsl(0 0% 70%)" }}
           onClick={() => setIsMobileOpen(false)}
         >
           <X className="h-5 w-5" />

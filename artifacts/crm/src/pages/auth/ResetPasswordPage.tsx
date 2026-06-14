@@ -116,7 +116,7 @@ export function ResetPasswordPage() {
           <div className="bg-primary text-primary-foreground p-3 rounded-xl mb-4 shadow-sm">
             <Building className="h-8 w-8" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">PropOS CRM</h1>
+          <h1 className="text-3xl font-bold tracking-tight">TIL Real Estate Group</h1>
           <p className="text-muted-foreground mt-2">Set a new password</p>
         </div>
 
