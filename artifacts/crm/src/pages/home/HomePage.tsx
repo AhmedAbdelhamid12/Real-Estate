@@ -64,6 +64,8 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
 }) {
   const [hovered, setHovered] = useState(false);
   const [, navigate] = useLocation();
+  const { locale } = useI18n();
+  const isAr = locale === "ar";
   const total = stats?.reduce((s, x) => s + x.value, 0) ?? 0;
   const primary = stats?.[0]?.value ?? 0;
 
@@ -78,42 +80,50 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
       className="relative cursor-pointer"
     >
       <motion.div
-        animate={{ y: hovered ? -6 : 0, scale: hovered ? 1.02 : 1 }}
+        animate={{ y: hovered ? -6 : 0, scale: hovered ? 1.025 : 1 }}
         transition={{ type: "spring", stiffness: 350, damping: 28 }}
         style={{
-          background: `linear-gradient(135deg, ${colors.from}, ${colors.to})`,
-          borderRadius: 20,
-          padding: "24px",
-          minHeight: 180,
+          background: `linear-gradient(145deg, ${colors.from} 0%, ${colors.to} 100%)`,
+          borderRadius: 22,
+          padding: "28px 24px 24px",
+          minHeight: 210,
           position: "relative",
           overflow: "hidden",
           boxShadow: hovered
-            ? `0 20px 40px -8px ${colors.from}60, 0 0 0 1px ${colors.from}30`
-            : `0 8px 24px -4px ${colors.from}40`,
+            ? `0 24px 48px -8px ${colors.from}70, 0 0 0 1px rgba(255,255,255,0.08)`
+            : `0 8px 28px -4px ${colors.from}50, 0 0 0 1px rgba(255,255,255,0.04)`,
           transition: "box-shadow 0.3s",
         }}
       >
-        {/* Background decoration */}
+        {/* Large circle bg top-right */}
         <div style={{
-          position: "absolute", top: -30, right: -30,
-          width: 120, height: 120, borderRadius: "50%",
-          background: "rgba(255,255,255,0.08)", pointerEvents: "none",
+          position: "absolute", top: -40, right: -40,
+          width: 160, height: 160, borderRadius: "50%",
+          background: "rgba(255,255,255,0.07)", pointerEvents: "none",
         }} />
+        {/* Small circle bg bottom-left */}
         <div style={{
-          position: "absolute", bottom: -20, left: 10,
-          width: 80, height: 80, borderRadius: "50%",
+          position: "absolute", bottom: -24, left: 16,
+          width: 90, height: 90, borderRadius: "50%",
           background: "rgba(255,255,255,0.04)", pointerEvents: "none",
         }} />
+        {/* Gold shimmer top */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.25) 50%, transparent)",
+          pointerEvents: "none",
+        }} />
 
-        {/* Top row */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        {/* Top row: icon + ring */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
           <div style={{
-            width: 44, height: 44, borderRadius: 12,
-            background: "rgba(255,255,255,0.18)",
+            width: 48, height: 48, borderRadius: 14,
+            background: "rgba(255,255,255,0.15)",
             display: "flex", alignItems: "center", justifyContent: "center",
             backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,255,255,0.12)",
           }}>
-            <Icon style={{ width: 22, height: 22, color: "white" }} />
+            <Icon style={{ width: 24, height: 24, color: "white" }} />
           </div>
           {stats && stats.length > 0 && (
             <div style={{ position: "relative" }}>
@@ -121,7 +131,7 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
               <div style={{
                 position: "absolute", inset: 0, display: "flex",
                 alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: "white",
+                fontSize: 12, fontWeight: 800, color: "white",
               }}>
                 {primary}
               </div>
@@ -129,19 +139,19 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
           )}
         </div>
 
-        {/* Label */}
-        <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "white", lineHeight: 1.2 }}>{label}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", marginTop: 2 }}>{description}</div>
+        {/* Label + description */}
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ fontSize: 17, fontWeight: 800, color: "white", lineHeight: 1.2, letterSpacing: isAr ? 0 : "-0.01em" }}>{label}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 3, fontWeight: 400 }}>{description}</div>
         </div>
 
         {/* Stats row */}
         {stats && stats.length > 0 && (
-          <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+          <div style={{ display: "flex", gap: 16, marginTop: 18 }}>
             {stats.slice(0, 3).map((s) => (
-              <div key={s.label} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "white", lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.55)", marginTop: 2, textTransform: "uppercase", letterSpacing: "0.06em" }}>{s.label}</div>
+              <div key={s.label}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "white", lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 3, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 500 }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -149,15 +159,16 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
 
         {/* Arrow */}
         <motion.div
-          animate={{ x: hovered ? 4 : 0, opacity: hovered ? 1 : 0.6 }}
+          animate={{ x: hovered ? (isAr ? -4 : 4) : 0, opacity: hovered ? 1 : 0.55 }}
           style={{
-            position: "absolute", bottom: 20, right: 20,
-            width: 28, height: 28, borderRadius: "50%",
-            background: "rgba(255,255,255,0.2)",
+            position: "absolute", bottom: 20, right: isAr ? undefined : 20, left: isAr ? 20 : undefined,
+            width: 30, height: 30, borderRadius: "50%",
+            background: "rgba(255,255,255,0.18)",
+            border: "1px solid rgba(255,255,255,0.1)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
-          <ArrowRight style={{ width: 14, height: 14, color: "white" }} />
+          <ArrowRight style={{ width: 14, height: 14, color: "white", transform: isAr ? "scaleX(-1)" : undefined }} />
         </motion.div>
       </motion.div>
     </motion.div>
@@ -208,46 +219,54 @@ export function HomePage() {
 
   const navCards = [
     {
-      icon: Users, label: "My Leads", description: "Manage & track your leads",
+      icon: Users,
+      label: t("home.nav.my_leads"),
+      description: t("home.nav.my_leads_desc"),
       href: "/leads",
       colors: isDark
-        ? { from: "#0F2D52", to: "#1A4A7A", ring: "#2563B0", accent: "#60a5fa" }
-        : { from: "#0F2D52", to: "#1A4A7A", ring: "#2563B0", accent: "#93c5fd" },
+        ? { from: "#1e3a8a", to: "#0F2D52", ring: "#3b82f6", accent: "#60a5fa" }
+        : { from: "#1d4ed8", to: "#0F2D52", ring: "#3b82f6", accent: "#93c5fd" },
       stats: [
-        { label: "Active", value: activeLeads.length },
-        { label: "Won", value: wonLeads.length },
-        { label: "Lost", value: lostLeads.length },
+        { label: t("common.active"), value: activeLeads.length },
+        { label: t("home.stat.won"), value: wonLeads.length },
+        { label: t("home.stat.lost"), value: lostLeads.length },
       ],
       delay: 0.1,
     },
     {
-      icon: Home, label: "Resale Units", description: "Secondary market",
+      icon: Home,
+      label: t("home.nav.resale"),
+      description: t("home.nav.resale_desc"),
       href: "/resale",
       colors: isDark
-        ? { from: "#A8893A", to: "#7A6028", ring: "#C9A84C", accent: "#D4B86A" }
-        : { from: "#C9A84C", to: "#A8893A", ring: "#C9A84C", accent: "#e8d070" },
+        ? { from: "#92400e", to: "#C9A84C", ring: "#C9A84C", accent: "#fde68a" }
+        : { from: "#b45309", to: "#C9A84C", ring: "#C9A84C", accent: "#fef3c7" },
       stats: [],
       delay: 0.18,
     },
     {
-      icon: Calendar, label: "Daily Planner", description: "Today's tasks & schedule",
+      icon: Calendar,
+      label: t("home.nav.planner"),
+      description: t("home.nav.planner_desc"),
       href: "/planner",
       colors: isDark
-        ? { from: "#1A2D4D", to: "#0F2D52", ring: "#2563B0", accent: "#C9A84C" }
-        : { from: "#1A2D4D", to: "#0A1E38", ring: "#2563B0", accent: "#C9A84C" },
+        ? { from: "#134e4a", to: "#0F766E", ring: "#14b8a6", accent: "#5eead4" }
+        : { from: "#0f766e", to: "#0d9488", ring: "#14b8a6", accent: "#99f6e4" },
       stats: [
-        { label: "Today", value: todayTasks.length },
-        { label: "Pending", value: pendingTasks.length },
-        { label: "Done", value: doneTasks.length },
+        { label: t("home.stat.today"), value: todayTasks.length },
+        { label: t("home.stat.pending"), value: pendingTasks.length },
+        { label: t("home.stat.done"), value: doneTasks.length },
       ],
       delay: 0.26,
     },
     {
-      icon: User, label: "My Profile", description: "Account & settings",
+      icon: User,
+      label: t("home.nav.profile"),
+      description: t("home.nav.profile_desc"),
       href: "/profile",
       colors: isDark
-        ? { from: "#0A1E38", to: "#060F1C", ring: "#C9A84C", accent: "#D4B86A" }
-        : { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" },
+        ? { from: "#064e3b", to: "#065f46", ring: "#10b981", accent: "#6ee7b7" }
+        : { from: "#065f46", to: "#047857", ring: "#10b981", accent: "#a7f3d0" },
       stats: [],
       delay: 0.34,
     },
@@ -398,7 +417,7 @@ export function HomePage() {
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)" }}>{t("home.my_leads")}</div>
-                  <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{activeLeads.length} active</div>
+                  <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{activeLeads.length} {t("home.leads_active")}</div>
                 </div>
               </div>
               <Link href="/leads">
@@ -409,7 +428,7 @@ export function HomePage() {
                   background: "rgba(200,168,75,0.08)",
                   border: "1px solid rgba(200,168,75,0.2)",
                 }}>
-                  View all <ArrowRight style={{ width: 11, height: 11 }} />
+                  {t("home.view_all")} <ArrowRight style={{ width: 11, height: 11 }} />
                 </div>
               </Link>
             </div>
@@ -485,7 +504,7 @@ export function HomePage() {
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "var(--foreground)" }}>{t("home.todays_tasks")}</div>
-                  <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{doneTasks.length}/{todayTasks.length} done</div>
+                  <div style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{doneTasks.length}/{todayTasks.length} {t("home.tasks_done")}</div>
                 </div>
               </div>
               <Link href="/planner">
@@ -496,7 +515,7 @@ export function HomePage() {
                   background: "rgba(200,168,75,0.08)",
                   border: "1px solid rgba(200,168,75,0.2)",
                 }}>
-                  View all <ArrowRight style={{ width: 11, height: 11 }} />
+                  {t("home.view_all")} <ArrowRight style={{ width: 11, height: 11 }} />
                 </div>
               </Link>
             </div>
@@ -524,7 +543,7 @@ export function HomePage() {
                   ? (
                     <div style={{ textAlign: "center", padding: "32px 0", color: "var(--muted-foreground)", fontSize: 13 }}>
                       <Calendar style={{ width: 28, height: 28, margin: "0 auto 8px", opacity: 0.3 }} />
-                      <p>No tasks for today</p>
+                      <p>{t("home.no_tasks")}</p>
                     </div>
                   )
                   : todayTasks.slice(0, 6).map((task: any, i: number) => (
