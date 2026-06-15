@@ -228,8 +228,8 @@ export function HomePage() {
       description: t("home.nav.my_leads_desc"),
       href: "/leads",
       colors: isDark
-        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
-        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
+        ? { from: "#0D2645", to: "#1A4A8A", ring: "#4A9AE8", accent: "#60AAFF" }
+        : { from: "#0D2645", to: "#1A4A8A", ring: "#4A9AE8", accent: "#60AAFF" },
       stats: [
         { label: t("common.active"), value: activeLeads.length },
         { label: t("home.stat.won"), value: wonLeads.length },
@@ -243,8 +243,8 @@ export function HomePage() {
       description: t("home.nav.resale_desc"),
       href: "/resale",
       colors: isDark
-        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
-        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
+        ? { from: "#6B4A12", to: "#C9A84C", ring: "#F0D080", accent: "#F5E090" }
+        : { from: "#6B4A12", to: "#C9A84C", ring: "#F0D080", accent: "#F5E090" },
       stats: [],
       delay: 0.18,
     },
@@ -254,8 +254,8 @@ export function HomePage() {
       description: t("home.nav.planner_desc"),
       href: "/planner",
       colors: isDark
-        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
-        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
+        ? { from: "#0F2D52", to: "#1E5A8A", ring: "#C9A84C", accent: "#D4B86A" }
+        : { from: "#0F2D52", to: "#1E5A8A", ring: "#C9A84C", accent: "#D4B86A" },
       stats: [
         { label: t("home.stat.today"), value: todayTasks.length },
         { label: t("home.stat.pending"), value: pendingTasks.length },
@@ -269,8 +269,8 @@ export function HomePage() {
       description: t("home.nav.profile_desc"),
       href: "/profile",
       colors: isDark
-        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
-        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
+        ? { from: "#0A1E38", to: "#7A5A1A", ring: "#D4B86A", accent: "#E8CC80" }
+        : { from: "#0A1E38", to: "#7A5A1A", ring: "#D4B86A", accent: "#E8CC80" },
       stats: [],
       delay: 0.34,
     },
@@ -287,14 +287,14 @@ export function HomePage() {
         style={{
           borderRadius: 24,
           background: isDark
-            ? "linear-gradient(135deg, #0A1E38 0%, #0F2D52 55%, #060F1C 100%)"
-            : "linear-gradient(135deg, #0F2D52 0%, #1A4A7A 55%, #0A1E38 100%)",
+            ? "linear-gradient(135deg, #0F2D52 0%, #1A4A7A 55%, #0A1E38 100%)"
+            : "linear-gradient(135deg, #1A4A7A 0%, #0F2D52 55%, #07192E 100%)",
           padding: "32px 36px",
           position: "relative",
           overflow: "hidden",
           boxShadow: isDark
-            ? "0 24px 48px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,168,76,0.08)"
-            : "0 20px 40px -8px rgba(15,45,82,0.45), inset 0 1px 0 rgba(201,168,76,0.12)",
+            ? "0 24px 48px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,168,76,0.12)"
+            : "0 20px 40px -8px rgba(15,45,82,0.45), inset 0 1px 0 rgba(201,168,76,0.16)",
         }}
       >
         {/* Gold shimmer strip */}
