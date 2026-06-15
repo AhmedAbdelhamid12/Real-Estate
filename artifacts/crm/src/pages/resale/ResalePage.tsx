@@ -116,57 +116,113 @@ function PhotoGallery({ photos, unitName }: { photos: { id: string; url: string 
   );
 }
 
-function AddPhotoDialog({ unitId, onAdded }: { unitId: string; onAdded: () => void }) {
+function AddPhotoDialog({ unitId, onAdded, currentCount }: { unitId: string; onAdded: () => void; currentCount: number }) {
+  const MAX_PHOTOS = 5;
   const [open, setOpen] = useState(false);
-  const [url, setUrl] = useState("");
+  const [previews, setPreviews] = useState<{ file: File; previewUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
+  const remaining = MAX_PHOTOS - currentCount;
 
-  const addPhoto = useMutation({
-    mutationFn: async () => {
-      const res = await apiFetch(`/api/resale/${unitId}/photos`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error((err as any).error || "Failed to add photo");
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    const allowed = files.slice(0, remaining);
+    const newPreviews = allowed.map((f) => ({
+      file: f,
+      previewUrl: URL.createObjectURL(f),
+    }));
+    setPreviews((p) => [...p, ...newPreviews].slice(0, remaining));
+    e.target.value = "";
+  }
+
+  function removePreview(idx: number) {
+    setPreviews((p) => {
+      URL.revokeObjectURL(p[idx].previewUrl);
+      return p.filter((_, i) => i !== idx);
+    });
+  }
+
+  async function handleUpload() {
+    if (previews.length === 0) return;
+    setUploading(true);
+    try {
+      for (const { file } of previews) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: fd, credentials: "include" });
+        if (!uploadRes.ok) throw new Error("Upload failed");
+        const { url } = await uploadRes.json() as { url: string };
+        const addRes = await apiFetch(`/api/resale/${unitId}/photos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        if (!addRes.ok) throw new Error("Failed to save photo");
       }
-      return res.json();
-    },
-    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getListResaleUnitsQueryKey() });
-      toast.success("Photo added");
-      setUrl("");
+      toast.success(`${previews.length} photo${previews.length > 1 ? "s" : ""} added`);
+      previews.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+      setPreviews([]);
       setOpen(false);
       onAdded();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to add photos");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { previews.forEach((p) => URL.revokeObjectURL(p.previewUrl)); setPreviews([]); } }}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-          <Image className="w-3 h-3" /> Add Photo
+        <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" disabled={remaining <= 0}>
+          <Image className="w-3 h-3" />
+          {remaining <= 0 ? "Max photos" : `Add Photos (${currentCount}/${MAX_PHOTOS})`}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader><DialogTitle>Add Photo URL</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <Input
-            placeholder="https://example.com/photo.jpg"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          {url && (
-            <img src={url} alt="preview" className="w-full h-32 object-cover rounded-lg" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add Photos — {currentCount}/{MAX_PHOTOS}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          {remaining > 0 && (
+            <div
+              className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => document.getElementById(`photo-upload-${unitId}`)?.click()}
+            >
+              <input
+                type="file"
+                id={`photo-upload-${unitId}`}
+                className="hidden"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+              />
+              <Image className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">Click to browse — up to {remaining} more photo{remaining !== 1 ? "s" : ""}</p>
+            </div>
+          )}
+          {previews.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {previews.map((p, i) => (
+                <div key={i} className="relative rounded-lg overflow-hidden aspect-square bg-muted">
+                  <img src={p.previewUrl} alt={`preview ${i + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePreview(i)}
+                    className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={() => addPhoto.mutate()} disabled={!url || addPhoto.isPending}>
-            {addPhoto.isPending ? "Adding..." : "Add Photo"}
+          <Button onClick={handleUpload} disabled={previews.length === 0 || uploading}>
+            {uploading ? "Uploading..." : `Upload ${previews.length > 0 ? previews.length : ""} Photo${previews.length !== 1 ? "s" : ""}`}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -605,7 +661,7 @@ export function ResalePage() {
                       <ToggleHideField unitId={unit.id} field="isOwnerEmailHidden" value={unit.isOwnerEmailHidden} label="Email" />
                     </div>
                     <div className="flex items-center gap-1">
-                      <AddPhotoDialog unitId={unit.id} onAdded={() => {}} />
+                      <AddPhotoDialog unitId={unit.id} onAdded={() => {}} currentCount={unit.photos?.length ?? 0} />
                       <Button
                         variant="ghost"
                         size="icon"
@@ -671,7 +727,7 @@ export function ResalePage() {
               {/* Actions */}
               {isAdmin && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <AddPhotoDialog unitId={unit.id} onAdded={() => {}} />
+                  <AddPhotoDialog unitId={unit.id} onAdded={() => {}} currentCount={unit.photos?.length ?? 0} />
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(unit.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>

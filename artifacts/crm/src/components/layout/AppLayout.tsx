@@ -41,7 +41,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden" dir={dir}>
+    <div className="flex h-screen bg-background overflow-hidden" dir="rtl">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar />

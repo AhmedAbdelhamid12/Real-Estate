@@ -197,7 +197,7 @@ export function Sidebar() {
       <Button
         variant="outline"
         size="icon"
-        className="fixed top-3 left-4 z-50 md:hidden bg-background"
+        className="fixed top-3 right-4 z-50 md:hidden bg-background"
         onClick={() => setIsMobileOpen(true)}
       >
         <Menu className="h-4 w-4" />
@@ -212,15 +212,15 @@ export function Sidebar() {
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 transform bg-sidebar transition-transform duration-200 ease-in-out md:static md:translate-x-0",
+          "fixed inset-y-0 right-0 z-50 w-64 transform bg-sidebar transition-transform duration-200 ease-in-out md:static md:translate-x-0",
           isCollapsed ? "md:w-20" : "md:w-64",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          isMobileOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-3 right-3 z-50 md:hidden hover:bg-sidebar-accent"
+          className="absolute top-3 left-3 z-50 md:hidden hover:bg-sidebar-accent"
           style={{ color: "hsl(0 0% 70%)" }}
           onClick={() => setIsMobileOpen(false)}
         >

@@ -86,7 +86,21 @@ router.post("/auth/register", async (req, res): Promise<void> => {
     .limit(1);
 
   if (existing) {
-    res.status(400).json({ error: "Email already registered" });
+    if (existing.emailVerifiedAt) {
+      res.status(400).json({ error: "Email already registered" });
+      return;
+    }
+    // Email exists but not verified — resend a new code instead of blocking
+    const verifyCode = generateVerifyCode();
+    const verifyTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await db
+      .update(usersTable)
+      .set({ verifyToken: verifyCode, verifyTokenExpires })
+      .where(eq(usersTable.id, existing.id));
+    sendVerificationCode(existing.email, existing.name, verifyCode).catch((err) => {
+      req.log.error({ err }, "Failed to resend verification email");
+    });
+    res.status(201).json({ user: sanitizeUser(existing) });
     return;
   }
 

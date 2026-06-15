@@ -13,6 +13,7 @@ import reportsRouter from "./reports";
 import permissionsRouter from "./permissions";
 import heartbeatRouter from "./heartbeat";
 import delaysRouter from "./delays";
+import uploadRouter from "./upload";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(reportsRouter);
 router.use(permissionsRouter);
 router.use(heartbeatRouter);
 router.use(delaysRouter);
+router.use(uploadRouter);
 
 export default router;

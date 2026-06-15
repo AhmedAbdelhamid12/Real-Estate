@@ -615,10 +615,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return (localStorage.getItem("locale") as Locale) ?? "en";
   });
 
-  const dir: Direction = locale === "ar" ? "rtl" : "ltr";
+  const dir: Direction = "rtl";
 
   useEffect(() => {
     document.documentElement.lang = locale;
+    document.documentElement.dir = "rtl";
     localStorage.setItem("locale", locale);
   }, [locale]);
 

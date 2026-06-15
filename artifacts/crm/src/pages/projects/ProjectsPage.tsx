@@ -15,9 +15,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, MapPin, Building2, User, ChevronRight, Edit, Image } from "lucide-react";
+import { Plus, Search, MapPin, Building2, User, ChevronRight, Edit, Image, Upload, X as XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/contexts/i18nContext";
+
+async function uploadImageFile(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "include" });
+  if (!res.ok) throw new Error("Upload failed");
+  const data = await res.json() as { url: string };
+  return data.url;
+}
 
 const projectSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -35,6 +44,7 @@ export function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const queryClient = useQueryClient();
   const { data: projectsAll = [], isLoading } = useListProjects();
@@ -162,18 +172,56 @@ export function ProjectsPage() {
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-1"><Image className="w-3.5 h-3.5" /> Cover Image URL</FormLabel>
+                      <FormLabel className="flex items-center gap-1"><Image className="w-3.5 h-3.5" /> Cover Image</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/project.jpg" {...field} />
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              id="project-image-upload"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                setImageUploading(true);
+                                try {
+                                  const url = await uploadImageFile(file);
+                                  field.onChange(url);
+                                } catch {
+                                  toast.error("Failed to upload image");
+                                } finally {
+                                  setImageUploading(false);
+                                  e.target.value = "";
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={imageUploading}
+                              onClick={() => document.getElementById("project-image-upload")?.click()}
+                            >
+                              <Upload className="w-3.5 h-3.5 mr-1" />
+                              {imageUploading ? "Uploading..." : "Browse from device"}
+                            </Button>
+                            {field.value && (
+                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => field.onChange("")}>
+                                <XIcon className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                          {field.value && (
+                            <img
+                              src={field.value}
+                              alt="preview"
+                              className="w-full h-28 object-cover rounded-lg"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                            />
+                          )}
+                        </div>
                       </FormControl>
-                      {field.value && (
-                        <img
-                          src={field.value}
-                          alt="preview"
-                          className="w-full h-28 object-cover rounded-lg mt-1"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-                      )}
                       <FormMessage />
                     </FormItem>
                   )}
