@@ -5,15 +5,17 @@ import { RoleBadge } from "@/components/shared/RoleBadge";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/contexts/i18nContext";
 
 export function EmployeesPage() {
+  const { t } = useI18n();
   const { data: users = [], isLoading } = useListUsers({ status: "active" });
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Team Directory</h2>
-        <p className="text-muted-foreground">Browse and manage company employees.</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t("employees.title")}</h2>
+        <p className="text-muted-foreground">{t("employees.subtitle")}</p>
       </div>
 
       {isLoading ? (
@@ -34,7 +36,7 @@ export function EmployeesPage() {
         </div>
       ) : users.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-xl border shadow-sm">
-          <p className="text-muted-foreground">No active employees found.</p>
+          <p className="text-muted-foreground">{t("employees.no_employees")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

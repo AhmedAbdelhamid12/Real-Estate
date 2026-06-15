@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { CalendarIcon, TrendingUp, Download, FileDown, Home, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/contexts/i18nContext";
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -43,6 +44,7 @@ function formatPrice(val: number) {
 }
 
 export function ReportsPage() {
+  const { t } = useI18n();
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
     to: new Date(),
@@ -155,8 +157,8 @@ export function ReportsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Reports & Analytics</h2>
-          <p className="text-muted-foreground">Comprehensive insights into your business performance.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("reports.title")}</h2>
+          <p className="text-muted-foreground">{t("reports.sales")}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <DateRangePicker />
@@ -169,9 +171,9 @@ export function ReportsPage() {
 
       <Tabs defaultValue="sales">
         <TabsList className="mb-4">
-          <TabsTrigger value="sales">Sales Performance</TabsTrigger>
-          <TabsTrigger value="leads">Lead Analytics</TabsTrigger>
-          <TabsTrigger value="resale">Resale Market</TabsTrigger>
+          <TabsTrigger value="sales">{t("reports.sales")}</TabsTrigger>
+          <TabsTrigger value="leads">{t("reports.leads")}</TabsTrigger>
+          <TabsTrigger value="resale">{t("reports.resale")}</TabsTrigger>
         </TabsList>
 
         {/* ── SALES TAB ── */}

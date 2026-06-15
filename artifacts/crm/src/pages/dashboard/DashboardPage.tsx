@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { motion } from "framer-motion";
+import { useI18n } from "@/contexts/i18nContext";
 
 function useCountUp(target: number | undefined, duration = 900): number {
   const [count, setCount] = useState(0);
@@ -44,6 +45,7 @@ const sectionVariants = {
 };
 
 export function DashboardPage() {
+  const { t } = useI18n();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: pipeline, isLoading: pipelineLoading } = useGetPipelineBreakdown();
   const { data: performers, isLoading: performersLoading } = useGetTopPerformers();
@@ -56,8 +58,8 @@ export function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">Overview of your real estate pipeline and performance.</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h2>
+        <p className="text-muted-foreground">{t("reports.leads")}</p>
       </motion.div>
 
       {/* KPI Cards */}
@@ -80,8 +82,8 @@ export function DashboardPage() {
         <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="show" className="col-span-4">
           <Card>
             <CardHeader>
-              <CardTitle>Pipeline Breakdown</CardTitle>
-              <CardDescription>Current leads by status</CardDescription>
+              <CardTitle>{t("reports.pipeline")}</CardTitle>
+              <CardDescription>{t("leads.subtitle")}</CardDescription>
             </CardHeader>
             <CardContent className="h-[300px]">
               {pipelineLoading ? (
@@ -171,8 +173,8 @@ export function DashboardPage() {
       <motion.div custom={2} variants={sectionVariants} initial="hidden" animate="show">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest actions across the platform</CardDescription>
+            <CardTitle>{t("leads.activity")}</CardTitle>
+            <CardDescription>{t("leads.subtitle")}</CardDescription>
           </CardHeader>
           <CardContent>
             {activitiesLoading ? (

@@ -21,6 +21,7 @@ import { Plus, Search, Filter } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { SourceBadge } from "@/components/shared/SourceBadge";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { useI18n } from "@/contexts/i18nContext";
 
 const createLeadSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -32,6 +33,7 @@ const createLeadSchema = z.object({
 });
 
 export function LeadsListPage() {
+  const { t } = useI18n();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -77,13 +79,13 @@ export function LeadsListPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Leads</h2>
-          <p className="text-muted-foreground">Manage and track your potential clients.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("leads.title")}</h2>
+          <p className="text-muted-foreground">{t("leads.subtitle")}</p>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Lead
+              <Plus className="mr-2 h-4 w-4" /> {t("leads.add")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
@@ -204,7 +206,7 @@ export function LeadsListPage() {
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search leads..."
+            placeholder={t("leads.search")}
             className="pl-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -217,7 +219,7 @@ export function LeadsListPage() {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="all">{t("leads.all_statuses")}</SelectItem>
               <SelectItem value="new">New</SelectItem>
               <SelectItem value="called">Called</SelectItem>
               <SelectItem value="qualified">Qualified</SelectItem>
@@ -234,13 +236,13 @@ export function LeadsListPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Lead</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>Assigned To</TableHead>
-              <TableHead>Last Action</TableHead>
+              <TableHead>{t("leads.col.name")}</TableHead>
+              <TableHead>{t("common.phone")}</TableHead>
+              <TableHead>{t("common.status")}</TableHead>
+              <TableHead>{t("leads.col.source")}</TableHead>
+              <TableHead>{t("leads.col.project")}</TableHead>
+              <TableHead>{t("leads.col.assignee")}</TableHead>
+              <TableHead>{t("leads.col.created")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -259,7 +261,7 @@ export function LeadsListPage() {
             ) : leads.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
-                  No leads found. Create a new lead to get started.
+                  {t("leads.no_leads")}
                 </TableCell>
               </TableRow>
             ) : (

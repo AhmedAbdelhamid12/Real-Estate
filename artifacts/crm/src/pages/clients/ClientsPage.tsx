@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Search, User, Phone, Mail, Building, Briefcase } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/contexts/i18nContext";
 
 const clientSchema = z.object({
   name: z.string().min(2, "Name required"),
@@ -27,6 +28,7 @@ const clientSchema = z.object({
 type ClientFormValues = z.infer<typeof clientSchema>;
 
 export function ClientsPage() {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
 
@@ -65,13 +67,13 @@ export function ClientsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Clients</h2>
-          <p className="text-muted-foreground">Manage your client database and relationships.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("clients.title")}</h2>
+          <p className="text-muted-foreground">{t("clients.subtitle")}</p>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Client
+              <Plus className="mr-2 h-4 w-4" /> {t("clients.add")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
@@ -150,7 +152,7 @@ export function ClientsPage() {
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search clients..."
+            placeholder={t("clients.search")}
             className="pl-8 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -162,12 +164,12 @@ export function ClientsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Client Name</TableHead>
-              <TableHead>Contact Info</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>Assigned Sales</TableHead>
-              <TableHead>Deal Value</TableHead>
-              <TableHead>Added</TableHead>
+              <TableHead>{t("common.name")}</TableHead>
+              <TableHead>{t("common.phone")}</TableHead>
+              <TableHead>{t("leads.col.project")}</TableHead>
+              <TableHead>{t("leads.salesperson")}</TableHead>
+              <TableHead>{t("clients.deal_value")}</TableHead>
+              <TableHead>{t("clients.added")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -191,7 +193,7 @@ export function ClientsPage() {
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                   <Briefcase className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                  No clients found.
+                  {t("clients.no_clients")}
                 </TableCell>
               </TableRow>
             ) : (

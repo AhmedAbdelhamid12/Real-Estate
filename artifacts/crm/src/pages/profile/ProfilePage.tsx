@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Camera, Instagram, Facebook, MessageCircle, Link as LinkIcon, Check, Loader2 } from "lucide-react";
+import { useI18n } from "@/contexts/i18nContext";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -34,6 +35,7 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export function ProfilePage() {
+  const { t } = useI18n();
   const { currentUser, refetch } = useAuth();
   const queryClient = useQueryClient();
   const updateUser = useUpdateUser();
@@ -106,8 +108,8 @@ export function ProfilePage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Account Profile</h2>
-        <p className="text-muted-foreground">Manage your personal information and social links.</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t("profile.title")}</h2>
+        <p className="text-muted-foreground">{t("profile.bio_placeholder")}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

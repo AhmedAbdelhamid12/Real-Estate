@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import * as Haptics from "expo-haptics";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
@@ -60,6 +61,7 @@ export default function ProfileScreen() {
   const theme = useColors();
   const c = theme.colors;
   const { isDark, toggleTheme } = useAppTheme();
+  const { language, toggleLanguage } = useLanguage();
   const router = useRouter();
   const { user, signOut } = useAuthContext();
 
@@ -197,6 +199,35 @@ export default function ProfileScreen() {
               </View>
               <View style={[s.togglePill, { backgroundColor: isDark ? c.accent : c.border }]}>
                 <View style={[s.toggleThumb, { transform: [{ translateX: isDark ? 16 : 2 }] }]} />
+              </View>
+            </TouchableOpacity>
+            <View style={{ height: 1, backgroundColor: c.border, marginLeft: 60 }} />
+            <TouchableOpacity
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 16 }}
+              onPress={async () => {
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                await toggleLanguage();
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: `${c.primary}10`, alignItems: "center", justifyContent: "center" }}>
+                <Feather name="globe" size={16} color={c.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, color: c.foreground }}>
+                  {language === "en" ? "العربية" : "English"}
+                </Text>
+                <Text style={{ fontSize: 12, color: c.mutedForeground, marginTop: 1 }}>
+                  {language === "en" ? "التبديل إلى العربية" : "Switch to English"}
+                </Text>
+              </View>
+              <View style={{
+                paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+                backgroundColor: "rgba(201,168,76,0.15)", borderWidth: 1, borderColor: "rgba(201,168,76,0.3)"
+              }}>
+                <Text style={{ fontSize: 12, fontWeight: "700", color: "#C9A84C" }}>
+                  {language === "en" ? "AR" : "EN"}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>

@@ -22,8 +22,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, Trash2, Plus, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/contexts/i18nContext";
 
 export function PlannerPage() {
+  const { t } = useI18n();
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [date, setDate] = useState<Date>(new Date());
@@ -99,8 +101,8 @@ export function PlannerPage() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Daily Planner</h2>
-          <p className="text-muted-foreground">Manage your tasks and schedule.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("planner.title")}</h2>
+          <p className="text-muted-foreground">{t("planner.subtitle")}</p>
         </div>
 
         <Popover>
@@ -133,7 +135,7 @@ export function PlannerPage() {
           ) : tasks.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <CalendarIcon className="h-10 w-10 mx-auto mb-3 opacity-20" />
-              <p>No tasks scheduled for this day.</p>
+              <p>{t("planner.no_tasks")}</p>
             </div>
           ) : (
             <div className="divide-y">
@@ -181,7 +183,7 @@ export function PlannerPage() {
           <div className="p-4 border-t bg-muted/10">
             <form onSubmit={handleAdd} className="flex gap-3">
               <Input
-                placeholder="Add a new task..."
+                placeholder={t("planner.task_name")}
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
                 className="flex-1 bg-background"

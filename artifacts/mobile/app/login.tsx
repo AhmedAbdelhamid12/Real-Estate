@@ -239,6 +239,20 @@ export default function LoginScreen() {
         </Animated.View>
       </Animated.View>
 
+      <Animated.View style={[{ marginTop: 20, alignItems: "center", gap: 12 }, footerStyle]}>
+        <TouchableOpacity onPress={() => router.push("/forgot-password")} hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}>
+          <Text style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(15,31,56,0.5)", fontSize: 13 }}>
+            Forgot password?
+          </Text>
+        </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={{ color: isDark ? "rgba(255,255,255,0.35)" : "rgba(15,31,56,0.45)", fontSize: 13 }}>New to PropOS?  </Text>
+          <TouchableOpacity onPress={() => router.push("/register")}>
+            <Text style={{ color: "#C9A84C", fontSize: 13, fontWeight: "600" }}>Create account</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
       <Animated.Text style={[s.footer, footerStyle]}>
         TIL Real Estate Group © {new Date().getFullYear()}
       </Animated.Text>

@@ -15,8 +15,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, MapPin, Building2, User, ChevronRight, Edit } from "lucide-react";
+import { Plus, Search, MapPin, Building2, User, ChevronRight, Edit, Image } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/contexts/i18nContext";
 
 const projectSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -24,11 +25,13 @@ const projectSchema = z.object({
   ownerName: z.string().optional(),
   avgPrice: z.string().optional(),
   description: z.string().optional(),
+  imageUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export function ProjectsPage() {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -50,6 +53,7 @@ export function ProjectsPage() {
       ownerName: "",
       avgPrice: "",
       description: "",
+      imageUrl: "",
     },
   });
 
@@ -84,13 +88,13 @@ export function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
-          <p className="text-muted-foreground">Manage your property inventory and developments.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("projects.title")}</h2>
+          <p className="text-muted-foreground">{t("projects.subtitle")}</p>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Project
+              <Plus className="mr-2 h-4 w-4" /> {t("projects.add")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
@@ -153,6 +157,27 @@ export function ProjectsPage() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1"><Image className="w-3.5 h-3.5" /> Cover Image URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/project.jpg" {...field} />
+                      </FormControl>
+                      {field.value && (
+                        <img
+                          src={field.value}
+                          alt="preview"
+                          className="w-full h-28 object-cover rounded-lg mt-1"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <DialogFooter className="mt-6">
                   <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
                   <Button type="submit" disabled={createProject.isPending}>
@@ -169,7 +194,7 @@ export function ProjectsPage() {
         <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search projects..."
+            placeholder={t("projects.search")}
             className="pl-8 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -193,7 +218,7 @@ export function ProjectsPage() {
       ) : projects.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-xl border shadow-sm">
           <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-semibold">No projects found</h3>
+          <h3 className="text-xl font-semibold">{t("projects.no_projects")}</h3>
           <p className="text-muted-foreground mt-2">Create your first project to start tracking inventory.</p>
           <Button className="mt-6" onClick={() => setIsAddOpen(true)}>Add Project</Button>
         </div>
@@ -203,8 +228,21 @@ export function ProjectsPage() {
             const isActive = project.isActive !== false;
             return (
               <Card key={project.id} className="group hover:border-primary/50 transition-colors flex flex-col">
-                <div className="h-32 bg-muted flex items-center justify-center border-b">
-                  <Building2 className="h-10 w-10 text-muted-foreground/30" />
+                <div className="h-32 bg-muted flex items-center justify-center border-b overflow-hidden relative">
+                  {(project as any).imageUrl ? (
+                    <img
+                      src={(project as any).imageUrl}
+                      alt={project.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+                      }}
+                    />
+                  ) : null}
+                  <div className={`absolute inset-0 flex items-center justify-center ${(project as any).imageUrl ? "hidden" : ""}`}>
+                    <Building2 className="h-10 w-10 text-muted-foreground/30" />
+                  </div>
                 </div>
                 <CardHeader className="p-5 pb-0">
                   <div className="flex justify-between items-start mb-2">
