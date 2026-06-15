@@ -38,7 +38,7 @@ export function AuthShell({ children, maxWidth = 440 }: AuthShellProps) {
   }
 
   return (
-    <div style={{
+    <div dir="ltr" style={{
       minHeight: "100vh",
       width: "100%",
       background: p.bg,
@@ -48,6 +48,7 @@ export function AuthShell({ children, maxWidth = 440 }: AuthShellProps) {
       position: "relative",
       overflow: "hidden",
       transition: "background 0.3s ease",
+      direction: "ltr",
     }}>
       {/* Architectural line pattern */}
       <svg

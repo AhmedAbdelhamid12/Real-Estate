@@ -57,6 +57,11 @@ function RootLayoutNav() {
         <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
         <Stack.Screen name="verify-email" options={{ headerShown: false }} />
         <Stack.Screen name="lead/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="client/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="planner" options={{ headerShown: false }} />
+        <Stack.Screen name="resale" options={{ headerShown: false }} />
+        <Stack.Screen name="team" options={{ headerShown: false }} />
       </Stack>
     </AuthGate>
   );

@@ -20,13 +20,17 @@ function NativeTabLayout() {
         <Icon sf={{ default: "person.2", selected: "person.2.fill" }} />
         <Label>Leads</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="notifications">
-        <Icon sf={{ default: "bell", selected: "bell.fill" }} />
-        <Label>Alerts</Label>
+      <NativeTabs.Trigger name="projects">
+        <Icon sf={{ default: "building.2", selected: "building.2.fill" }} />
+        <Label>Projects</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="profile">
+      <NativeTabs.Trigger name="clients">
         <Icon sf={{ default: "person.crop.circle", selected: "person.crop.circle.fill" }} />
-        <Label>Profile</Label>
+        <Label>Clients</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="more">
+        <Icon sf={{ default: "ellipsis.circle", selected: "ellipsis.circle.fill" }} />
+        <Label>More</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -94,28 +98,49 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="notifications"
+        name="projects"
         options={{
-          tabBarLabel: "Alerts",
+          tabBarLabel: "Projects",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
-              <SymbolView name="bell" tintColor={color} size={size} />
+              <SymbolView name="building.2" tintColor={color} size={size} />
             ) : (
-              <Feather name="bell" size={22} color={color} />
+              <Feather name="layers" size={22} color={color} />
             ),
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="clients"
         options={{
-          tabBarLabel: "Profile",
+          tabBarLabel: "Clients",
           tabBarIcon: ({ color, size }) =>
             isIOS ? (
               <SymbolView name="person.crop.circle" tintColor={color} size={size} />
             ) : (
-              <Feather name="user" size={22} color={color} />
+              <Feather name="user-check" size={22} color={color} />
             ),
         }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          tabBarLabel: "More",
+          tabBarIcon: ({ color, size }) =>
+            isIOS ? (
+              <SymbolView name="ellipsis.circle" tintColor={color} size={size} />
+            ) : (
+              <Feather name="menu" size={22} color={color} />
+            ),
+        }}
+      />
+      {/* Hidden screens — keep registered so routing works */}
+      <Tabs.Screen
+        name="notifications"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ href: null }}
       />
     </Tabs>
   );

@@ -84,13 +84,14 @@ export function LoginPage() {
   }
 
   return (
-    <div style={{
+    <div dir="ltr" style={{
       minHeight: "100vh", width: "100%",
       background: p.bg,
       fontFamily: "'Inter', system-ui, sans-serif",
       display: "flex", flexDirection: "column",
       position: "relative", overflow: "hidden",
       transition: "background 0.3s ease",
+      direction: "ltr",
     }}>
       {/* Architectural line pattern */}
       <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: p.gridOpacity, pointerEvents: "none" }} viewBox="0 0 1920 1080" preserveAspectRatio="none">
