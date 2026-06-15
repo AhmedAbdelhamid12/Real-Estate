@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useListProjects, useCreateProject, useUpdateProject, useDeleteProject, getListProjectsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -6,18 +6,20 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, MapPin, Building2, User, ChevronRight, Edit, Image, Upload, X as XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Plus, Search, MapPin, Building2, User, Edit, Trash2, Eye, Upload, X as XIcon, Loader2 } from "lucide-react";
 import { useI18n } from "@/contexts/i18nContext";
+import { motion } from "framer-motion";
 
 async function uploadImageFile(file: File): Promise<string> {
   const fd = new FormData();
@@ -29,69 +31,285 @@ async function uploadImageFile(file: File): Promise<string> {
 }
 
 const projectSchema = z.object({
-  name: z.string().min(2, "Name is required"),
+  name: z.string().min(2, "اسم المشروع مطلوب"),
   location: z.string().optional(),
   ownerName: z.string().optional(),
   avgPrice: z.string().optional(),
   description: z.string().optional(),
-  imageUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
+  totalUnits: z.string().optional(),
+  completionPercentage: z.string().optional(),
+  deliveryDate: z.string().optional(),
+  status: z.enum(["planning", "under_construction", "completed", "cancelled"]).optional(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
+
+const STATUS_CONFIG = {
+  planning:           { label: "تخطيط",          color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+  under_construction: { label: "تحت الإنشاء",     color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
+  completed:          { label: "مكتمل",           color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
+  cancelled:          { label: "ملغي",            color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 18, scale: 0.97 },
+  show: (i: number) => ({
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.36, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
+function ProjectForm({
+  defaultValues,
+  onSubmit,
+  isPending,
+  onCancel,
+  submitLabel,
+}: {
+  defaultValues?: Partial<ProjectFormValues>;
+  onSubmit: (data: ProjectFormValues) => void;
+  isPending: boolean;
+  onCancel: () => void;
+  submitLabel: string;
+}) {
+  const [imageUploading, setImageUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: {
+      name: "", location: "", ownerName: "", avgPrice: "",
+      description: "", imageUrl: "", totalUnits: "",
+      completionPercentage: "", deliveryDate: "", status: "planning",
+      ...defaultValues,
+    },
+  });
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploading(true);
+    try {
+      const url = await uploadImageFile(file);
+      form.setValue("imageUrl", url);
+      toast.success("تم رفع الصورة بنجاح");
+    } catch {
+      toast.error("فشل رفع الصورة");
+    } finally {
+      setImageUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  const imageUrlValue = form.watch("imageUrl");
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Project Name */}
+        <FormField control={form.control} name="name" render={({ field }) => (
+          <FormItem>
+            <FormLabel>اسم المشروع *</FormLabel>
+            <FormControl><Input placeholder="مثال: مارينا فيوز" {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField control={form.control} name="location" render={({ field }) => (
+            <FormItem>
+              <FormLabel>الموقع</FormLabel>
+              <FormControl><Input placeholder="مثال: القاهرة الجديدة" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="ownerName" render={({ field }) => (
+            <FormItem>
+              <FormLabel>المطور / المالك</FormLabel>
+              <FormControl><Input placeholder="مثال: إعمار" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField control={form.control} name="avgPrice" render={({ field }) => (
+            <FormItem>
+              <FormLabel>متوسط السعر (ج.م)</FormLabel>
+              <FormControl><Input type="number" placeholder="1,000,000" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="totalUnits" render={({ field }) => (
+            <FormItem>
+              <FormLabel>إجمالي الوحدات</FormLabel>
+              <FormControl><Input type="number" placeholder="250" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField control={form.control} name="status" render={({ field }) => (
+            <FormItem>
+              <FormLabel>الحالة</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                <SelectContent>
+                  <SelectItem value="planning">تخطيط</SelectItem>
+                  <SelectItem value="under_construction">تحت الإنشاء</SelectItem>
+                  <SelectItem value="completed">مكتمل</SelectItem>
+                  <SelectItem value="cancelled">ملغي</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="deliveryDate" render={({ field }) => (
+            <FormItem>
+              <FormLabel>تاريخ التسليم</FormLabel>
+              <FormControl><Input type="date" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </div>
+
+        <FormField control={form.control} name="completionPercentage" render={({ field }) => (
+          <FormItem>
+            <FormLabel>نسبة الإنجاز (%)</FormLabel>
+            <FormControl><Input type="number" min="0" max="100" placeholder="65" {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        <FormField control={form.control} name="description" render={({ field }) => (
+          <FormItem>
+            <FormLabel>الوصف</FormLabel>
+            <FormControl>
+              <Textarea placeholder="وصف مفصل عن المشروع..." rows={3} className="resize-none" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        {/* Image Upload */}
+        <FormField control={form.control} name="imageUrl" render={({ field }) => (
+          <FormItem>
+            <FormLabel>صورة الغلاف</FormLabel>
+            <FormControl>
+              <div className="space-y-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={imageUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="gap-2"
+                  >
+                    {imageUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                    {imageUploading ? "جارٍ الرفع..." : "تصفح من الجهاز"}
+                  </Button>
+                  {imageUrlValue && (
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => field.onChange("")}>
+                      <XIcon className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                </div>
+                {imageUrlValue && (
+                  <div className="relative rounded-xl overflow-hidden h-32 bg-muted border">
+                    <img
+                      src={imageUrlValue}
+                      alt="معاينة"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  </div>
+                )}
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        <DialogFooter className="mt-6">
+          <Button type="button" variant="outline" onClick={onCancel}>إلغاء</Button>
+          <Button type="submit" disabled={isPending || imageUploading}>
+            {isPending ? "جارٍ الحفظ..." : submitLabel}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+}
 
 export function ProjectsPage() {
   const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [imageUploading, setImageUploading] = useState(false);
+  const [editingProject, setEditingProject] = useState<any | null>(null);
+  const [deletingProject, setDeletingProject] = useState<any | null>(null);
 
   const queryClient = useQueryClient();
   const { data: projectsAll = [], isLoading } = useListProjects();
   const projects = search
     ? projectsAll.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
     : projectsAll;
+
   const createProject = useCreateProject();
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
 
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      name: "",
-      location: "",
-      ownerName: "",
-      avgPrice: "",
-      description: "",
-      imageUrl: "",
-    },
-  });
-
   const onSubmitCreate = (data: ProjectFormValues) => {
     createProject.mutate(
-      { data },
+      { data: data as any },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
-          toast.success("Project created successfully");
+          toast.success("تم إنشاء المشروع بنجاح");
           setIsAddOpen(false);
-          form.reset();
         },
-        onError: (err) => {
-          toast.error(err.message || "Failed to create project");
-        }
+        onError: (err) => toast.error(err.message || "فشل إنشاء المشروع"),
       }
     );
   };
 
-  const getStatusFormat = (status: string) => {
-    switch (status) {
-      case "planning": return { label: "Planning", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" };
-      case "under_construction": return { label: "Under Construction", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" };
-      case "completed": return { label: "Completed", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" };
-      case "cancelled": return { label: "Cancelled", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" };
-      default: return { label: status, color: "bg-gray-100 text-gray-800" };
-    }
+  const onSubmitEdit = (data: ProjectFormValues) => {
+    if (!editingProject) return;
+    updateProject.mutate(
+      { projectId: editingProject.id, data: data as any },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
+          toast.success("تم تحديث المشروع بنجاح");
+          setEditingProject(null);
+        },
+        onError: (err) => toast.error(err.message || "فشل تحديث المشروع"),
+      }
+    );
+  };
+
+  const onDelete = () => {
+    if (!deletingProject) return;
+    deleteProject.mutate(
+      { projectId: deletingProject.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
+          toast.success("تم حذف المشروع");
+          setDeletingProject(null);
+        },
+        onError: (err) => toast.error(err.message || "فشل الحذف"),
+      }
+    );
   };
 
   return (
@@ -103,147 +321,30 @@ export function ProjectsPage() {
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> {t("projects.add")}
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" /> {t("projects.add")}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Project</DialogTitle>
+              <DialogTitle>إضافة مشروع جديد</DialogTitle>
             </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitCreate)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. Marina Views" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. New Cairo" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="ownerName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Developer / Owner</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Emaar" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="avgPrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Average Price (EGP)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="1000000" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1"><Image className="w-3.5 h-3.5" /> Cover Image</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              id="project-image-upload"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                setImageUploading(true);
-                                try {
-                                  const url = await uploadImageFile(file);
-                                  field.onChange(url);
-                                } catch {
-                                  toast.error("Failed to upload image");
-                                } finally {
-                                  setImageUploading(false);
-                                  e.target.value = "";
-                                }
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              disabled={imageUploading}
-                              onClick={() => document.getElementById("project-image-upload")?.click()}
-                            >
-                              <Upload className="w-3.5 h-3.5 mr-1" />
-                              {imageUploading ? "Uploading..." : "Browse from device"}
-                            </Button>
-                            {field.value && (
-                              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => field.onChange("")}>
-                                <XIcon className="w-3.5 h-3.5" />
-                              </Button>
-                            )}
-                          </div>
-                          {field.value && (
-                            <img
-                              src={field.value}
-                              alt="preview"
-                              className="w-full h-28 object-cover rounded-lg"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                            />
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter className="mt-6">
-                  <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                  <Button type="submit" disabled={createProject.isPending}>
-                    {createProject.isPending ? "Creating..." : "Create Project"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+            <ProjectForm
+              onSubmit={onSubmitCreate}
+              isPending={createProject.isPending}
+              onCancel={() => setIsAddOpen(false)}
+              submitLabel="إنشاء المشروع"
+            />
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="flex bg-card p-3 rounded-lg border shadow-sm max-w-md">
+      <div className="flex bg-card p-3 rounded-xl border shadow-sm max-w-md">
         <div className="relative w-full">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t("projects.search")}
-            className="pl-8 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="ps-8 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -254,7 +355,7 @@ export function ProjectsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
             <Card key={i} className="overflow-hidden">
-              <div className="h-32 bg-muted animate-pulse" />
+              <div className="h-40 bg-muted animate-pulse" />
               <CardContent className="p-5 space-y-3">
                 <Skeleton className="h-6 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
@@ -264,76 +365,188 @@ export function ProjectsPage() {
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="text-center py-20 bg-card rounded-xl border shadow-sm">
-          <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <div className="text-center py-20 bg-card rounded-2xl border shadow-sm">
+          <Building2 className="h-14 w-14 text-muted-foreground mx-auto mb-4 opacity-30" />
           <h3 className="text-xl font-semibold">{t("projects.no_projects")}</h3>
-          <p className="text-muted-foreground mt-2">Create your first project to start tracking inventory.</p>
-          <Button className="mt-6" onClick={() => setIsAddOpen(true)}>Add Project</Button>
+          <p className="text-muted-foreground mt-2 text-sm">أنشئ أول مشروع لك لبدء تتبع المخزون.</p>
+          <Button className="mt-6" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 me-2" /> إضافة مشروع
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map(project => {
-            const isActive = project.isActive !== false;
+          {projects.map((project, i) => {
+            const statusKey = (project as any).status as keyof typeof STATUS_CONFIG ?? "planning";
+            const statusCfg = STATUS_CONFIG[statusKey] ?? STATUS_CONFIG.planning;
+            const completionPct = Number((project as any).completionPercentage ?? 0);
+            const imageUrl = (project as any).imageUrl;
+
             return (
-              <Card key={project.id} className="group hover:border-primary/50 transition-colors flex flex-col">
-                <div className="h-32 bg-muted flex items-center justify-center border-b overflow-hidden relative">
-                  {(project as any).imageUrl ? (
-                    <img
-                      src={(project as any).imageUrl}
-                      alt={project.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
-                      }}
-                    />
-                  ) : null}
-                  <div className={`absolute inset-0 flex items-center justify-center ${(project as any).imageUrl ? "hidden" : ""}`}>
-                    <Building2 className="h-10 w-10 text-muted-foreground/30" />
-                  </div>
-                </div>
-                <CardHeader className="p-5 pb-0">
-                  <div className="flex justify-between items-start mb-2">
-                    <CardTitle className="text-lg line-clamp-1" title={project.name}>{project.name}</CardTitle>
-                    <Badge variant={isActive ? "default" : "secondary"}>{isActive ? "Active" : "Inactive"}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-5 flex-1 space-y-3">
-                  <div className="flex items-center text-sm text-muted-foreground gap-2">
-                    <MapPin className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{project.location || "No location specified"}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground gap-2">
-                    <User className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{project.ownerName || "Unknown developer"}</span>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Starting from</p>
-                      <p className="font-semibold">
-                        {project.avgPrice 
-                          ? new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(Number(project.avgPrice))
-                          : "TBA"}
-                      </p>
+              <motion.div
+                key={project.id}
+                custom={i}
+                variants={cardVariants}
+                initial="hidden"
+                animate="show"
+              >
+                <Card className="group hover:border-primary/50 hover:shadow-md transition-all flex flex-col overflow-hidden h-full">
+                  {/* Image */}
+                  <div className="h-40 bg-muted flex items-center justify-center border-b overflow-hidden relative">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={project.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                          const fallback = document.getElementById(`fallback-${project.id}`);
+                          if (fallback) fallback.classList.remove("hidden");
+                        }}
+                      />
+                    ) : null}
+                    <div id={`fallback-${project.id}`} className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/80 to-muted/40 ${imageUrl ? "hidden" : ""}`}>
+                      <Building2 className="h-12 w-12 text-muted-foreground/30" />
                     </div>
-                    {(project.leadsCount ?? 0) > 0 && (
-                      <Badge variant="secondary">{project.leadsCount} leads</Badge>
+
+                    {/* Status badge overlay */}
+                    <div className="absolute top-3 start-3">
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm ${statusCfg.color}`}>
+                        {statusCfg.label}
+                      </span>
+                    </div>
+
+                    {/* Progress bar overlay */}
+                    {completionPct > 0 && (
+                      <div className="absolute bottom-0 start-0 end-0">
+                        <div className="h-1 bg-muted/30">
+                          <div
+                            className="h-1 bg-emerald-500 transition-all"
+                            style={{ width: `${Math.min(100, completionPct)}%` }}
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
-                </CardContent>
-                <CardFooter className="p-5 pt-0 flex gap-2">
-                  <Link href={`/projects/${project.id}`} className="w-full">
-                    <Button variant="secondary" className="w-full">
-                      View Details
+
+                  <CardContent className="p-5 flex-1 space-y-3">
+                    <div className="flex justify-between items-start gap-2">
+                      <h3 className="font-bold text-base line-clamp-1" title={project.name}>{project.name}</h3>
+                      {(project.leadsCount ?? 0) > 0 && (
+                        <Badge variant="secondary" className="text-xs shrink-0">{project.leadsCount} عملاء</Badge>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center text-sm text-muted-foreground gap-2">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{project.location || "لا يوجد موقع"}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground gap-2">
+                        <User className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{project.ownerName || "مطور غير معروف"}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-0.5">يبدأ من</p>
+                        <p className="font-bold text-sm">
+                          {project.avgPrice
+                            ? new Intl.NumberFormat("ar-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(Number(project.avgPrice))
+                            : "TBA"}
+                        </p>
+                      </div>
+                      {(project as any).totalUnits && (
+                        <div className="text-end">
+                          <p className="text-xs text-muted-foreground">الوحدات</p>
+                          <p className="font-semibold text-sm">{(project as any).totalUnits}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="p-4 pt-0 flex gap-2 border-t mt-1">
+                    <Link href={`/projects/${project.id}`} className="flex-1">
+                      <Button variant="default" size="sm" className="w-full gap-1.5">
+                        <Eye className="h-3.5 w-3.5" /> عرض التفاصيل
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setEditingProject(project)}
+                      title="تعديل"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      onClick={() => setDeletingProject(project)}
+                      title="حذف"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
             );
           })}
         </div>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingProject} onOpenChange={(v) => { if (!v) setEditingProject(null); }}>
+        <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>تعديل المشروع: {editingProject?.name}</DialogTitle>
+          </DialogHeader>
+          {editingProject && (
+            <ProjectForm
+              defaultValues={{
+                name: editingProject.name,
+                location: editingProject.location || "",
+                ownerName: editingProject.ownerName || "",
+                avgPrice: editingProject.avgPrice || "",
+                description: editingProject.description || "",
+                imageUrl: (editingProject as any).imageUrl || "",
+                totalUnits: String((editingProject as any).totalUnits ?? ""),
+                completionPercentage: String((editingProject as any).completionPercentage ?? ""),
+                deliveryDate: (editingProject as any).deliveryDate?.split("T")[0] || "",
+                status: (editingProject as any).status || "planning",
+              }}
+              onSubmit={onSubmitEdit}
+              isPending={updateProject.isPending}
+              onCancel={() => setEditingProject(null)}
+              submitLabel="حفظ التغييرات"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingProject} onOpenChange={(v) => { if (!v) setDeletingProject(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف المشروع</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف مشروع <strong>{deletingProject?.name}</strong>؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={onDelete}
+              disabled={deleteProject.isPending}
+            >
+              {deleteProject.isPending ? "جارٍ الحذف..." : "حذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUpdateUser, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ import { RoleBadge } from "@/components/shared/RoleBadge";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Camera, Instagram, Facebook, MessageCircle, Link as LinkIcon, Check, Loader2 } from "lucide-react";
+import { Camera, Instagram, Facebook, MessageCircle, Check, Loader2, Upload, X } from "lucide-react";
 import { useI18n } from "@/contexts/i18nContext";
 
 const profileSchema = z.object({
@@ -40,6 +40,8 @@ export function ProfilePage() {
   const queryClient = useQueryClient();
   const updateUser = useUpdateUser();
   const [saved, setSaved] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -72,6 +74,26 @@ export function ProfilePage() {
 
   const avatarUrlValue = form.watch("avatarUrl");
 
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "include" });
+      if (!res.ok) throw new Error("فشل رفع الصورة");
+      const { url } = await res.json() as { url: string };
+      form.setValue("avatarUrl", url, { shouldDirty: true });
+      toast.success("تم رفع الصورة بنجاح");
+    } catch (err: any) {
+      toast.error(err.message || "فشل رفع الصورة");
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = "";
+    }
+  }
+
   const onSubmit = (data: ProfileFormValues) => {
     if (!currentUser) return;
     updateUser.mutate(
@@ -90,14 +112,14 @@ export function ProfilePage() {
       },
       {
         onSuccess: () => {
-          toast.success("Profile updated successfully");
+          toast.success("تم تحديث الملف الشخصي بنجاح");
           queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
           refetch();
           setSaved(true);
           setTimeout(() => setSaved(false), 2500);
         },
         onError: (err: Error) => {
-          toast.error(err.message || "Failed to update profile");
+          toast.error(err.message || "فشل تحديث الملف الشخصي");
         }
       }
     );
@@ -116,15 +138,24 @@ export function ProfilePage() {
         {/* Profile card */}
         <Card className="md:col-span-1 h-fit">
           <CardContent className="pt-6 flex flex-col items-center text-center">
-            <div className="relative mb-4">
+            <div className="relative mb-4 group">
               <UserAvatar
                 name={currentUser.name}
                 avatarUrl={avatarUrlValue || currentUser.avatarUrl}
                 className="h-28 w-28 text-3xl"
               />
-              <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 shadow-md border-2 border-background">
-                <Camera className="w-3.5 h-3.5" />
-              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              >
+                <Camera className="w-6 h-6 text-white" />
+              </button>
+              {avatarUploading && (
+                <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                </div>
+              )}
             </div>
             <h3 className="font-bold text-xl">{currentUser.name}</h3>
             {currentUser.title && (
@@ -137,18 +168,18 @@ export function ProfilePage() {
 
             <div className="w-full space-y-2.5 text-sm text-left">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Status</span>
+                <span className="text-muted-foreground">الحالة</span>
                 <Badge variant={currentUser.status === "active" ? "default" : "secondary"} className="capitalize text-xs">
                   {currentUser.status}
                 </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Joined</span>
+                <span className="text-muted-foreground">انضم في</span>
                 <span className="font-medium">{format(new Date(currentUser.createdAt), "MMM yyyy")}</span>
               </div>
               {currentUser.phone && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Phone</span>
+                  <span className="text-muted-foreground">الهاتف</span>
                   <span className="font-medium text-xs">{currentUser.phone}</span>
                 </div>
               )}
@@ -189,8 +220,8 @@ export function ProfilePage() {
               {/* Personal Info Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Personal Information</CardTitle>
-                  <CardDescription>Update your profile details displayed to the team.</CardDescription>
+                  <CardTitle>المعلومات الشخصية</CardTitle>
+                  <CardDescription>قم بتحديث بياناتك الظاهرة للفريق.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -198,7 +229,7 @@ export function ProfilePage() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
+                        <FormLabel>الاسم الكامل</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -211,9 +242,9 @@ export function ProfilePage() {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Job Title</FormLabel>
+                          <FormLabel>المسمى الوظيفي</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Senior Property Consultant" {...field} />
+                            <Input placeholder="مثال: مستشار عقاري أول" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -224,7 +255,7 @@ export function ProfilePage() {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
+                          <FormLabel>رقم الهاتف</FormLabel>
                           <FormControl><Input placeholder="+20..." {...field} /></FormControl>
                           <FormMessage />
                         </FormItem>
@@ -237,10 +268,10 @@ export function ProfilePage() {
                     name="bio"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bio</FormLabel>
+                        <FormLabel>نبذة شخصية</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="A short description about yourself..."
+                            placeholder="وصف مختصر عن نفسك..."
                             className="resize-none"
                             rows={3}
                             {...field}
@@ -252,7 +283,7 @@ export function ProfilePage() {
                   />
 
                   <div className="pt-1">
-                    <Label className="text-muted-foreground text-sm">Email Address (read-only)</Label>
+                    <Label className="text-muted-foreground text-sm">البريد الإلكتروني (للقراءة فقط)</Label>
                     <Input value={currentUser.email} disabled className="bg-muted mt-1.5" />
                   </div>
                 </CardContent>
@@ -262,45 +293,67 @@ export function ProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Camera className="w-4 h-4" /> Profile Photo
+                    <Camera className="w-4 h-4" /> صورة الملف الشخصي
                   </CardTitle>
-                  <CardDescription>Paste a URL to your profile photo.</CardDescription>
+                  <CardDescription>ارفع صورتك مباشرة من جهازك.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="avatarUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5">
-                          <LinkIcon className="w-3.5 h-3.5" /> Photo URL
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com/your-photo.jpg" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        {avatarUrlValue && (
-                          <div className="mt-2 flex items-center gap-3">
-                            <img
-                              src={avatarUrlValue}
-                              alt="Preview"
-                              className="w-12 h-12 rounded-full object-cover border"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                            />
-                            <p className="text-xs text-muted-foreground">Preview of your new photo</p>
-                          </div>
-                        )}
-                      </FormItem>
-                    )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileUpload}
                   />
+
+                  <div className="flex items-center gap-4">
+                    {avatarUrlValue ? (
+                      <div className="relative">
+                        <img
+                          src={avatarUrlValue}
+                          alt="Preview"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-primary/20"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => form.setValue("avatarUrl", "")}
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 w-5 h-5 flex items-center justify-center"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-muted border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                        <Camera className="w-6 h-6 text-muted-foreground/40" />
+                      </div>
+                    )}
+
+                    <div className="flex-1 space-y-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={avatarUploading}
+                        className="w-full gap-2"
+                      >
+                        {avatarUploading ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> جارٍ الرفع...</>
+                        ) : (
+                          <><Upload className="w-4 h-4" /> تصفح من الجهاز</>
+                        )}
+                      </Button>
+                      <p className="text-xs text-muted-foreground text-center">PNG, JPG, WEBP - حجم أقصى 8MB</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Social Links Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Social Links</CardTitle>
-                  <CardDescription>Add your social media profiles so teammates can connect.</CardDescription>
+                  <CardTitle>روابط التواصل الاجتماعي</CardTitle>
+                  <CardDescription>أضف روابط وسائل التواصل الاجتماعي الخاصة بك.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -309,7 +362,7 @@ export function ProfilePage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
-                          <Instagram className="w-4 h-4 text-pink-500" /> Instagram
+                          <Instagram className="w-4 h-4 text-pink-500" /> إنستغرام
                         </FormLabel>
                         <FormControl>
                           <Input placeholder="https://instagram.com/yourprofile" {...field} />
@@ -324,7 +377,7 @@ export function ProfilePage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
-                          <Facebook className="w-4 h-4 text-blue-600" /> Facebook
+                          <Facebook className="w-4 h-4 text-blue-600" /> فيسبوك
                         </FormLabel>
                         <FormControl>
                           <Input placeholder="https://facebook.com/yourprofile" {...field} />
@@ -339,7 +392,7 @@ export function ProfilePage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
-                          <MessageCircle className="w-4 h-4 text-green-500" /> WhatsApp Number
+                          <MessageCircle className="w-4 h-4 text-green-500" /> رقم واتساب
                         </FormLabel>
                         <FormControl>
                           <Input placeholder="+201012345678" {...field} />
@@ -352,11 +405,11 @@ export function ProfilePage() {
                 <CardFooter className="border-t px-6 py-4">
                   <Button type="submit" disabled={updateUser.isPending} className="ml-auto gap-2">
                     {updateUser.isPending ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
+                      <><Loader2 className="w-4 h-4 animate-spin" /> جارٍ الحفظ...</>
                     ) : saved ? (
-                      <><Check className="w-4 h-4" /> Saved!</>
+                      <><Check className="w-4 h-4" /> تم الحفظ!</>
                     ) : (
-                      "Save Changes"
+                      "حفظ التغييرات"
                     )}
                   </Button>
                 </CardFooter>

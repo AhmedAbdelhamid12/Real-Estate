@@ -20,32 +20,68 @@ description: Completed features, fixes, and patterns across web CRM and mobile a
 - All 8 pages (Leads, Projects, Clients, Dashboard, Planner, Employees, Profile, Reports) use `useI18n` hook
 - `t()` keys: leads.*, clients.*, projects.*, employees.*, reports.*, profile.*, planner.*, nav.*, common.*
 - All defined in `artifacts/crm/src/contexts/i18nContext.tsx`
+- IMPORTANT: `t()` uses `{{var}}` double-brace format for var substitution (line 780 in i18nContext.tsx)
+- All translation strings now use `{{var}}` — single-brace `{var}` WON'T be replaced
 
 ## AppLayout RTL Fix
 - `artifacts/crm/src/components/layout/AppLayout.tsx` outer div uses `dir={dir}`
 - `dir` comes from `useI18n()` context
 - Sidebar slides to right side in Arabic
 
-## ProjectsPage imageUrl
-- `projectSchema` includes `imageUrl: z.string().url().optional()`
-- Create form has Cover Image URL field with live preview
-- Project cards show actual image when `imageUrl` is set; fallback to Building2 icon
-- API (`/api/projects`) already accepts and stores `imageUrl`
+## ProjectsPage
+- Full CRUD: create/edit/delete with dialogs
+- Fields: name, location, ownerName, avgPrice, description, imageUrl, totalUnits, completionPercentage, deliveryDate, status
+- Image upload via `/api/upload` endpoint (device file picker)
+- Status dropdown: planning/under_construction/completed/cancelled
+- Completion % shown as progress bar overlay on card image
 
-## ResalePage Photos
-- `AddPhotoDialog` already existed — accepts URL + shows preview before saving
-- POST to `/api/resale/:id/photos` with `{ url }` body
-- `PhotoGallery` component already displays multi-photo carousels with nav arrows
+## ResalePage
+- Edit button opens dialog to edit unit details (PATCH /api/resale/:unitId)
+- Fixed `{count}/{active}` bug by fixing translation strings to use `{{var}}`
+- ToggleHideField + AddPhotoDialog + Edit + Delete in admin actions per card
 
-## Full i18n Coverage (all CRM pages)
-- LeadDetailPage, LeadsKanbanPage, ProjectDetailPage, ClientDetailPage, PendingEmployeesPage all fully translated
-- LeadDetailPage covers: header, status, actions, activity log form, edit dialog, delete dialog, key dates sidebar
-- New keys added: leads.notes, leads.outcome, leads.next_action_label, leads.saving, leads.deadline, leads.edit_lead, leads.save_changes, leads.delete_lead_title, leads.delete_lead_desc, leads.salesperson, leads.source, leads.email, leads.full_name, leads.all_interactions, common.cancel
+## LeadsListPage
+- Card grid view (4 cols), Arabic form labels
+- Extra form fields: nationality, governorate, budget, notes
+- Bulk Import button → BulkImportModal
+- Cards have: View (navigate to /leads/:id), Assign (AssignLeadModal), Delete buttons
+
+## LeadsKanbanPage
+- Status-specific column gradient backgrounds + colored headers
+- Drag-and-drop still works; cards navigate to /leads/:id on click
+- Column counts show in colored badges
+
+## ClientsPage
+- Card grid view with avatar initials (color-hashed)
+- Stats strip: total clients, this month, total deal value
+- Sort options: newest, oldest, name A-Z, highest deal value
+- Click card → details dialog
+
+## EmployeesPage
+- Card click navigates to /employees/:id
+- Edit/Delete buttons stop propagation; appear on hover in top-right corner
+- Online indicator dot (green/grey) on avatar
+
+## PermissionsPage
+- Custom toggle switch buttons (no Switch component — proper role-colored toggles)
+- Role tabs: indigo/violet/blue/emerald gradient active states
+- Lock/Unlock icons per permission
+
+## ProfilePage
+- File upload from device via hidden input + /api/upload endpoint
+- Camera overlay on hover for avatar
+- Removes URL-input approach (photo upload only)
 
 ## apiFetch vs customFetch
 - `apiFetch` = raw fetch with `credentials: "include"` — use on web only
 - `customFetch` = applies baseUrl + Bearer token — use on mobile
 - `customFetch` returns PARSED body (not Response object); throws on non-2xx
+
+## Workflow Config
+- API server: `PORT=8080 pnpm --filter @workspace/api-server run dev`
+- CRM frontend: `BASE_PATH=/ PORT=5173 pnpm --filter @workspace/crm run dev`
+- Both run in same workflow via `&` (background)
+- vite.config.ts requires BOTH `PORT` and `BASE_PATH` env vars (throws if missing)
 
 ## Framer Motion
 - Variants `type` must be `"spring" as const` to avoid TS error

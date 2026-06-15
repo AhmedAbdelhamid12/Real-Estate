@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useListUsers, apiFetch, getListUsersQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RoleBadge } from "@/components/shared/RoleBadge";
@@ -10,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, Edit, Trash2 } from "lucide-react";
+import { Mail, Phone, Edit, Trash2, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/contexts/i18nContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,6 +34,7 @@ export function EmployeesPage() {
   const { t } = useI18n();
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const { data: users = [], isLoading } = useListUsers({ status: "active" });
 
   const isAdmin = currentUser && ["ceo", "admin"].includes(currentUser.role);
@@ -43,9 +45,15 @@ export function EmployeesPage() {
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  function openEdit(u: Employee) {
+  function openEdit(e: React.MouseEvent, u: Employee) {
+    e.stopPropagation();
     setEditingUser(u);
     setEditForm({ name: u.name, phone: u.phone ?? "", title: u.title ?? "", role: u.role });
+  }
+
+  function openDelete(e: React.MouseEvent, u: Employee) {
+    e.stopPropagation();
+    setDeleteTarget(u);
   }
 
   async function handleEdit() {
@@ -67,10 +75,10 @@ export function EmployeesPage() {
         throw new Error(err.error || "Failed to update");
       }
       await queryClient.invalidateQueries({ queryKey: getListUsersQueryKey({ status: "active" }) });
-      toast.success("Employee updated");
+      toast.success("تم تحديث الموظف");
       setEditingUser(null);
     } catch (e: any) {
-      toast.error(e.message || "Failed to update employee");
+      toast.error(e.message || "فشل تحديث الموظف");
     } finally {
       setEditLoading(false);
     }
@@ -83,10 +91,10 @@ export function EmployeesPage() {
       const res = await apiFetch(`/api/users/${deleteTarget.id}`, { method: "DELETE" });
       if (!res.ok && res.status !== 204) throw new Error("Failed to delete");
       await queryClient.invalidateQueries({ queryKey: getListUsersQueryKey({ status: "active" }) });
-      toast.success("Employee removed");
+      toast.success("تم حذف الموظف");
       setDeleteTarget(null);
     } catch (e: any) {
-      toast.error(e.message || "Failed to delete employee");
+      toast.error(e.message || "فشل حذف الموظف");
     } finally {
       setDeleteLoading(false);
     }
@@ -122,16 +130,20 @@ export function EmployeesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {users.map(user => (
-            <Card key={user.id} className="overflow-hidden group hover:border-primary/50 transition-colors">
+            <Card
+              key={user.id}
+              className="overflow-hidden group hover:border-primary/50 hover:shadow-md transition-all cursor-pointer"
+              onClick={() => setLocation(`/employees/${user.id}`)}
+            >
               <CardHeader className="pb-0 pt-6 px-6 relative flex flex-col items-center">
                 {isAdmin && (
-                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 hover:bg-muted"
-                      onClick={() => openEdit(user as Employee)}
-                      title="Edit employee"
+                      onClick={(e) => openEdit(e, user as Employee)}
+                      title="تعديل الموظف"
                     >
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
@@ -139,23 +151,26 @@ export function EmployeesPage() {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                      onClick={() => setDeleteTarget(user as Employee)}
-                      title="Delete employee"
+                      onClick={(e) => openDelete(e, user as Employee)}
+                      title="حذف الموظف"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 )}
+                <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
                 <div className="relative">
                   <UserAvatar name={user.name} avatarUrl={user.avatarUrl} className="h-20 w-20 mb-4" />
                   <div className={cn(
                     "absolute bottom-4 right-0 h-4 w-4 rounded-full border-2 border-background",
                     user.isOnline ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"
-                  )} title={user.isOnline ? "Online" : "Offline"} />
+                  )} title={user.isOnline ? "متصل" : "غير متصل"} />
                 </div>
                 <h3 className="font-semibold text-lg text-center leading-none tracking-tight">{user.name}</h3>
                 <p className="text-sm text-muted-foreground mt-1.5 text-center h-5">
-                  {user.title || "No Title Set"}
+                  {user.title || "لا يوجد لقب"}
                 </p>
                 <div className="mt-3">
                   <RoleBadge role={user.role} />
@@ -168,7 +183,7 @@ export function EmployeesPage() {
                 </div>
                 <div className="flex items-center text-sm gap-3 text-muted-foreground">
                   <Phone className="h-4 w-4 shrink-0 text-foreground/40" />
-                  <span>{user.phone || "No phone provided"}</span>
+                  <span>{user.phone || "لا يوجد هاتف"}</span>
                 </div>
               </CardContent>
             </Card>
@@ -180,23 +195,23 @@ export function EmployeesPage() {
       <Dialog open={!!editingUser} onOpenChange={(v) => { if (!v) setEditingUser(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Employee</DialogTitle>
+            <DialogTitle>تعديل الموظف</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Full Name</Label>
+              <Label>الاسم الكامل</Label>
               <Input value={editForm.name} onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label>Phone</Label>
+              <Label>الهاتف</Label>
               <Input value={editForm.phone} onChange={(e) => setEditForm(f => ({ ...f, phone: e.target.value }))} placeholder="+20 10 1234 5678" />
             </div>
             <div className="space-y-1.5">
-              <Label>Title / Position</Label>
-              <Input value={editForm.title} onChange={(e) => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Senior Sales Agent" />
+              <Label>المسمى الوظيفي</Label>
+              <Input value={editForm.title} onChange={(e) => setEditForm(f => ({ ...f, title: e.target.value }))} placeholder="مثال: مستشار مبيعات أول" />
             </div>
             <div className="space-y-1.5">
-              <Label>Role</Label>
+              <Label>الدور</Label>
               <Select value={editForm.role} onValueChange={(v) => setEditForm(f => ({ ...f, role: v }))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -210,9 +225,9 @@ export function EmployeesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditingUser(null)}>إلغاء</Button>
             <Button onClick={handleEdit} disabled={editLoading || !editForm.name.trim()}>
-              {editLoading ? "Saving..." : "Save Changes"}
+              {editLoading ? "جارٍ الحفظ..." : "حفظ التغييرات"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -222,15 +237,15 @@ export function EmployeesPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Employee</DialogTitle>
+            <DialogTitle>حذف الموظف</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground py-2">
-            Are you sure you want to remove <span className="font-semibold text-foreground">{deleteTarget?.name}</span> from the system? This action cannot be undone.
+            هل أنت متأكد من إزالة <span className="font-semibold text-foreground">{deleteTarget?.name}</span> من النظام؟ لا يمكن التراجع عن هذا الإجراء.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>إلغاء</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleteLoading}>
-              {deleteLoading ? "Deleting..." : "Delete"}
+              {deleteLoading ? "جارٍ الحذف..." : "حذف"}
             </Button>
           </DialogFooter>
         </DialogContent>

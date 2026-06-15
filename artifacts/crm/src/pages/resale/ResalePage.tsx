@@ -317,6 +317,9 @@ export function ResalePage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [pendingPhotos, setPendingPhotos] = useState<{ file: File; previewUrl: string }[]>([]);
+  const [editingUnit, setEditingUnit] = useState<ResaleUnit | null>(null);
+  const [editForm, setEditForm] = useState<Partial<ResaleFormValues>>({});
+  const [editSaving, setEditSaving] = useState(false);
 
   const { currentUser } = useAuth();
   const isAdmin = currentUser && ["ceo", "admin", "director"].includes(currentUser.role);
@@ -390,6 +393,44 @@ export function ResalePage() {
           toast.success(t("resale.unit_deleted"));
         }
       });
+    }
+  };
+
+  const openEdit = (unit: ResaleUnit) => {
+    setEditingUnit(unit);
+    setEditForm({
+      projectName: unit.projectName,
+      unitType: unit.unitType ?? "apartment",
+      area: unit.area ?? "",
+      price: unit.price ?? "",
+      floor: unit.floor ?? undefined,
+      ownerName: unit.ownerName ?? "",
+      ownerPhone: unit.ownerPhone ?? "",
+      ownerEmail: unit.ownerEmail ?? "",
+      ownerNotes: unit.ownerNotes ?? "",
+      description: unit.description ?? "",
+      isOwnerPhoneHidden: unit.isOwnerPhoneHidden,
+      isOwnerEmailHidden: unit.isOwnerEmailHidden,
+    });
+  };
+
+  const handleEditSave = async () => {
+    if (!editingUnit) return;
+    setEditSaving(true);
+    try {
+      const res = await apiFetch(`/api/resale/${editingUnit.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      queryClient.invalidateQueries({ queryKey: getListResaleUnitsQueryKey() });
+      toast.success("تم تحديث الوحدة بنجاح");
+      setEditingUnit(null);
+    } catch {
+      toast.error("فشل تحديث الوحدة");
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -751,6 +792,13 @@ export function ResalePage() {
                     <div className="flex items-center gap-1">
                       <AddPhotoDialog unitId={unit.id} onAdded={() => {}} currentCount={unit.photos?.length ?? 0} />
                       <Button
+                        variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted"
+                        onClick={() => openEdit(unit)}
+                        title="تعديل"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
                         variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10"
                         onClick={() => handleDelete(unit.id)}
                       >
@@ -813,6 +861,10 @@ export function ResalePage() {
               {isAdmin && (
                 <div className="flex items-center gap-1 shrink-0">
                   <AddPhotoDialog unitId={unit.id} onAdded={() => {}} currentCount={unit.photos?.length ?? 0} />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted"
+                    onClick={() => openEdit(unit)} title="تعديل">
+                    <Edit className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10"
                     onClick={() => handleDelete(unit.id)}>
                     <Trash2 className="h-4 w-4" />
@@ -823,6 +875,79 @@ export function ResalePage() {
           ))}
         </div>
       )}
+
+      {/* Edit Unit Dialog */}
+      <Dialog open={!!editingUnit} onOpenChange={(v) => { if (!v) setEditingUnit(null); }}>
+        <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>تعديل الوحدة: {editingUnit?.projectName}</DialogTitle>
+          </DialogHeader>
+          {editingUnit && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>{t("resale.project_name")}</Label>
+                  <Input
+                    value={editForm.projectName ?? ""}
+                    onChange={(e) => setEditForm(f => ({ ...f, projectName: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t("resale.unit_type")}</Label>
+                  <Select value={editForm.unitType ?? "apartment"} onValueChange={(v) => setEditForm(f => ({ ...f, unitType: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["apartment","villa","townhouse","penthouse","plot","studio","duplex"].map(ty => (
+                        <SelectItem key={ty} value={ty} className="capitalize">{ty}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <Label>{t("resale.price_egp")}</Label>
+                  <Input value={editForm.price ?? ""} onChange={(e) => setEditForm(f => ({ ...f, price: e.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t("resale.area_sqm")}</Label>
+                  <Input value={editForm.area ?? ""} onChange={(e) => setEditForm(f => ({ ...f, area: e.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t("resale.floor")}</Label>
+                  <Input type="number" value={editForm.floor ?? ""} onChange={(e) => setEditForm(f => ({ ...f, floor: Number(e.target.value) }))} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("resale.description")}</Label>
+                <Textarea rows={2} className="resize-none" value={editForm.description ?? ""} onChange={(e) => setEditForm(f => ({ ...f, description: e.target.value }))} />
+              </div>
+              <Separator />
+              <p className="text-sm font-medium text-muted-foreground">{t("resale.owner_details")}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>{t("resale.owner_name")}</Label>
+                  <Input value={editForm.ownerName ?? ""} onChange={(e) => setEditForm(f => ({ ...f, ownerName: e.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t("resale.owner_phone")}</Label>
+                  <Input value={editForm.ownerPhone ?? ""} onChange={(e) => setEditForm(f => ({ ...f, ownerPhone: e.target.value }))} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("resale.owner_email")}</Label>
+                <Input type="email" value={editForm.ownerEmail ?? ""} onChange={(e) => setEditForm(f => ({ ...f, ownerEmail: e.target.value }))} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingUnit(null)}>إلغاء</Button>
+            <Button onClick={handleEditSave} disabled={editSaving}>
+              {editSaving ? "جارٍ الحفظ..." : "حفظ التغييرات"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

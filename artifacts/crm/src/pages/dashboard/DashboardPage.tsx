@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { useGetDashboardStats, useGetPipelineBreakdown, useGetTopPerformers, useGetRecentActivity } from "@workspace/api-client-react";
+import { useGetDashboardStats, useGetPipelineBreakdown, useGetTopPerformers } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, UserPlus, CheckCircle2, XCircle, TrendingUp, Clock } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import { Users, UserPlus, CheckCircle2, XCircle, TrendingUp, Percent, ArrowUpRight } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Progress } from "@/components/ui/progress";
-import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { motion } from "framer-motion";
 import { useI18n } from "@/contexts/i18nContext";
 
@@ -44,12 +42,25 @@ const sectionVariants = {
   }),
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  new: "#6366f1",
+  called: "#f59e0b",
+  qualified: "#3b82f6",
+  proposal: "#8b5cf6",
+  negotiation: "#f97316",
+  won: "#22c55e",
+  lost: "#ef4444",
+};
+
 export function DashboardPage() {
   const { t } = useI18n();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: pipeline, isLoading: pipelineLoading } = useGetPipelineBreakdown();
   const { data: performers, isLoading: performersLoading } = useGetTopPerformers();
-  const { data: activities, isLoading: activitiesLoading } = useGetRecentActivity();
+
+  const conversionRate = stats && stats.totalLeads > 0
+    ? Math.round((stats.wonLeads / stats.totalLeads) * 100)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -59,17 +70,18 @@ export function DashboardPage() {
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
         <h2 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h2>
-        <p className="text-muted-foreground">{t("reports.leads")}</p>
+        <p className="text-muted-foreground">{t("leads.subtitle")}</p>
       </motion.div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {[
-          { title: "Total Leads", value: stats?.totalLeads, icon: Users },
-          { title: "Active Leads", value: stats?.activeLeads, icon: TrendingUp },
-          { title: "Won Leads", value: stats?.wonLeads, icon: CheckCircle2, valueClassName: "text-green-500" },
-          { title: "Lost Leads", value: stats?.lostLeads, icon: XCircle, valueClassName: "text-red-500" },
-          { title: "Total Clients", value: stats?.totalClients, icon: UserPlus },
+          { title: t("leads.col.name") !== "leads.col.name" ? "إجمالي العملاء المحتملين" : "Total Leads", value: stats?.totalLeads, icon: Users, bg: "bg-indigo-500/10", iconColor: "text-indigo-500", border: "border-indigo-200 dark:border-indigo-800" },
+          { title: "نشط", value: stats?.activeLeads, icon: TrendingUp, bg: "bg-blue-500/10", iconColor: "text-blue-500", border: "border-blue-200 dark:border-blue-800" },
+          { title: "تم الفوز", value: stats?.wonLeads, icon: CheckCircle2, bg: "bg-emerald-500/10", iconColor: "text-emerald-500", border: "border-emerald-200 dark:border-emerald-800", valueClassName: "text-emerald-600 dark:text-emerald-400" },
+          { title: "خسائر", value: stats?.lostLeads, icon: XCircle, bg: "bg-red-500/10", iconColor: "text-red-500", border: "border-red-200 dark:border-red-800", valueClassName: "text-red-600 dark:text-red-400" },
+          { title: "إجمالي العملاء", value: stats?.totalClients, icon: UserPlus, bg: "bg-violet-500/10", iconColor: "text-violet-500", border: "border-violet-200 dark:border-violet-800" },
+          { title: "نسبة التحويل", value: conversionRate, icon: Percent, bg: "bg-amber-500/10", iconColor: "text-amber-500", border: "border-amber-200 dark:border-amber-800", valueClassName: "text-amber-600 dark:text-amber-400", suffix: "%" },
         ].map((kpi, i) => (
           <motion.div key={kpi.title} custom={i} variants={cardVariants} initial="hidden" animate="show">
             <KpiCard {...kpi} loading={statsLoading} />
@@ -80,12 +92,19 @@ export function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         {/* Pipeline Chart */}
         <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="show" className="col-span-4">
-          <Card>
+          <Card className="h-full">
             <CardHeader>
-              <CardTitle>{t("reports.pipeline")}</CardTitle>
-              <CardDescription>{t("leads.subtitle")}</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>{t("reports.pipeline")}</CardTitle>
+                  <CardDescription>توزيع العملاء المحتملين حسب المرحلة</CardDescription>
+                </div>
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="h-[300px]">
+            <CardContent className="h-[320px]">
               {pipelineLoading ? (
                 <Skeleton className="h-full w-full" />
               ) : (
@@ -94,10 +113,16 @@ export function DashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="status"
-                      tickFormatter={(val) => val.charAt(0).toUpperCase() + val.slice(1).replace('_', ' ')}
+                      tickFormatter={(val) => {
+                        const map: Record<string, string> = {
+                          new: "جديد", called: "تم الاتصال", qualified: "مؤهل",
+                          proposal: "عرض", negotiation: "تفاوض", won: "فاز", lost: "خسر"
+                        };
+                        return map[val] ?? val;
+                      }}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                     />
                     <YAxis
                       tickLine={false}
@@ -108,14 +133,11 @@ export function DashboardPage() {
                       cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
                       contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--background))' }}
                     />
-                    <Bar
-                      dataKey="count"
-                      fill="hsl(var(--primary))"
-                      radius={[4, 4, 0, 0]}
-                      isAnimationActive={true}
-                      animationDuration={800}
-                      animationEasing="ease-out"
-                    />
+                    <Bar dataKey="count" radius={[6, 6, 0, 0]} isAnimationActive={true} animationDuration={800}>
+                      {(pipeline || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status] ?? "hsl(var(--primary))"} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -125,42 +147,54 @@ export function DashboardPage() {
 
         {/* Top Performers */}
         <motion.div custom={1} variants={sectionVariants} initial="hidden" animate="show" className="col-span-3">
-          <Card>
+          <Card className="h-full">
             <CardHeader>
-              <CardTitle>Top Performers</CardTitle>
-              <CardDescription>Highest conversion rates</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>أفضل المؤدين</CardTitle>
+                  <CardDescription>أعلى معدلات التحويل</CardDescription>
+                </div>
+                <div className="p-2 rounded-lg bg-amber-500/10">
+                  <ArrowUpRight className="w-4 h-4 text-amber-500" />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {performersLoading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 w-full" />)}
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {performers?.map((performer, i) => (
                     <motion.div
                       key={performer.userId}
                       initial={{ opacity: 0, x: 12 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.35, delay: 0.5 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                      className="flex items-center gap-4"
+                      className="flex items-center gap-3"
                     >
-                      <UserAvatar name={performer.userName} avatarUrl={performer.avatarUrl} />
+                      <div className="relative">
+                        <UserAvatar name={performer.userName} avatarUrl={performer.avatarUrl} className="h-10 w-10" />
+                        <span className="absolute -top-1 -start-1 bg-amber-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                          {i + 1}
+                        </span>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium leading-none truncate">{performer.userName}</p>
-                          <span className="text-sm font-bold">{Math.round(performer.conversionRate ?? 0)}%</span>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-sm font-semibold leading-none truncate">{performer.userName}</p>
+                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{Math.round(performer.conversionRate ?? 0)}%</span>
                         </div>
-                        <Progress value={performer.conversionRate ?? 0} className="h-2" />
+                        <Progress value={performer.conversionRate ?? 0} className="h-1.5" />
                         <div className="flex justify-between mt-1">
-                          <span className="text-[10px] text-muted-foreground">{performer.wonLeads} won</span>
-                          <span className="text-[10px] text-muted-foreground">{performer.totalLeads} total</span>
+                          <span className="text-[10px] text-muted-foreground">{performer.wonLeads} فاز</span>
+                          <span className="text-[10px] text-muted-foreground">{performer.totalLeads} إجمالي</span>
                         </div>
                       </div>
                     </motion.div>
                   ))}
                   {(!performers || performers.length === 0) && (
-                    <div className="text-center text-sm text-muted-foreground py-4">No performance data available</div>
+                    <div className="text-center text-sm text-muted-foreground py-8">لا توجد بيانات أداء متاحة</div>
                   )}
                 </div>
               )}
@@ -168,84 +202,39 @@ export function DashboardPage() {
           </Card>
         </motion.div>
       </div>
-
-      {/* Recent Activity */}
-      <motion.div custom={2} variants={sectionVariants} initial="hidden" animate="show">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("leads.activity")}</CardTitle>
-            <CardDescription>{t("leads.subtitle")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {activitiesLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-10 w-full" />)}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {activities?.map((activity, i) => (
-                  <motion.div
-                    key={activity.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.55 + i * 0.07, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex items-start gap-4 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="bg-primary/10 text-primary p-2 rounded-full mt-0.5">
-                      <Clock className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium text-foreground">
-                          <span className="capitalize">{activity.type.replace("_", " ")}</span> on <span className="font-semibold">{activity.leadName}</span>
-                        </p>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {activity.notes ?? `By ${activity.userName}`}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-                {(!activities || activities.length === 0) && (
-                  <div className="text-center text-sm text-muted-foreground py-8">No recent activity found</div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
     </div>
   );
 }
 
 function KpiCard({
-  title, value, icon: Icon, loading, valueClassName
+  title, value, icon: Icon, loading, valueClassName, bg, iconColor, border, suffix
 }: {
   title: string;
   value?: number;
   icon: any;
   loading: boolean;
   valueClassName?: string;
+  bg?: string;
+  iconColor?: string;
+  border?: string;
+  suffix?: string;
 }) {
   const count = useCountUp(loading ? undefined : value);
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <motion.div whileHover={{ scale: 1.15, rotate: 5 }} transition={{ duration: 0.2 }}>
-          <Icon className="h-4 w-4 text-muted-foreground" />
-        </motion.div>
-      </CardHeader>
-      <CardContent>
+    <Card className={`overflow-hidden border ${border ?? ""}`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-medium text-muted-foreground leading-tight">{title}</p>
+          <div className={`p-2 rounded-lg ${bg ?? "bg-primary/10"}`}>
+            <Icon className={`h-3.5 w-3.5 ${iconColor ?? "text-primary"}`} />
+          </div>
+        </div>
         {loading ? (
           <Skeleton className="h-8 w-16" />
         ) : (
           <div className={`text-2xl font-bold tabular-nums ${valueClassName || ''}`}>
-            {count}
+            {count}{suffix ?? ""}
           </div>
         )}
       </CardContent>
