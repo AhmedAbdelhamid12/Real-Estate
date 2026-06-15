@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useGetDashboardStats, useGetPipelineBreakdown, useGetTopPerformers } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, UserPlus, CheckCircle2, XCircle, TrendingUp, Percent, ArrowUpRight } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
-import { UserAvatar } from "@/components/shared/UserAvatar";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UserAvatar } from "@/components/shared/UserAvatar";
+import { Users, UserPlus, CheckCircle2, XCircle, TrendingUp, Percent, Medal, Crown, Flame } from "lucide-react";
+import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell,
+  RadialBarChart, RadialBar,
+} from "recharts";
 import { motion } from "framer-motion";
 import { useI18n } from "@/contexts/i18nContext";
 
@@ -22,35 +24,27 @@ function useCountUp(target: number | undefined, duration = 900): number {
       if (progress >= 1) clearInterval(timer);
     }, 16);
     return () => clearInterval(timer);
-  }, [target, duration]);
+  }, [target]);
   return count;
 }
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 18, scale: 0.97 },
-  show: (i: number) => ({
-    opacity: 1, y: 0, scale: 1,
-    transition: { duration: 0.38, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
-
-const sectionVariants = {
-  hidden: { opacity: 0, y: 14 },
-  show: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.42, delay: 0.35 + i * 0.1, ease: [0.22, 1, 0.36, 1] },
-  }),
-};
-
 const STATUS_COLORS: Record<string, string> = {
-  new: "#6366f1",
-  called: "#f59e0b",
-  qualified: "#3b82f6",
-  proposal: "#8b5cf6",
-  negotiation: "#f97316",
-  won: "#22c55e",
-  lost: "#ef4444",
+  new: "#818cf8",
+  called: "#fbbf24",
+  qualified: "#38bdf8",
+  proposal: "#c084fc",
+  negotiation: "#fb923c",
+  won: "#4ade80",
+  lost: "#f87171",
 };
+
+const STATUS_LABELS: Record<string, string> = {
+  new: "جديد", called: "تم الاتصال", qualified: "مؤهل",
+  proposal: "عرض", negotiation: "تفاوض", won: "فاز", lost: "خسر",
+};
+
+const RANK_COLORS = ["#f59e0b", "#94a3b8", "#cd7f32"];
+const RANK_ICONS = [Crown, Medal, Medal];
 
 export function DashboardPage() {
   const { t } = useI18n();
@@ -62,182 +56,326 @@ export function DashboardPage() {
     ? Math.round((stats.wonLeads / stats.totalLeads) * 100)
     : 0;
 
+  const totalLeadsCount = useCountUp(statsLoading ? undefined : stats?.totalLeads);
+  const activeCount = useCountUp(statsLoading ? undefined : stats?.activeLeads);
+  const wonCount = useCountUp(statsLoading ? undefined : stats?.wonLeads);
+  const lostCount = useCountUp(statsLoading ? undefined : stats?.lostLeads);
+  const clientsCount = useCountUp(statsLoading ? undefined : stats?.totalClients);
+  const conversionCount = useCountUp(statsLoading ? undefined : conversionRate);
+
+  const kpis = [
+    {
+      title: "إجمالي العملاء", value: totalLeadsCount, icon: Users,
+      gradient: "linear-gradient(135deg, #1d4ed8, #1e3a8a)",
+      glow: "#3b82f6", suffix: "",
+    },
+    {
+      title: "نشط", value: activeCount, icon: TrendingUp,
+      gradient: "linear-gradient(135deg, #0369a1, #0c4a6e)",
+      glow: "#38bdf8", suffix: "",
+    },
+    {
+      title: "تم الفوز", value: wonCount, icon: CheckCircle2,
+      gradient: "linear-gradient(135deg, #15803d, #14532d)",
+      glow: "#4ade80", suffix: "",
+    },
+    {
+      title: "خسائر", value: lostCount, icon: XCircle,
+      gradient: "linear-gradient(135deg, #b91c1c, #7f1d1d)",
+      glow: "#f87171", suffix: "",
+    },
+    {
+      title: "عدد العملاء", value: clientsCount, icon: UserPlus,
+      gradient: "linear-gradient(135deg, #6d28d9, #3b0764)",
+      glow: "#a78bfa", suffix: "",
+    },
+    {
+      title: "نسبة التحويل", value: conversionCount, icon: Percent,
+      gradient: "linear-gradient(135deg, #b45309, #78350f)",
+      glow: "#fbbf24", suffix: "%",
+    },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+      {/* ── HEADER ── */}
       <motion.div
-        initial={{ opacity: 0, y: -8 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}
       >
-        <h2 className="text-3xl font-bold tracking-tight">{t("nav.dashboard")}</h2>
-        <p className="text-muted-foreground">{t("leads.subtitle")}</p>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <div style={{ width: 24, height: 2, background: "#c8a84b", borderRadius: 2 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#c8a84b", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+              Analytics Overview
+            </span>
+          </div>
+          <h2 style={{ fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: "-0.02em", color: "var(--foreground)" }}>
+            {t("nav.dashboard")}
+          </h2>
+          <p style={{ fontSize: 13, color: "var(--muted-foreground)", margin: 0 }}>
+            {t("leads.subtitle")}
+          </p>
+        </div>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "8px 14px", borderRadius: 10,
+          background: "rgba(200,168,75,0.08)",
+          border: "1px solid rgba(200,168,75,0.2)",
+        }}>
+          <Flame style={{ width: 14, height: 14, color: "#c8a84b" }} />
+          <span style={{ fontSize: 12, color: "#c8a84b", fontWeight: 600 }}>
+            {conversionRate}% معدل التحويل
+          </span>
+        </div>
       </motion.div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {[
-          { title: t("leads.col.name") !== "leads.col.name" ? "إجمالي العملاء المحتملين" : "Total Leads", value: stats?.totalLeads, icon: Users, bg: "bg-indigo-500/10", iconColor: "text-indigo-500", border: "border-indigo-200 dark:border-indigo-800" },
-          { title: "نشط", value: stats?.activeLeads, icon: TrendingUp, bg: "bg-blue-500/10", iconColor: "text-blue-500", border: "border-blue-200 dark:border-blue-800" },
-          { title: "تم الفوز", value: stats?.wonLeads, icon: CheckCircle2, bg: "bg-emerald-500/10", iconColor: "text-emerald-500", border: "border-emerald-200 dark:border-emerald-800", valueClassName: "text-emerald-600 dark:text-emerald-400" },
-          { title: "خسائر", value: stats?.lostLeads, icon: XCircle, bg: "bg-red-500/10", iconColor: "text-red-500", border: "border-red-200 dark:border-red-800", valueClassName: "text-red-600 dark:text-red-400" },
-          { title: "إجمالي العملاء", value: stats?.totalClients, icon: UserPlus, bg: "bg-violet-500/10", iconColor: "text-violet-500", border: "border-violet-200 dark:border-violet-800" },
-          { title: "نسبة التحويل", value: conversionRate, icon: Percent, bg: "bg-amber-500/10", iconColor: "text-amber-500", border: "border-amber-200 dark:border-amber-800", valueClassName: "text-amber-600 dark:text-amber-400", suffix: "%" },
-        ].map((kpi, i) => (
-          <motion.div key={kpi.title} custom={i} variants={cardVariants} initial="hidden" animate="show">
-            <KpiCard {...kpi} loading={statsLoading} />
+      {/* ── KPI CARDS ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 14 }}>
+        {kpis.map((kpi, i) => (
+          <motion.div
+            key={kpi.title}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div style={{
+              background: kpi.gradient, borderRadius: 16,
+              padding: "18px 16px", position: "relative", overflow: "hidden",
+              boxShadow: `0 8px 24px -4px ${kpi.glow}40`,
+              cursor: "default",
+            }}>
+              <div style={{
+                position: "absolute", top: -20, right: -20,
+                width: 80, height: 80, borderRadius: "50%",
+                background: "rgba(255,255,255,0.07)", pointerEvents: "none",
+              }} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  {kpi.title}
+                </span>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <kpi.icon style={{ width: 14, height: 14, color: "white" }} />
+                </div>
+              </div>
+              {statsLoading ? (
+                <div style={{ height: 32, width: 48, background: "rgba(255,255,255,0.15)", borderRadius: 6 }} />
+              ) : (
+                <div style={{ fontSize: 28, fontWeight: 800, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>
+                  {kpi.value}{kpi.suffix}
+                </div>
+              )}
+            </div>
           </motion.div>
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      {/* ── PIPELINE + LEADERBOARD ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 20 }}>
+
         {/* Pipeline Chart */}
-        <motion.div custom={0} variants={sectionVariants} initial="hidden" animate="show" className="col-span-4">
-          <Card className="h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{t("reports.pipeline")}</CardTitle>
-                  <CardDescription>توزيع العملاء المحتملين حسب المرحلة</CardDescription>
-                </div>
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                </div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.38, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div style={{
+            borderRadius: 20, background: "var(--card)",
+            border: "1px solid var(--border)", overflow: "hidden", height: "100%",
+          }}>
+            <div style={{
+              padding: "20px 24px 16px",
+              borderBottom: "1px solid var(--border)",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--foreground)" }}>{t("reports.pipeline")}</div>
+                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>توزيع العملاء المحتملين حسب المرحلة</div>
               </div>
-            </CardHeader>
-            <CardContent className="h-[320px]">
+              <div style={{ display: "flex", gap: 6 }}>
+                {["won", "lost"].map((s) => (
+                  <div key={s} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: STATUS_COLORS[s] }} />
+                    <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{STATUS_LABELS[s]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ padding: "16px 20px 20px", height: 320 }}>
               {pipelineLoading ? (
-                <Skeleton className="h-full w-full" />
+                <div style={{ height: "100%", background: "var(--muted)", borderRadius: 10, opacity: 0.4 }} />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={pipeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <BarChart data={pipeline} margin={{ top: 8, right: 8, left: -24, bottom: 0 }} barCategoryGap="32%">
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="status"
-                      tickFormatter={(val) => {
-                        const map: Record<string, string> = {
-                          new: "جديد", called: "تم الاتصال", qualified: "مؤهل",
-                          proposal: "عرض", negotiation: "تفاوض", won: "فاز", lost: "خسر"
-                        };
-                        return map[val] ?? val;
-                      }}
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                      tickFormatter={(val) => STATUS_LABELS[val] ?? val}
+                      tickLine={false} axisLine={false}
+                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
                     />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                    />
+                    <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
                     <RechartsTooltip
-                      cursor={{ fill: 'hsl(var(--muted)/0.5)' }}
-                      contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--background))' }}
+                      cursor={{ fill: "hsl(var(--muted))", borderRadius: 4 }}
+                      contentStyle={{
+                        borderRadius: 10, border: "1px solid hsl(var(--border))",
+                        background: "hsl(var(--card))", boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                        fontSize: 12,
+                      }}
+                      formatter={(val, name) => [val, "عدد العملاء"]}
+                      labelFormatter={(label) => STATUS_LABELS[label] ?? label}
                     />
-                    <Bar dataKey="count" radius={[6, 6, 0, 0]} isAnimationActive={true} animationDuration={800}>
-                      {(pipeline || []).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status] ?? "hsl(var(--primary))"} />
+                    <Bar dataKey="count" radius={[8, 8, 0, 0]} isAnimationActive animationDuration={900}>
+                      {(pipeline || []).map((entry, i) => (
+                        <Cell key={`cell-${i}`} fill={STATUS_COLORS[entry.status] ?? "#6366f1"} />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
-            </CardContent>
-          </Card>
+            </div>
+
+            {/* Legend row */}
+            {!pipelineLoading && pipeline && pipeline.length > 0 && (
+              <div style={{
+                padding: "12px 24px", borderTop: "1px solid var(--border)",
+                display: "flex", gap: 12, flexWrap: "wrap",
+              }}>
+                {pipeline.map((entry) => (
+                  <div key={entry.status} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: 3, background: STATUS_COLORS[entry.status] ?? "#6366f1" }} />
+                    <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{STATUS_LABELS[entry.status]} ({entry.count})</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </motion.div>
 
-        {/* Top Performers */}
-        <motion.div custom={1} variants={sectionVariants} initial="hidden" animate="show" className="col-span-3">
-          <Card className="h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>أفضل المؤدين</CardTitle>
-                  <CardDescription>أعلى معدلات التحويل</CardDescription>
+        {/* Leaderboard */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.46, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div style={{
+            borderRadius: 20, overflow: "hidden", height: "100%",
+            background: "var(--card)", border: "1px solid var(--border)",
+          }}>
+            {/* Header with gradient */}
+            <div style={{
+              background: "linear-gradient(135deg, #0f172a, #1e1b4b)",
+              padding: "20px 24px",
+              position: "relative", overflow: "hidden",
+            }}>
+              <div style={{
+                position: "absolute", top: 0, left: 0, right: 0, height: 2,
+                background: "linear-gradient(90deg, transparent, #c8a84b 40%, transparent)",
+              }} />
+              <div style={{
+                position: "absolute", top: -30, right: -20,
+                width: 100, height: 100, borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(200,168,75,0.15) 0%, transparent 70%)",
+              }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,168,75,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Crown style={{ width: 17, height: 17, color: "#c8a84b" }} />
                 </div>
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <ArrowUpRight className="w-4 h-4 text-amber-500" />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>أفضل المؤدين</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>أعلى معدلات التحويل</div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+
+            <div style={{ padding: "16px" }}>
               {performersLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 w-full" />)}
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} style={{ height: 64, background: "var(--muted)", borderRadius: 12, opacity: 0.5 }} />
+                  ))}
+                </div>
+              ) : !performers || performers.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted-foreground)", fontSize: 13 }}>
+                  لا توجد بيانات أداء متاحة
                 </div>
               ) : (
-                <div className="space-y-5">
-                  {performers?.map((performer, i) => (
-                    <motion.div
-                      key={performer.userId}
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.35, delay: 0.5 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                      className="flex items-center gap-3"
-                    >
-                      <div className="relative">
-                        <UserAvatar name={performer.userName} avatarUrl={performer.avatarUrl} className="h-10 w-10" />
-                        <span className="absolute -top-1 -start-1 bg-amber-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                          {i + 1}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <p className="text-sm font-semibold leading-none truncate">{performer.userName}</p>
-                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{Math.round(performer.conversionRate ?? 0)}%</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {performers.map((p, i) => {
+                    const RankIcon = RANK_ICONS[i] ?? Medal;
+                    const rankColor = RANK_COLORS[i] ?? "#6366f1";
+                    const rate = Math.round(p.conversionRate ?? 0);
+                    return (
+                      <motion.div
+                        key={p.userId}
+                        initial={{ opacity: 0, x: 16 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.35, delay: 0.55 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                        style={{
+                          borderRadius: 14,
+                          background: i === 0 ? "linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.03))" : "var(--muted)/40",
+                          border: i === 0 ? "1px solid rgba(245,158,11,0.2)" : "1px solid var(--border)",
+                          padding: "12px 14px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          {/* Rank */}
+                          <div style={{
+                            width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
+                            background: `${rankColor}20`,
+                            border: `1.5px solid ${rankColor}50`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}>
+                            <span style={{ fontSize: 11, fontWeight: 800, color: rankColor }}>{i + 1}</span>
+                          </div>
+
+                          {/* Avatar */}
+                          <UserAvatar name={p.userName} avatarUrl={p.avatarUrl} className="h-9 w-9 shrink-0" />
+
+                          {/* Info */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--foreground)" }}>
+                                {p.userName}
+                              </span>
+                              <span style={{
+                                fontSize: 13, fontWeight: 800,
+                                color: rate >= 50 ? "#4ade80" : rate >= 25 ? "#fbbf24" : "#f87171",
+                                flexShrink: 0, marginInlineStart: 8,
+                              }}>
+                                {rate}%
+                              </span>
+                            </div>
+                            {/* Progress bar */}
+                            <div style={{ height: 5, background: "var(--border)", borderRadius: 10, overflow: "hidden" }}>
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${rate}%` }}
+                                transition={{ duration: 1, delay: 0.7 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                                style={{
+                                  height: "100%", borderRadius: 10,
+                                  background: `linear-gradient(90deg, ${rankColor}, ${rankColor}aa)`,
+                                }}
+                              />
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+                              <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{p.wonLeads} فاز</span>
+                              <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{p.totalLeads} إجمالي</span>
+                            </div>
+                          </div>
                         </div>
-                        <Progress value={performer.conversionRate ?? 0} className="h-1.5" />
-                        <div className="flex justify-between mt-1">
-                          <span className="text-[10px] text-muted-foreground">{performer.wonLeads} فاز</span>
-                          <span className="text-[10px] text-muted-foreground">{performer.totalLeads} إجمالي</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                  {(!performers || performers.length === 0) && (
-                    <div className="text-center text-sm text-muted-foreground py-8">لا توجد بيانات أداء متاحة</div>
-                  )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
-  );
-}
-
-function KpiCard({
-  title, value, icon: Icon, loading, valueClassName, bg, iconColor, border, suffix
-}: {
-  title: string;
-  value?: number;
-  icon: any;
-  loading: boolean;
-  valueClassName?: string;
-  bg?: string;
-  iconColor?: string;
-  border?: string;
-  suffix?: string;
-}) {
-  const count = useCountUp(loading ? undefined : value);
-
-  return (
-    <Card className={`overflow-hidden border ${border ?? ""}`}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-muted-foreground leading-tight">{title}</p>
-          <div className={`p-2 rounded-lg ${bg ?? "bg-primary/10"}`}>
-            <Icon className={`h-3.5 w-3.5 ${iconColor ?? "text-primary"}`} />
-          </div>
-        </div>
-        {loading ? (
-          <Skeleton className="h-8 w-16" />
-        ) : (
-          <div className={`text-2xl font-bold tabular-nums ${valueClassName || ''}`}>
-            {count}{suffix ?? ""}
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
