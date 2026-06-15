@@ -72,7 +72,7 @@ export function LoginPage() {
     login.mutate({ data }, {
       onSuccess: async () => {
         await refetch();
-        setLocation("/dashboard");
+        setLocation("/home");
       },
       onError: (err) => {
         setError((err as any)?.message || "Invalid credentials. Please try again.");

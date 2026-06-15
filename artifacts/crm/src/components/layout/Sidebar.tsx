@@ -6,7 +6,6 @@ import { RoleBadge } from "@/components/shared/RoleBadge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  LayoutDashboard,
   Users,
   Building2,
   Kanban,
@@ -41,7 +40,6 @@ export function Sidebar() {
       title: t("sidebar.overview"),
       items: [
         { href: "/home", label: t("nav.home"), icon: Home },
-        { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
       ],
     },
     {

@@ -20,7 +20,6 @@ import { PendingApprovalPage } from "@/pages/auth/PendingApprovalPage";
 
 // Dashboard pages
 import { HomePage } from "@/pages/home/HomePage";
-import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import { LeadsListPage } from "@/pages/leads/LeadsListPage";
 import { LeadsKanbanPage } from "@/pages/leads/LeadsKanbanPage";
 import { LeadDetailPage } from "@/pages/leads/LeadDetailPage";
@@ -90,7 +89,6 @@ function Router() {
       <Route path="/pending-approval" component={PendingApprovalPage} />
 
       <ProtectedRoute path="/home" component={HomePage} />
-      <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/leads" component={LeadsListPage} />
       <ProtectedRoute path="/leads/kanban" component={LeadsKanbanPage} />
       <ProtectedRoute path="/leads/:id" component={LeadDetailPage} />
