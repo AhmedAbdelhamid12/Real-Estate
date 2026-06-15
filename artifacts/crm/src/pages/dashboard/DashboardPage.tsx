@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { useGetDashboardStats, useGetPipelineBreakdown, useGetTopPerformers } from "@workspace/api-client-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Users, UserPlus, CheckCircle2, XCircle, TrendingUp, Percent, Medal, Crown, Flame } from "lucide-react";
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis,
+  BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell,
-  RadialBarChart, RadialBar,
 } from "recharts";
 import { motion } from "framer-motion";
 import { useI18n } from "@/contexts/i18nContext";
@@ -43,8 +41,32 @@ const STATUS_LABELS: Record<string, string> = {
   proposal: "عرض", negotiation: "تفاوض", won: "فاز", lost: "خسر",
 };
 
-const RANK_COLORS = ["#f59e0b", "#94a3b8", "#cd7f32"];
+const RANK_COLORS = ["#C9A84C", "#94a3b8", "#cd7f32"];
 const RANK_ICONS = [Crown, Medal, Medal];
+
+const CARD_BG = "linear-gradient(135deg, #0A1E38 0%, #0F2D52 55%, #060F1C 100%)";
+const CARD_SHADOW = "0 8px 32px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,168,76,0.08)";
+
+function GoldShimmer() {
+  return (
+    <div style={{
+      position: "absolute", top: 0, left: 0, right: 0, height: 2,
+      background: "linear-gradient(90deg, transparent, #C9A84C 30%, #D4B86A 60%, transparent)",
+      opacity: 0.75,
+    }} />
+  );
+}
+
+function GlowOrb({ top = -40, right = -40, size = 120, opacity = 0.12 }: { top?: number; right?: number; size?: number; opacity?: number }) {
+  return (
+    <div style={{
+      position: "absolute", top, right,
+      width: size, height: size, borderRadius: "50%",
+      background: `radial-gradient(circle, rgba(201,168,76,${opacity}) 0%, transparent 70%)`,
+      pointerEvents: "none",
+    }} />
+  );
+}
 
 export function DashboardPage() {
   const { t } = useI18n();
@@ -64,36 +86,12 @@ export function DashboardPage() {
   const conversionCount = useCountUp(statsLoading ? undefined : conversionRate);
 
   const kpis = [
-    {
-      title: "إجمالي العملاء", value: totalLeadsCount, icon: Users,
-      gradient: "linear-gradient(145deg, #2563B0 0%, #0F2D52 100%)",
-      glow: "#2563B0", suffix: "",
-    },
-    {
-      title: "نشط", value: activeCount, icon: TrendingUp,
-      gradient: "linear-gradient(145deg, #1A4A7A 0%, #0A1E38 100%)",
-      glow: "#1A4A7A", suffix: "",
-    },
-    {
-      title: "تم الفوز", value: wonCount, icon: CheckCircle2,
-      gradient: "linear-gradient(145deg, #0F2D52 0%, #060F1C 100%)",
-      glow: "#1A4A7A", suffix: "",
-    },
-    {
-      title: "خسائر", value: lostCount, icon: XCircle,
-      gradient: "linear-gradient(145deg, #0A1E38 0%, #060F1C 100%)",
-      glow: "#C9A84C", suffix: "",
-    },
-    {
-      title: "عدد العملاء", value: clientsCount, icon: UserPlus,
-      gradient: "linear-gradient(145deg, #D4B86A 0%, #A8893A 100%)",
-      glow: "#C9A84C", suffix: "",
-    },
-    {
-      title: "نسبة التحويل", value: conversionCount, icon: Percent,
-      gradient: "linear-gradient(145deg, #1A4A7A 0%, #C9A84C 100%)",
-      glow: "#C9A84C", suffix: "%",
-    },
+    { title: "إجمالي العملاء", value: totalLeadsCount, icon: Users, suffix: "" },
+    { title: "نشط", value: activeCount, icon: TrendingUp, suffix: "" },
+    { title: "تم الفوز", value: wonCount, icon: CheckCircle2, suffix: "" },
+    { title: "خسائر", value: lostCount, icon: XCircle, suffix: "" },
+    { title: "عدد العملاء", value: clientsCount, icon: UserPlus, suffix: "" },
+    { title: "نسبة التحويل", value: conversionCount, icon: Percent, suffix: "%" },
   ];
 
   return (
@@ -108,8 +106,8 @@ export function DashboardPage() {
       >
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <div style={{ width: 24, height: 2, background: "#c8a84b", borderRadius: 2 }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#c8a84b", letterSpacing: "0.16em", textTransform: "uppercase" }}>
+            <div style={{ width: 24, height: 2, background: "#C9A84C", borderRadius: 2 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#C9A84C", letterSpacing: "0.16em", textTransform: "uppercase" }}>
               Analytics Overview
             </span>
           </div>
@@ -123,11 +121,11 @@ export function DashboardPage() {
         <div style={{
           display: "flex", alignItems: "center", gap: 8,
           padding: "8px 14px", borderRadius: 10,
-          background: "rgba(200,168,75,0.08)",
-          border: "1px solid rgba(200,168,75,0.2)",
+          background: "rgba(201,168,76,0.10)",
+          border: "1px solid rgba(201,168,76,0.25)",
         }}>
-          <Flame style={{ width: 14, height: 14, color: "#c8a84b" }} />
-          <span style={{ fontSize: 12, color: "#c8a84b", fontWeight: 600 }}>
+          <Flame style={{ width: 14, height: 14, color: "#C9A84C" }} />
+          <span style={{ fontSize: 12, color: "#C9A84C", fontWeight: 600 }}>
             {conversionRate}% معدل التحويل
           </span>
         </div>
@@ -143,26 +141,25 @@ export function DashboardPage() {
             transition={{ duration: 0.4, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
           >
             <div style={{
-              background: kpi.gradient, borderRadius: 16,
-              padding: "18px 16px", position: "relative", overflow: "hidden",
-              boxShadow: `0 8px 24px -4px ${kpi.glow}40`,
-              cursor: "default",
+              background: CARD_BG,
+              borderRadius: 16,
+              padding: "18px 16px",
+              position: "relative",
+              overflow: "hidden",
+              boxShadow: CARD_SHADOW,
             }}>
-              <div style={{
-                position: "absolute", top: -20, right: -20,
-                width: 80, height: 80, borderRadius: "50%",
-                background: "rgba(255,255,255,0.07)", pointerEvents: "none",
-              }} />
+              <GoldShimmer />
+              <GlowOrb top={-24} right={-24} size={80} opacity={0.14} />
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.65)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   {kpi.title}
                 </span>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <kpi.icon style={{ width: 14, height: 14, color: "white" }} />
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(201,168,76,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <kpi.icon style={{ width: 14, height: 14, color: "#C9A84C" }} />
                 </div>
               </div>
               {statsLoading ? (
-                <div style={{ height: 32, width: 48, background: "rgba(255,255,255,0.15)", borderRadius: 6 }} />
+                <div style={{ height: 32, width: 48, background: "rgba(255,255,255,0.12)", borderRadius: 6 }} />
               ) : (
                 <div style={{ fontSize: 28, fontWeight: 800, color: "white", lineHeight: 1, letterSpacing: "-0.02em" }}>
                   {kpi.value}{kpi.suffix}
@@ -183,49 +180,63 @@ export function DashboardPage() {
           transition={{ duration: 0.45, delay: 0.38, ease: [0.22, 1, 0.36, 1] }}
         >
           <div style={{
-            borderRadius: 20, background: "var(--card)",
-            border: "1px solid var(--border)", overflow: "hidden", height: "100%",
+            borderRadius: 20,
+            background: CARD_BG,
+            border: "1px solid rgba(201,168,76,0.12)",
+            overflow: "hidden",
+            height: "100%",
+            boxShadow: CARD_SHADOW,
+            position: "relative",
           }}>
+            <GoldShimmer />
+            <GlowOrb top={-60} right={-40} size={220} opacity={0.10} />
+
+            {/* Header */}
             <div style={{
               padding: "20px 24px 16px",
-              borderBottom: "1px solid var(--border)",
+              borderBottom: "1px solid rgba(255,255,255,0.07)",
               display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--foreground)" }}>{t("reports.pipeline")}</div>
-                <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>توزيع العملاء المحتملين حسب المرحلة</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "white" }}>{t("reports.pipeline")}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>توزيع العملاء المحتملين حسب المرحلة</div>
               </div>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: 8 }}>
                 {["won", "lost"].map((s) => (
                   <div key={s} style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: STATUS_COLORS[s] }} />
-                    <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{STATUS_LABELS[s]}</span>
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{STATUS_LABELS[s]}</span>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Chart */}
             <div style={{ padding: "16px 20px 20px", height: 320 }}>
               {pipelineLoading ? (
-                <div style={{ height: "100%", background: "var(--muted)", borderRadius: 10, opacity: 0.4 }} />
+                <div style={{ height: "100%", background: "rgba(255,255,255,0.06)", borderRadius: 10 }} />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pipeline} margin={{ top: 8, right: 8, left: -24, bottom: 0 }} barCategoryGap="32%">
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.07)" />
                     <XAxis
                       dataKey="status"
                       tickFormatter={(val) => STATUS_LABELS[val] ?? val}
                       tickLine={false} axisLine={false}
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11, fontWeight: 500 }}
+                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 500 }}
                     />
-                    <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                    <YAxis tickLine={false} axisLine={false} tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
                     <RechartsTooltip
-                      cursor={{ fill: "hsl(var(--muted))", borderRadius: 4 }}
+                      cursor={{ fill: "rgba(255,255,255,0.05)", borderRadius: 4 }}
                       contentStyle={{
-                        borderRadius: 10, border: "1px solid hsl(var(--border))",
-                        background: "hsl(var(--card))", boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+                        borderRadius: 10,
+                        border: "1px solid rgba(201,168,76,0.2)",
+                        background: "#0A1E38",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
                         fontSize: 12,
+                        color: "white",
                       }}
-                      formatter={(val, name) => [val, "عدد العملاء"]}
+                      formatter={(val) => [val, "عدد العملاء"]}
                       labelFormatter={(label) => STATUS_LABELS[label] ?? label}
                     />
                     <Bar dataKey="count" radius={[8, 8, 0, 0]} isAnimationActive animationDuration={900}>
@@ -238,16 +249,17 @@ export function DashboardPage() {
               )}
             </div>
 
-            {/* Legend row */}
+            {/* Legend */}
             {!pipelineLoading && pipeline && pipeline.length > 0 && (
               <div style={{
-                padding: "12px 24px", borderTop: "1px solid var(--border)",
+                padding: "12px 24px",
+                borderTop: "1px solid rgba(255,255,255,0.07)",
                 display: "flex", gap: 12, flexWrap: "wrap",
               }}>
                 {pipeline.map((entry) => (
                   <div key={entry.status} style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <div style={{ width: 10, height: 10, borderRadius: 3, background: STATUS_COLORS[entry.status] ?? "#6366f1" }} />
-                    <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{STATUS_LABELS[entry.status]} ({entry.count})</span>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{STATUS_LABELS[entry.status]} ({entry.count})</span>
                   </div>
                 ))}
               </div>
@@ -262,31 +274,26 @@ export function DashboardPage() {
           transition={{ duration: 0.45, delay: 0.46, ease: [0.22, 1, 0.36, 1] }}
         >
           <div style={{
-            borderRadius: 20, overflow: "hidden", height: "100%",
-            background: "var(--card)", border: "1px solid var(--border)",
+            borderRadius: 20,
+            overflow: "hidden",
+            height: "100%",
+            background: CARD_BG,
+            border: "1px solid rgba(201,168,76,0.12)",
+            boxShadow: CARD_SHADOW,
+            position: "relative",
           }}>
-            {/* Header with gradient */}
-            <div style={{
-              background: "linear-gradient(135deg, #0A1E38, #0F2D52)",
-              padding: "20px 24px",
-              position: "relative", overflow: "hidden",
-            }}>
-              <div style={{
-                position: "absolute", top: 0, left: 0, right: 0, height: 2,
-                background: "linear-gradient(90deg, transparent, #C9A84C 40%, transparent)",
-              }} />
-              <div style={{
-                position: "absolute", top: -30, right: -20,
-                width: 100, height: 100, borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%)",
-              }} />
+            <GoldShimmer />
+            <GlowOrb top={-40} right={-20} size={120} opacity={0.12} />
+
+            {/* Header */}
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.07)", position: "relative" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(201,168,76,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Crown style={{ width: 17, height: 17, color: "#C9A84C" }} />
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>أفضل المؤدين</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>أعلى معدلات التحويل</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>أعلى معدلات التحويل</div>
                 </div>
               </div>
             </div>
@@ -295,17 +302,16 @@ export function DashboardPage() {
               {performersLoading ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {[1, 2, 3].map((i) => (
-                    <div key={i} style={{ height: 64, background: "var(--muted)", borderRadius: 12, opacity: 0.5 }} />
+                    <div key={i} style={{ height: 64, background: "rgba(255,255,255,0.06)", borderRadius: 12 }} />
                   ))}
                 </div>
               ) : !performers || performers.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted-foreground)", fontSize: 13 }}>
+                <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
                   لا توجد بيانات أداء متاحة
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {performers.map((p, i) => {
-                    const RankIcon = RANK_ICONS[i] ?? Medal;
                     const rankColor = RANK_COLORS[i] ?? "#6366f1";
                     const rate = Math.round(p.conversionRate ?? 0);
                     return (
@@ -316,8 +322,12 @@ export function DashboardPage() {
                         transition={{ duration: 0.35, delay: 0.55 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                         style={{
                           borderRadius: 14,
-                          background: i === 0 ? "linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.03))" : "var(--muted)/40",
-                          border: i === 0 ? "1px solid rgba(245,158,11,0.2)" : "1px solid var(--border)",
+                          background: i === 0
+                            ? "rgba(201,168,76,0.08)"
+                            : "rgba(255,255,255,0.04)",
+                          border: i === 0
+                            ? "1px solid rgba(201,168,76,0.25)"
+                            : "1px solid rgba(255,255,255,0.06)",
                           padding: "12px 14px",
                         }}
                       >
@@ -325,8 +335,8 @@ export function DashboardPage() {
                           {/* Rank */}
                           <div style={{
                             width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-                            background: `${rankColor}20`,
-                            border: `1.5px solid ${rankColor}50`,
+                            background: `${rankColor}25`,
+                            border: `1.5px solid ${rankColor}60`,
                             display: "flex", alignItems: "center", justifyContent: "center",
                           }}>
                             <span style={{ fontSize: 11, fontWeight: 800, color: rankColor }}>{i + 1}</span>
@@ -338,7 +348,7 @@ export function DashboardPage() {
                           {/* Info */}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                              <span style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--foreground)" }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "white" }}>
                                 {p.userName}
                               </span>
                               <span style={{
@@ -350,7 +360,7 @@ export function DashboardPage() {
                               </span>
                             </div>
                             {/* Progress bar */}
-                            <div style={{ height: 5, background: "var(--border)", borderRadius: 10, overflow: "hidden" }}>
+                            <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 10, overflow: "hidden" }}>
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${rate}%` }}
@@ -362,8 +372,8 @@ export function DashboardPage() {
                               />
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                              <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{p.wonLeads} فاز</span>
-                              <span style={{ fontSize: 10, color: "var(--muted-foreground)" }}>{p.totalLeads} إجمالي</span>
+                              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{p.wonLeads} فاز</span>
+                              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>{p.totalLeads} إجمالي</span>
                             </div>
                           </div>
                         </div>
