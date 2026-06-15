@@ -360,7 +360,14 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  // For web (cookie-based auth) always include credentials so the browser
+  // stores the session cookie and sends it on subsequent requests.
+  // When an authTokenGetter is set (mobile / Bearer-token mode) we leave
+  // the caller's explicit `credentials` value unchanged (defaults to "same-origin").
+  const credentials: RequestCredentials =
+    init.credentials ?? (_authTokenGetter ? "same-origin" : "include");
+
+  const response = await fetch(input, { ...init, method, headers, credentials });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

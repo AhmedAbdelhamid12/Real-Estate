@@ -225,7 +225,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.email, email.toLowerCase()))
+    .where(eq(usersTable.email, email.toLowerCase().trim()))
     .limit(1);
 
   if (!user || !user.passwordHash) {
@@ -233,7 +233,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const valid = await verifyPassword(password, user.passwordHash);
+  const valid = await verifyPassword(password.trim(), user.passwordHash);
   if (!valid) {
     res.status(401).json({ error: "Invalid credentials" });
     return;
