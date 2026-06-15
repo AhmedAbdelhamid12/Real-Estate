@@ -210,7 +210,9 @@ export function HomePage() {
     {
       icon: Users, label: "My Leads", description: "Manage & track your leads",
       href: "/leads",
-      colors: { from: "#1d4ed8", to: "#1e3a8a", ring: "#3b82f6", accent: "#60a5fa" },
+      colors: isDark
+        ? { from: "#0F2D52", to: "#1A4A7A", ring: "#2563B0", accent: "#60a5fa" }
+        : { from: "#0F2D52", to: "#1A4A7A", ring: "#2563B0", accent: "#93c5fd" },
       stats: [
         { label: "Active", value: activeLeads.length },
         { label: "Won", value: wonLeads.length },
@@ -221,14 +223,18 @@ export function HomePage() {
     {
       icon: Home, label: "Resale Units", description: "Secondary market",
       href: "/resale",
-      colors: { from: "#b45309", to: "#78350f", ring: "#f59e0b", accent: "#fbbf24" },
+      colors: isDark
+        ? { from: "#A8893A", to: "#7A6028", ring: "#C9A84C", accent: "#D4B86A" }
+        : { from: "#C9A84C", to: "#A8893A", ring: "#C9A84C", accent: "#e8d070" },
       stats: [],
       delay: 0.18,
     },
     {
       icon: Calendar, label: "Daily Planner", description: "Today's tasks & schedule",
       href: "/planner",
-      colors: { from: "#6d28d9", to: "#3b0764", ring: "#a78bfa", accent: "#c4b5fd" },
+      colors: isDark
+        ? { from: "#1A2D4D", to: "#0F2D52", ring: "#2563B0", accent: "#C9A84C" }
+        : { from: "#1A2D4D", to: "#0A1E38", ring: "#2563B0", accent: "#C9A84C" },
       stats: [
         { label: "Today", value: todayTasks.length },
         { label: "Pending", value: pendingTasks.length },
@@ -239,7 +245,9 @@ export function HomePage() {
     {
       icon: User, label: "My Profile", description: "Account & settings",
       href: "/profile",
-      colors: { from: "#047857", to: "#064e3b", ring: "#34d399", accent: "#6ee7b7" },
+      colors: isDark
+        ? { from: "#0A1E38", to: "#060F1C", ring: "#C9A84C", accent: "#D4B86A" }
+        : { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" },
       stats: [],
       delay: 0.34,
     },
