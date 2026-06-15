@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -10,18 +10,20 @@ import { useAssignLead, useListUsers, getListLeadsQueryKey } from "@workspace/ap
 import type { Lead } from "@workspace/api-client-react";
 
 interface AssignLeadModalProps {
-  lead: Lead;
+  lead: Lead | null | undefined;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function AssignLeadModal({ lead, open, onOpenChange }: AssignLeadModalProps) {
   const queryClient = useQueryClient();
-  const [selectedUserId, setSelectedUserId] = useState(lead.primarySalesId ?? "");
+  const [selectedUserId, setSelectedUserId] = useState(lead?.primarySalesId ?? "");
   const [note, setNote] = useState("");
 
   const { data: users = [] } = useListUsers({ role: "sales", status: "active" });
   const assignLead = useAssignLead();
+
+  if (!lead) return null;
 
   const onAssign = () => {
     if (!selectedUserId) { toast.error("Select a salesperson"); return; }
