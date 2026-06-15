@@ -167,6 +167,18 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
 export function HomePage() {
   const { currentUser } = useAuth();
   const { t } = useI18n();
+
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+  useEffect(() => {
+    const el = document.documentElement;
+    const obs = new MutationObserver(() =>
+      setIsDark(el.classList.contains("dark"))
+    );
+    obs.observe(el, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
   const { data: leads = [], isLoading: leadsLoading } = useListLeads();
   const { data: tasks = [], isLoading: tasksLoading } = useListPlannerTasks();
 
@@ -243,30 +255,37 @@ export function HomePage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         style={{
           borderRadius: 24,
-          background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
+          background: isDark
+            ? "linear-gradient(135deg, #0A1E38 0%, #0F2D52 55%, #060D18 100%)"
+            : "linear-gradient(135deg, #0F2D52 0%, #1A4A7A 55%, #0A1E38 100%)",
           padding: "32px 36px",
           position: "relative",
           overflow: "hidden",
-          boxShadow: "0 24px 48px -12px rgba(0,0,0,0.4)",
+          boxShadow: isDark
+            ? "0 24px 48px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,168,76,0.08)"
+            : "0 20px 40px -8px rgba(15,45,82,0.45), inset 0 1px 0 rgba(201,168,76,0.12)",
         }}
       >
         {/* Gold shimmer strip */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, height: 2,
-          background: "linear-gradient(90deg, transparent, #c8a84b 30%, #e8d070 60%, transparent)",
-          opacity: 0.8,
+          background: "linear-gradient(90deg, transparent, #C9A84C 30%, #D4B86A 60%, transparent)",
+          opacity: isDark ? 0.75 : 0.9,
         }} />
-        {/* Decorative glow */}
+        {/* Gold glow — top right */}
         <div style={{
           position: "absolute", top: -60, right: -40,
           width: 280, height: 280, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(200,168,75,0.12) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(201,168,76,0.14) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
+        {/* Navy glow — bottom left */}
         <div style={{
           position: "absolute", bottom: -80, left: 100,
           width: 200, height: 200, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)",
+          background: isDark
+            ? "radial-gradient(circle, rgba(26,74,122,0.25) 0%, transparent 70%)"
+            : "radial-gradient(circle, rgba(15,45,82,0.30) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
 
