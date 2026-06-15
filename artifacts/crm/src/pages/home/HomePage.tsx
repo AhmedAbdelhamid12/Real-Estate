@@ -142,7 +142,9 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
 
         {/* Label + description */}
         <div style={{ marginBottom: 6 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: "white", lineHeight: 1.2, letterSpacing: isAr ? 0 : "-0.01em" }}>{label}</div>
+          <div
+            style={{ fontSize: 17, fontWeight: 800, color: "white", lineHeight: 1.2, letterSpacing: isAr ? 0 : "-0.01em" }}
+            className="text-ring border-t-[#e8d070] border-r-[#e8d070] border-b-[#e8d070] border-l-[#e8d070]">{label}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 3, fontWeight: 400 }}>{description}</div>
         </div>
 
@@ -326,7 +328,7 @@ export function HomePage() {
                 {format(new Date(), "EEEE, MMMM d, yyyy", isAr ? { locale: arLocale } : undefined)}
               </span>
             </div>
-            <h1 style={{ fontSize: 32, fontWeight: 800, color: "white", margin: 0, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+            <h1 className="text-[#ffffff]" style={{ fontSize: 32, fontWeight: 800, color: "white", margin: 0, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
               {getGreeting(t)},{" "}
               <span style={{ color: "#e8d070" }}>{currentUser.name.split(" ")[0]}</span> 👋
             </h1>
