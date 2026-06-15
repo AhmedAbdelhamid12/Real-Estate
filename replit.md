@@ -1,36 +1,54 @@
-# [Project name]
+# PropOS CRM — TIL Real Estate Group
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A full-featured Real Estate CRM for managing leads, clients, projects, employees, and performance reporting.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- **Start app**: workflow runs `PORT=8080 api-server` + `PORT=5000 crm` in parallel
+- `pnpm --filter @workspace/api-server run dev` — API server (port 8080)
+- `pnpm --filter @workspace/crm run dev` — CRM frontend (port 5000, proxies /api → 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/db run seed` — seed database with test data
+- Required env: `DATABASE_URL` — Postgres connection string (Replit-managed)
+
+## Test Credentials
+
+- CEO: `ceo@propos.app` / `Change@Me2026!`
+- Admin: `admin@propos.app` / `Test1234!`
+- Sales reps: `sales1@propos.app` through `sales5@propos.app` / `Test1234!`
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- pnpm workspaces monorepo, Node.js 20, TypeScript 5.9
+- **API**: Express 5, Passport.js (Google/Facebook OAuth optional), bcryptjs sessions
+- **DB**: PostgreSQL (Replit-managed) + Drizzle ORM, migrations via `drizzle-kit push`
+- **CRM Web**: React 19, Vite 7, Wouter, TanStack Query v5, Tailwind CSS 4, Radix UI
+- **Mobile**: Expo 54 / React Native (in `artifacts/mobile`)
+- **Validation**: Zod, drizzle-zod
+- **API codegen**: Orval (from `lib/api-spec/openapi.yaml`)
+- **Email**: Resend (optional — falls back to console logging if `RESEND_API_KEY` not set)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/api-server/` — Express backend, routes, middleware, auth
+- `artifacts/crm/` — React CRM web app
+- `artifacts/mobile/` — Expo mobile app
+- `lib/db/` — Drizzle schema, migrations, seed data
+- `lib/api-spec/openapi.yaml` — source-of-truth API spec
+- `lib/api-client-react/` — generated React Query hooks (from spec)
+- `lib/api-zod/` — generated Zod schemas (from spec)
+- `lib/permissions/` — shared RBAC logic
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Auth is custom session-based (cookie `session` + DB sessions table) — not Supabase/Firebase/Clerk
+- OAuth (Google/Facebook) is optional — configured via env vars, warnings shown if not set
+- Vite dev server proxies `/api` and `/uploads` to `localhost:8080`
+- API server must be built before starting (`pnpm run build` inside api-server)
+- `lib/db/src/index.ts` checks `SUPABASE_DATABASE_URL` first, then `DATABASE_URL`
 
 ## User preferences
 
@@ -38,8 +56,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- API server build step is required before `start` — the dev script does `build && start`
+- Seed script creates users with status `active` and `emailVerifiedAt` set so they can log in immediately
+- Google/Facebook OAuth only works if env vars `GOOGLE_CLIENT_ID/SECRET` and `FACEBOOK_CLIENT_ID/SECRET` are set
+- Resend email integration is optional — missing `RESEND_API_KEY` just logs emails to console
