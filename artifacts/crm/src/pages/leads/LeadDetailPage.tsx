@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, useLocation } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useI18n } from "@/contexts/i18nContext";
 import { 
   useUpdateLead,
@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { formatDistanceToNow, format, differenceInDays, isPast, isToday } from "date-fns";
+import { ar as arDateLocale } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -29,8 +30,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,16 +69,16 @@ import {
 
 const activitySchema = z.object({
   type: z.enum(["call", "meeting", "email", "message", "note"]),
-  notes: z.string().min(1, "Notes are required"),
+  notes: z.string().min(1),
   outcome: z.string().optional(),
   nextAction: z.string().optional(),
   durationMinutes: z.coerce.number().optional(),
 });
 
 const editLeadSchema = z.object({
-  name: z.string().min(2, "Name is required"),
+  name: z.string().min(2),
   phone: z.string().optional(),
-  email: z.string().email("Invalid email").optional().or(z.literal("")),
+  email: z.string().email().optional().or(z.literal("")),
   source: z.enum(["manual", "import", "campaign", "referral", "website", "social"]),
   notes: z.string().optional(),
   nextAction: z.string().optional(),
@@ -87,13 +86,29 @@ const editLeadSchema = z.object({
   nextActionAt: z.string().optional(),
 });
 
-function DeadlineBadge({ deadline }: { deadline: string | null | undefined }) {
+const STATUS_LABELS: Record<string, { en: string; ar: string }> = {
+  new:         { en: "New",         ar: "جديد" },
+  called:      { en: "Called",      ar: "تم الاتصال" },
+  qualified:   { en: "Qualified",   ar: "مؤهل" },
+  proposal:    { en: "Proposal",    ar: "عرض سعر" },
+  negotiation: { en: "Negotiation", ar: "تفاوض" },
+  won:         { en: "Won",         ar: "صفقة مكتملة" },
+  lost:        { en: "Lost",        ar: "خسارة" },
+};
+
+function DeadlineBadge({ deadline, isAr, t }: { deadline: string | null | undefined; isAr: boolean; t: (k: string, v?: Record<string, string | number>) => string }) {
   if (!deadline) return null;
   const d = new Date(deadline);
   const daysLeft = differenceInDays(d, new Date());
   const overdue = isPast(d) && !isToday(d);
   const today = isToday(d);
   const urgent = !overdue && daysLeft <= 2;
+
+  const label = overdue
+    ? t("leads.overdue", { n: Math.abs(daysLeft) })
+    : today
+    ? t("leads.due_today")
+    : t("leads.due_in", { n: daysLeft });
 
   return (
     <div className={cn(
@@ -105,15 +120,16 @@ function DeadlineBadge({ deadline }: { deadline: string | null | undefined }) {
     )}>
       {overdue ? <AlertTriangle className="h-4 w-4" /> : today ? <Timer className="h-4 w-4" /> : <CalendarIcon className="h-4 w-4" />}
       <span>
-        {overdue ? `Overdue by ${Math.abs(daysLeft)}d` : today ? "Due Today" : `Due in ${daysLeft}d`}
-        <span className="font-normal ml-1 opacity-75">({format(d, "MMM d, yyyy")})</span>
+        {label}
+        <span className="font-normal mx-1 opacity-75">({format(d, "MMM d, yyyy")})</span>
       </span>
     </div>
   );
 }
 
 export function LeadDetailPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isAr = locale === "ar";
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -121,7 +137,6 @@ export function LeadDetailPage() {
   const [, setLocation] = useLocation();
 
   const { data: leads = [], isLoading: isLeadsLoading } = useListLeads({ search: undefined });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lead = leads.find((l: any) => l.id === id);
 
   const { data: activities = [], isLoading: isActivitiesLoading } = useListLeadActivities(id as string);
@@ -152,6 +167,8 @@ export function LeadDetailPage() {
     } : undefined,
   });
 
+  const getActivityLabel = (type: string) => t(`leads.activity.${type}`) || type;
+
   const onAddActivity = (values: z.infer<typeof activitySchema>) => {
     if (!id) return;
     createActivity.mutate(
@@ -159,10 +176,10 @@ export function LeadDetailPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListLeadActivitiesQueryKey(id) });
-          toast.success("Activity logged");
+          toast.success(t("leads.activity_logged"));
           form.reset();
         },
-        onError: (err: Error) => toast.error(err.message || "Failed to log activity"),
+        onError: (err: Error) => toast.error(err.message),
       }
     );
   };
@@ -186,10 +203,10 @@ export function LeadDetailPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListLeadsQueryKey() });
-          toast.success("Lead updated");
+          toast.success(t("leads.lead_updated"));
           setIsEditOpen(false);
         },
-        onError: (err: Error) => toast.error(err.message || "Failed to update lead"),
+        onError: (err: Error) => toast.error(err.message),
       }
     );
   };
@@ -202,7 +219,7 @@ export function LeadDetailPage() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListLeadsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetLeadsKanbanQueryKey() });
-          toast.success("Status updated");
+          toast.success(t("leads.status_updated"));
         },
       }
     );
@@ -215,7 +232,7 @@ export function LeadDetailPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListLeadsQueryKey() });
-          toast.success("Lead reassigned");
+          toast.success(t("leads.reassigned"));
         },
       }
     );
@@ -228,11 +245,21 @@ export function LeadDetailPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListLeadsQueryKey() });
-          toast.success("Lead deleted");
+          toast.success(t("leads.lead_deleted"));
           setLocation("/leads");
         },
       }
     );
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "call":    return <Phone className="h-4 w-4" />;
+      case "meeting": return <CalendarIcon className="h-4 w-4" />;
+      case "email":   return <Mail className="h-4 w-4" />;
+      case "message": return <MessageCircle className="h-4 w-4" />;
+      default:        return <FileText className="h-4 w-4" />;
+    }
   };
 
   if (isLeadsLoading) {
@@ -250,30 +277,22 @@ export function LeadDetailPage() {
   if (!lead) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold">Lead not found</h2>
-        <p className="text-muted-foreground mt-2">The lead you're looking for doesn't exist or was deleted.</p>
+        <h2 className="text-2xl font-bold">{t("leads.not_found")}</h2>
+        <p className="text-muted-foreground mt-2">{t("leads.not_found_desc")}</p>
         <Button className="mt-4" onClick={() => setLocation("/leads")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads
+          <ArrowLeft className={cn("h-4 w-4", isAr ? "ml-2 rotate-180" : "mr-2")} />
+          {t("leads.back_to_leads")}
         </Button>
       </div>
     );
   }
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "call": return <Phone className="h-4 w-4" />;
-      case "meeting": return <CalendarIcon className="h-4 w-4" />;
-      case "email": return <Mail className="h-4 w-4" />;
-      case "message": return <MessageCircle className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Back Button */}
       <Button variant="ghost" size="sm" onClick={() => setLocation("/leads")} className="text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="mr-2 h-4 w-4" /> {t("leads.back")}
+        <ArrowLeft className={cn("h-4 w-4", isAr ? "ml-2 rotate-180" : "mr-2")} />
+        {t("leads.back")}
       </Button>
 
       {/* Header Card */}
@@ -287,7 +306,7 @@ export function LeadDetailPage() {
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             {lead.phone && (
               <a href={`tel:${lead.phone}`} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                <Phone className="h-3.5 w-3.5" /> {lead.phone}
+                <Phone className="h-3.5 w-3.5" /> <span dir="ltr">{lead.phone}</span>
               </a>
             )}
             {lead.email && (
@@ -301,14 +320,13 @@ export function LeadDetailPage() {
               </div>
             )}
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">{t("leads.created_label")}</span> {format(new Date(lead.createdAt), "MMM d, yyyy")}
+              <span className="font-medium text-foreground">{t("leads.created_label")}</span>
+              {format(new Date(lead.createdAt), "MMM d, yyyy")}
             </div>
           </div>
-
-          {/* Deadline badge */}
           {lead.deadline && (
             <div className="mt-3">
-              <DeadlineBadge deadline={lead.deadline} />
+              <DeadlineBadge deadline={lead.deadline} isAr={isAr} t={t} />
             </div>
           )}
         </div>
@@ -317,17 +335,18 @@ export function LeadDetailPage() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex-1 md:flex-none">
-                {t("leads.change_status")} <ChevronDown className="ml-2 h-4 w-4" />
+                {t("leads.change_status")} <ChevronDown className={cn("h-4 w-4", isAr ? "mr-2" : "ml-2")} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>{t("leads.update_status")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {["new", "called", "qualified", "proposal", "negotiation", "won", "lost"].map(status => (
-                <DropdownMenuItem key={status} onClick={() => handleStatusChange(status)} className="capitalize">
-                  {status === lead.status && <CheckCircle className="mr-2 h-4 w-4 text-emerald-500" />}
-                  {status !== lead.status && <span className="w-6" />}
-                  {status.replace('_', ' ')}
+              {Object.entries(STATUS_LABELS).map(([key, lbl]) => (
+                <DropdownMenuItem key={key} onClick={() => handleStatusChange(key)}>
+                  {key === lead.status
+                    ? <CheckCircle className={cn("h-4 w-4 text-emerald-500", isAr ? "ml-2" : "mr-2")} />
+                    : <span className="w-6" />}
+                  {isAr ? lbl.ar : lbl.en}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -343,11 +362,11 @@ export function LeadDetailPage() {
               <DropdownMenuLabel>{t("leads.actions")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
-                <Edit className="mr-2 h-4 w-4" /> {t("leads.edit_details")}
+                <Edit className={cn("h-4 w-4", isAr ? "ml-2" : "mr-2")} /> {t("leads.edit_details")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive focus:bg-destructive/10 cursor-pointer" onClick={() => setIsDeleteOpen(true)}>
-                <Trash2 className="mr-2 h-4 w-4" /> {t("leads.delete")}
+                <Trash2 className={cn("h-4 w-4", isAr ? "ml-2" : "mr-2")} /> {t("leads.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -362,11 +381,13 @@ export function LeadDetailPage() {
             <div className="flex items-start gap-3 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
               <Timer className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-0.5">{t("leads.next_action_label")}</p>
+                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-0.5">
+                  {t("leads.next_action_label")}
+                </p>
                 <p className="text-sm">{lead.nextAction}</p>
                 {lead.nextActionAt && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Scheduled: {format(new Date(lead.nextActionAt), "MMM d, yyyy")}
+                    {t("leads.scheduled")} {format(new Date(lead.nextActionAt), "MMM d, yyyy")}
                   </p>
                 )}
               </div>
@@ -386,7 +407,7 @@ export function LeadDetailPage() {
                 </div>
               ) : activities.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                  No activities logged yet.
+                  {t("leads.no_activities")}
                 </div>
               ) : (
                 <div className="relative border-l border-muted ml-3 space-y-6 pb-4">
@@ -397,23 +418,38 @@ export function LeadDetailPage() {
                       </span>
                       <div className="bg-muted/30 border rounded-lg p-3">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm capitalize">{activity.type}</span>
-                            <span className="text-xs text-muted-foreground">by {activity.userName}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm">{getActivityLabel(activity.type)}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {t("leads.by")} {activity.userName}
+                            </span>
                             {activity.duration && (
                               <Badge variant="outline" className="text-xs py-0">{activity.duration}m</Badge>
                             )}
                           </div>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
                             <Clock className="h-3 w-3" />
-                            {formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(activity.createdAt), {
+                              addSuffix: true,
+                              locale: isAr ? arDateLocale : undefined,
+                            })}
                           </span>
                         </div>
                         <p className="text-sm">{activity.notes}</p>
                         {(activity.outcome || activity.nextAction) && (
                           <div className="mt-3 text-xs bg-background p-2 rounded border space-y-1">
-                            {activity.outcome && <div><span className="font-semibold text-muted-foreground">Outcome:</span> {activity.outcome}</div>}
-                            {activity.nextAction && <div><span className="font-semibold text-muted-foreground">Next:</span> {activity.nextAction}</div>}
+                            {activity.outcome && (
+                              <div>
+                                <span className="font-semibold text-muted-foreground">{t("leads.outcome_label")}</span>{" "}
+                                {activity.outcome}
+                              </div>
+                            )}
+                            {activity.nextAction && (
+                              <div>
+                                <span className="font-semibold text-muted-foreground">{t("leads.next_short")}</span>{" "}
+                                {activity.nextAction}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -442,14 +478,16 @@ export function LeadDetailPage() {
                           <FormLabel>{t("leads.activity_type")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                              <SelectTrigger>
+                                <SelectValue placeholder={t("leads.select_type")} />
+                              </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="call">📞 Call</SelectItem>
-                              <SelectItem value="meeting">🤝 Meeting</SelectItem>
-                              <SelectItem value="email">✉️ Email</SelectItem>
-                              <SelectItem value="message">💬 Message</SelectItem>
-                              <SelectItem value="note">📝 Internal Note</SelectItem>
+                              <SelectItem value="call">📞 {t("leads.activity.call")}</SelectItem>
+                              <SelectItem value="meeting">🤝 {t("leads.activity.meeting")}</SelectItem>
+                              <SelectItem value="email">✉️ {t("leads.activity.email")}</SelectItem>
+                              <SelectItem value="message">💬 {t("leads.activity.message")}</SelectItem>
+                              <SelectItem value="note">📝 {t("leads.activity.note")}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -477,7 +515,11 @@ export function LeadDetailPage() {
                       <FormItem>
                         <FormLabel>{t("leads.notes")} *</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="What was discussed?" className="min-h-[100px]" {...field} />
+                          <Textarea
+                            placeholder={t("leads.notes_placeholder")}
+                            className="min-h-[100px]"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -491,7 +533,7 @@ export function LeadDetailPage() {
                         <FormItem>
                           <FormLabel>{t("leads.outcome")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Interested, wants proposal" {...field} />
+                            <Input placeholder={t("leads.outcome_placeholder")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -504,7 +546,7 @@ export function LeadDetailPage() {
                         <FormItem>
                           <FormLabel>{t("leads.next_action_label")}</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. Send proposal by Friday" {...field} />
+                            <Input placeholder={t("leads.next_action_placeholder")} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -529,23 +571,27 @@ export function LeadDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wider">Deadline</p>
+                <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wider">
+                  {t("leads.deadline_label")}
+                </p>
                 {lead.deadline ? (
-                  <DeadlineBadge deadline={lead.deadline} />
+                  <DeadlineBadge deadline={lead.deadline} isAr={isAr} t={t} />
                 ) : (
-                  <span className="text-sm text-muted-foreground italic">No deadline set</span>
+                  <span className="text-sm text-muted-foreground italic">{t("leads.no_deadline")}</span>
                 )}
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wider">Next Action Date</p>
+                <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wider">
+                  {t("leads.next_action_date")}
+                </p>
                 {lead.nextActionAt ? (
                   <span className="text-sm">{format(new Date(lead.nextActionAt), "MMM d, yyyy")}</span>
                 ) : (
-                  <span className="text-sm text-muted-foreground italic">Not scheduled</span>
+                  <span className="text-sm text-muted-foreground italic">{t("leads.not_scheduled")}</span>
                 )}
               </div>
               <Button variant="outline" size="sm" className="w-full" onClick={() => setIsEditOpen(true)}>
-                <Edit className="mr-2 h-3.5 w-3.5" /> {t("leads.edit_details")}
+                <Edit className={cn("h-3.5 w-3.5", isAr ? "ml-2" : "mr-2")} /> {t("leads.edit_details")}
               </Button>
             </CardContent>
           </Card>
@@ -557,18 +603,22 @@ export function LeadDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3 mb-4">
-                <UserAvatar name={(lead as any).primarySalesName || "Unassigned"} className="h-10 w-10" />
+                <UserAvatar
+                  name={(lead as any).primarySalesName || t("leads.unassigned")}
+                  className="h-10 w-10"
+                />
                 <div>
-                  <p className="text-sm font-medium">{(lead as any).primarySalesName || "Unassigned"}</p>
-                  <p className="text-xs text-muted-foreground">Primary Agent</p>
+                  <p className="text-sm font-medium">
+                    {(lead as any).primarySalesName || t("leads.unassigned")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{t("leads.primary_agent")}</p>
                 </div>
               </div>
               <Select onValueChange={handleAssign} value={(lead as any).primarySalesId || undefined}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Reassign lead" />
+                  <SelectValue placeholder={t("leads.reassign_placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {users.map((user: any) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.name} ({user.role})
@@ -619,7 +669,7 @@ export function LeadDetailPage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone</FormLabel>
+                      <FormLabel>{t("leads.phone_label")}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -646,7 +696,9 @@ export function LeadDetailPage() {
                         <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                         <SelectContent>
                           {["manual", "import", "campaign", "referral", "website", "social"].map(s => (
-                            <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                            <SelectItem key={s} value={s}>
+                              {t(`leads.source.${s}`)}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -671,7 +723,9 @@ export function LeadDetailPage() {
                   render={({ field }) => (
                     <FormItem className="col-span-2">
                       <FormLabel>{t("leads.next_action_label")}</FormLabel>
-                      <FormControl><Input placeholder="e.g. Send proposal" {...field} /></FormControl>
+                      <FormControl>
+                        <Input placeholder={t("leads.next_action_short_placeholder")} {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -681,7 +735,7 @@ export function LeadDetailPage() {
                   name="nextActionAt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Next Action Date</FormLabel>
+                      <FormLabel>{t("leads.next_action_date")}</FormLabel>
                       <FormControl><Input type="date" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -694,7 +748,11 @@ export function LeadDetailPage() {
                     <FormItem className="col-span-2">
                       <FormLabel>{t("leads.notes")}</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="General notes..." className="min-h-[80px]" {...field} />
+                        <Textarea
+                          placeholder={t("leads.notes_general_placeholder")}
+                          className="min-h-[80px]"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -702,7 +760,9 @@ export function LeadDetailPage() {
                 />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>{t("common.cancel")}</Button>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                  {t("common.cancel")}
+                </Button>
                 <Button type="submit" disabled={updateLead.isPending}>
                   {updateLead.isPending ? t("leads.saving") : t("leads.save_changes")}
                 </Button>
@@ -717,13 +777,14 @@ export function LeadDetailPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("leads.delete_lead_title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("leads.delete_lead_desc")}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("leads.delete_lead_desc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               {t("leads.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
