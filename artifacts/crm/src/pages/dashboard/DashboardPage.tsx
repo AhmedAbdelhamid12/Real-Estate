@@ -66,33 +66,33 @@ export function DashboardPage() {
   const kpis = [
     {
       title: "إجمالي العملاء", value: totalLeadsCount, icon: Users,
-      gradient: "linear-gradient(135deg, #1d4ed8, #1e3a8a)",
-      glow: "#3b82f6", suffix: "",
+      gradient: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+      glow: "#6d6cf8", suffix: "",
     },
     {
       title: "نشط", value: activeCount, icon: TrendingUp,
-      gradient: "linear-gradient(135deg, #0369a1, #0c4a6e)",
-      glow: "#38bdf8", suffix: "",
+      gradient: "linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)",
+      glow: "#22a4e8", suffix: "",
     },
     {
       title: "تم الفوز", value: wonCount, icon: CheckCircle2,
-      gradient: "linear-gradient(135deg, #15803d, #14532d)",
-      glow: "#4ade80", suffix: "",
+      gradient: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+      glow: "#0ec4a8", suffix: "",
     },
     {
       title: "خسائر", value: lostCount, icon: XCircle,
-      gradient: "linear-gradient(135deg, #b91c1c, #7f1d1d)",
-      glow: "#f87171", suffix: "",
+      gradient: "linear-gradient(135deg, #f43f5e 0%, #f97316 100%)",
+      glow: "#f86c3a", suffix: "",
     },
     {
       title: "عدد العملاء", value: clientsCount, icon: UserPlus,
-      gradient: "linear-gradient(135deg, #6d28d9, #3b0764)",
-      glow: "#a78bfa", suffix: "",
+      gradient: "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)",
+      glow: "#b94ac8", suffix: "",
     },
     {
       title: "نسبة التحويل", value: conversionCount, icon: Percent,
-      gradient: "linear-gradient(135deg, #b45309, #78350f)",
-      glow: "#fbbf24", suffix: "%",
+      gradient: "linear-gradient(135deg, #f59e0b 0%, #10b981 100%)",
+      glow: "#6ab858", suffix: "%",
     },
   ];
 
