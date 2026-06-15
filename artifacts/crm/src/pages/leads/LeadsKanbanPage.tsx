@@ -2,6 +2,7 @@ import { useGetLeadsKanban, useUpdateLeadStatus, getGetLeadsKanbanQueryKey } fro
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Link, useLocation } from "wouter";
+import { useI18n } from "@/contexts/i18nContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -11,6 +12,7 @@ import { Calendar, Phone } from "lucide-react";
 import { format } from "date-fns";
 
 export function LeadsKanbanPage() {
+  const { t } = useI18n();
   const { data: kanbanData, isLoading } = useGetLeadsKanban();
   const [, setLocation] = useLocation();
   const updateStatus = useUpdateLeadStatus();
@@ -33,7 +35,7 @@ export function LeadsKanbanPage() {
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getGetLeadsKanbanQueryKey() });
-            toast.success(`Lead moved to ${status}`);
+            toast.success(t("leads.change_status"));
           },
           onError: (err) => {
             toast.error(err.message || "Failed to update lead status");
@@ -47,8 +49,8 @@ export function LeadsKanbanPage() {
     return (
       <div className="space-y-6 h-full flex flex-col">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Kanban Board</h2>
-          <p className="text-muted-foreground">Drag and drop leads to update their status.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("nav.leads.kanban")}</h2>
+          <p className="text-muted-foreground">{t("leads.kanban_subtitle")}</p>
         </div>
         <div className="flex gap-4 overflow-x-auto pb-4 flex-1">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -68,8 +70,8 @@ export function LeadsKanbanPage() {
   return (
     <div className="space-y-6 h-[calc(100vh-100px)] flex flex-col overflow-hidden">
       <div className="shrink-0">
-        <h2 className="text-3xl font-bold tracking-tight">Kanban Board</h2>
-        <p className="text-muted-foreground">Drag and drop leads to update their status.</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t("nav.leads.kanban")}</h2>
+        <p className="text-muted-foreground">{t("leads.kanban_subtitle")}</p>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4 flex-1 items-start h-full">
@@ -92,7 +94,7 @@ export function LeadsKanbanPage() {
             <div className="flex-1 overflow-y-auto pr-1 space-y-3 pb-4">
               {column.leads.length === 0 ? (
                 <div className="h-24 border-2 border-dashed border-muted flex items-center justify-center rounded-lg text-sm text-muted-foreground">
-                  Drop leads here
+                  {t("leads.no_leads")}
                 </div>
               ) : (
                 column.leads.map((lead) => (
@@ -129,7 +131,7 @@ export function LeadsKanbanPage() {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground italic">Unassigned</span>
+                          <span className="text-xs text-muted-foreground italic">{t("common.none")}</span>
                         )}
                         
                         {lead.deadline && (

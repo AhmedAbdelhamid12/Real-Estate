@@ -9,6 +9,7 @@ import { format } from "date-fns";
 // Mocking useGetProject since it wasn't specified but needed, 
 // using list with filter as fallback if not available
 import { useListProjects, useUpdateProject, useDeleteProject, getListProjectsQueryKey } from "@workspace/api-client-react";
+import { useI18n } from "@/contexts/i18nContext";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ import {
 import { useState } from "react";
 
 export function ProjectDetailPage() {
+  const { t } = useI18n();
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -64,11 +66,11 @@ export function ProjectDetailPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
-          toast.success("Project deleted");
+          toast.success(t("projects.delete_title"));
           setLocation("/projects");
         },
-        onError: (err) => {
-          toast.error("Failed to delete project");
+        onError: () => {
+          toast.error(t("common.error"));
         }
       }
     );
@@ -78,8 +80,8 @@ export function ProjectDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/projects">
-          <Button variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
+          <Button variant="outline" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" /> {t("projects.back")}
           </Button>
         </Link>
         <h2 className="text-3xl font-bold tracking-tight">{project.name}</h2>
@@ -96,22 +98,22 @@ export function ProjectDetailPage() {
                 </CardDescription>
               </div>
               <Button variant="destructive" size="sm" onClick={() => setIsDeleteOpen(true)}>
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-muted/30 p-4 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Developer / Owner</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("projects.owner")}</p>
                 <p className="font-medium">{project.ownerName || "-"}</p>
               </div>
               <div className="bg-muted/30 p-4 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Status</p>
-                <p className="font-medium capitalize">{project.isActive ? "Active" : "Inactive"}</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("projects.status")}</p>
+                <p className="font-medium capitalize">{project.isActive ? t("common.active") : t("common.inactive")}</p>
               </div>
               <div className="bg-muted/30 p-4 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Avg Price</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("projects.avg_price_label")}</p>
                 <p className="font-medium">
                   {project.avgPrice 
                     ? new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(Number(project.avgPrice))
@@ -119,15 +121,15 @@ export function ProjectDetailPage() {
                 </p>
               </div>
               <div className="bg-muted/30 p-4 rounded-lg border">
-                <p className="text-sm text-muted-foreground mb-1">Added</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("projects.added")}</p>
                 <p className="font-medium">{format(new Date(project.createdAt), "MMM d, yyyy")}</p>
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Description</h3>
+              <h3 className="font-semibold mb-2">{t("projects.description")}</h3>
               <p className="text-muted-foreground whitespace-pre-wrap">
-                {project.description || "No description provided."}
+                {project.description || t("projects.no_description")}
               </p>
             </div>
           </CardContent>
@@ -135,7 +137,7 @@ export function ProjectDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Project Statistics</CardTitle>
+            <CardTitle>{t("projects.statistics")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8">
@@ -149,14 +151,14 @@ export function ProjectDetailPage() {
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
+            <AlertDialogTitle>{t("projects.delete_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {project.name}? This action cannot be undone.
+              {t("projects.delete_desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">{t("common.delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

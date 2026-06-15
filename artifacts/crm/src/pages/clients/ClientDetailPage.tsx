@@ -1,5 +1,6 @@
 import { useParams } from "wouter";
 import { useGetClient, useListLeads } from "@workspace/api-client-react";
+import { useI18n } from "@/contexts/i18nContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { format } from "date-fns";
 
 export function ClientDetailPage() {
+  const { t } = useI18n();
   const { id } = useParams<{ id: string }>();
   const { data: client, isLoading } = useGetClient(id!);
   const { data: leads = [] } = useListLeads();
@@ -23,7 +25,7 @@ export function ClientDetailPage() {
   );
 
   if (!client) return (
-    <div className="text-center py-16 text-muted-foreground">Client not found</div>
+    <div className="text-center py-16 text-muted-foreground">{t("clients.not_found")}</div>
   );
 
   return (
@@ -31,7 +33,7 @@ export function ClientDetailPage() {
       <div className="flex items-center gap-3">
         <Link href="/clients">
           <Button variant="ghost" size="sm" className="gap-1">
-            <ArrowLeft className="w-4 h-4" /> Clients
+            <ArrowLeft className="w-4 h-4" /> {t("clients.back")}
           </Button>
         </Link>
       </div>
@@ -61,7 +63,7 @@ export function ClientDetailPage() {
             {client.createdAt && (
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
-                Client since {format(new Date(client.createdAt), "MMM yyyy")}
+                {t("clients.added")} {format(new Date(client.createdAt), "MMM yyyy")}
               </p>
             )}
           </CardContent>
@@ -69,17 +71,17 @@ export function ClientDetailPage() {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Associated Leads ({clientLeads.length})</CardTitle>
+            <CardTitle className="text-base">{t("clients.leads_section")} ({clientLeads.length})</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {clientLeads.length === 0
-              ? <p className="text-sm text-muted-foreground text-center py-8">No associated leads</p>
+              ? <p className="text-sm text-muted-foreground text-center py-8">{t("leads.no_leads")}</p>
               : clientLeads.map((lead) => (
                 <Link key={lead.id} href={`/leads/${lead.id}`}>
                   <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/40 transition-colors cursor-pointer">
                     <div>
                       <p className="font-medium text-sm">{lead.name}</p>
-                      <p className="text-xs text-muted-foreground">{lead.projectName ?? "No project"}</p>
+                      <p className="text-xs text-muted-foreground">{lead.projectName ?? t("common.none")}</p>
                     </div>
                     <StatusBadge status={lead.status} />
                   </div>

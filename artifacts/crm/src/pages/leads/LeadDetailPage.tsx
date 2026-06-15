@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
+import { useI18n } from "@/contexts/i18nContext";
 import { 
   useUpdateLead,
   useUpdateLeadStatus, 
@@ -112,6 +113,7 @@ function DeadlineBadge({ deadline }: { deadline: string | null | undefined }) {
 }
 
 export function LeadDetailPage() {
+  const { t } = useI18n();
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -271,7 +273,7 @@ export function LeadDetailPage() {
     <div className="space-y-6">
       {/* Back Button */}
       <Button variant="ghost" size="sm" onClick={() => setLocation("/leads")} className="text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="mr-2 h-4 w-4" /> All Leads
+        <ArrowLeft className="mr-2 h-4 w-4" /> {t("leads.back")}
       </Button>
 
       {/* Header Card */}
@@ -295,11 +297,11 @@ export function LeadDetailPage() {
             )}
             {(lead as any).projectName && (
               <div className="flex items-center gap-1">
-                <span className="font-medium text-foreground">Project:</span> {(lead as any).projectName}
+                <span className="font-medium text-foreground">{t("leads.project_label")}</span> {(lead as any).projectName}
               </div>
             )}
             <div className="flex items-center gap-1">
-              <span className="font-medium text-foreground">Created:</span> {format(new Date(lead.createdAt), "MMM d, yyyy")}
+              <span className="font-medium text-foreground">{t("leads.created_label")}</span> {format(new Date(lead.createdAt), "MMM d, yyyy")}
             </div>
           </div>
 
@@ -315,11 +317,11 @@ export function LeadDetailPage() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex-1 md:flex-none">
-                Change Status <ChevronDown className="ml-2 h-4 w-4" />
+                {t("leads.change_status")} <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("leads.update_status")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {["new", "called", "qualified", "proposal", "negotiation", "won", "lost"].map(status => (
                 <DropdownMenuItem key={status} onClick={() => handleStatusChange(status)} className="capitalize">
@@ -338,14 +340,14 @@ export function LeadDetailPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Lead Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("leads.actions")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
-                <Edit className="mr-2 h-4 w-4" /> Edit Details
+                <Edit className="mr-2 h-4 w-4" /> {t("leads.edit_details")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive focus:bg-destructive/10 cursor-pointer" onClick={() => setIsDeleteOpen(true)}>
-                <Trash2 className="mr-2 h-4 w-4" /> Delete Lead
+                <Trash2 className="mr-2 h-4 w-4" /> {t("leads.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -360,7 +362,7 @@ export function LeadDetailPage() {
             <div className="flex items-start gap-3 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
               <Timer className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-0.5">Next Action</p>
+                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-0.5">{t("leads.next_action_label")}</p>
                 <p className="text-sm">{lead.nextAction}</p>
                 {lead.nextActionAt && (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -374,8 +376,8 @@ export function LeadDetailPage() {
           {/* Activity History */}
           <Card>
             <CardHeader>
-              <CardTitle>Activity History</CardTitle>
-              <CardDescription>All interactions recorded with this lead.</CardDescription>
+              <CardTitle>{t("leads.activity_history")}</CardTitle>
+              <CardDescription>{t("leads.all_interactions")}</CardDescription>
             </CardHeader>
             <CardContent>
               {isActivitiesLoading ? (
@@ -425,8 +427,8 @@ export function LeadDetailPage() {
           {/* Log Activity */}
           <Card>
             <CardHeader>
-              <CardTitle>Log Activity</CardTitle>
-              <CardDescription>Record a new interaction with this lead.</CardDescription>
+              <CardTitle>{t("leads.log_activity")}</CardTitle>
+              <CardDescription>{t("leads.all_interactions")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -437,7 +439,7 @@ export function LeadDetailPage() {
                       name="type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Activity Type</FormLabel>
+                          <FormLabel>{t("leads.activity_type")}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
@@ -459,7 +461,7 @@ export function LeadDetailPage() {
                       name="durationMinutes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Duration (mins)</FormLabel>
+                          <FormLabel>{t("leads.duration")}</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="15" {...field} />
                           </FormControl>
@@ -473,7 +475,7 @@ export function LeadDetailPage() {
                     name="notes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Notes *</FormLabel>
+                        <FormLabel>{t("leads.notes")} *</FormLabel>
                         <FormControl>
                           <Textarea placeholder="What was discussed?" className="min-h-[100px]" {...field} />
                         </FormControl>
@@ -487,7 +489,7 @@ export function LeadDetailPage() {
                       name="outcome"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Outcome</FormLabel>
+                          <FormLabel>{t("leads.outcome")}</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g. Interested, wants proposal" {...field} />
                           </FormControl>
@@ -500,7 +502,7 @@ export function LeadDetailPage() {
                       name="nextAction"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Next Action</FormLabel>
+                          <FormLabel>{t("leads.next_action_label")}</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g. Send proposal by Friday" {...field} />
                           </FormControl>
@@ -510,7 +512,7 @@ export function LeadDetailPage() {
                     />
                   </div>
                   <Button type="submit" disabled={createActivity.isPending}>
-                    {createActivity.isPending ? "Saving..." : "Log Activity"}
+                    {createActivity.isPending ? t("leads.saving") : t("leads.log_activity")}
                   </Button>
                 </form>
               </Form>
@@ -523,7 +525,7 @@ export function LeadDetailPage() {
           {/* Deadline & Next Action Summary */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Key Dates</CardTitle>
+              <CardTitle className="text-base">{t("leads.deadline")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
@@ -543,7 +545,7 @@ export function LeadDetailPage() {
                 )}
               </div>
               <Button variant="outline" size="sm" className="w-full" onClick={() => setIsEditOpen(true)}>
-                <Edit className="mr-2 h-3.5 w-3.5" /> Edit Details
+                <Edit className="mr-2 h-3.5 w-3.5" /> {t("leads.edit_details")}
               </Button>
             </CardContent>
           </Card>
@@ -551,7 +553,7 @@ export function LeadDetailPage() {
           {/* Assignment */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Assignment</CardTitle>
+              <CardTitle className="text-base">{t("leads.salesperson")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-3 mb-4">
@@ -581,7 +583,7 @@ export function LeadDetailPage() {
           {lead.notes && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Lead Notes</CardTitle>
+                <CardTitle className="text-base">{t("leads.notes")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{lead.notes}</p>
@@ -595,8 +597,8 @@ export function LeadDetailPage() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit Lead Details</DialogTitle>
-            <DialogDescription>Update lead information, notes, and key dates.</DialogDescription>
+            <DialogTitle>{t("leads.edit_lead")}</DialogTitle>
+            <DialogDescription>{t("leads.all_interactions")}</DialogDescription>
           </DialogHeader>
           <Form {...editForm}>
             <form onSubmit={editForm.handleSubmit(onEditLead)} className="space-y-4">
@@ -606,7 +608,7 @@ export function LeadDetailPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem className="col-span-2">
-                      <FormLabel>Full Name *</FormLabel>
+                      <FormLabel>{t("leads.full_name")}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -628,7 +630,7 @@ export function LeadDetailPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t("leads.email")}</FormLabel>
                       <FormControl><Input type="email" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -639,7 +641,7 @@ export function LeadDetailPage() {
                   name="source"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Source</FormLabel>
+                      <FormLabel>{t("leads.source")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -657,7 +659,7 @@ export function LeadDetailPage() {
                   name="deadline"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deadline</FormLabel>
+                      <FormLabel>{t("leads.deadline")}</FormLabel>
                       <FormControl><Input type="date" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -668,7 +670,7 @@ export function LeadDetailPage() {
                   name="nextAction"
                   render={({ field }) => (
                     <FormItem className="col-span-2">
-                      <FormLabel>Next Action</FormLabel>
+                      <FormLabel>{t("leads.next_action_label")}</FormLabel>
                       <FormControl><Input placeholder="e.g. Send proposal" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -690,7 +692,7 @@ export function LeadDetailPage() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem className="col-span-2">
-                      <FormLabel>Notes</FormLabel>
+                      <FormLabel>{t("leads.notes")}</FormLabel>
                       <FormControl>
                         <Textarea placeholder="General notes..." className="min-h-[80px]" {...field} />
                       </FormControl>
@@ -700,9 +702,9 @@ export function LeadDetailPage() {
                 />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>{t("common.cancel")}</Button>
                 <Button type="submit" disabled={updateLead.isPending}>
-                  {updateLead.isPending ? "Saving..." : "Save Changes"}
+                  {updateLead.isPending ? t("leads.saving") : t("leads.save_changes")}
                 </Button>
               </DialogFooter>
             </form>
@@ -714,15 +716,15 @@ export function LeadDetailPage() {
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this lead?</AlertDialogTitle>
+            <AlertDialogTitle>{t("leads.delete_lead_title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{lead.name}</strong> and all associated activities. This action cannot be undone.
+              {t("leads.delete_lead_desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete Lead
+              {t("leads.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

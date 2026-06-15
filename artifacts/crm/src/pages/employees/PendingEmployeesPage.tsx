@@ -1,4 +1,5 @@
 import { useListPendingUsers, useApproveUser, useRejectUser, getListPendingUsersQueryKey, getListUsersQueryKey } from "@workspace/api-client-react";
+import { useI18n } from "@/contexts/i18nContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 
 export function PendingEmployeesPage() {
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const { data: users = [], isLoading } = useListPendingUsers();
   const approveUser = useApproveUser();
@@ -33,11 +35,11 @@ export function PendingEmployeesPage() {
       { userId },
       {
         onSuccess: () => {
-          toast.success("User approved successfully");
+          toast.success(t("employees.approve"));
           queryClient.invalidateQueries({ queryKey: getListPendingUsersQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListUsersQueryKey() });
         },
-        onError: (err) => toast.error(err.message || "Failed to approve user")
+        onError: (err) => toast.error(err.message || t("common.error"))
       }
     );
   };
@@ -48,12 +50,12 @@ export function PendingEmployeesPage() {
       { userId: rejectingId, data: { reason: rejectReason } },
       {
         onSuccess: () => {
-          toast.success("User rejected");
+          toast.success(t("employees.reject"));
           queryClient.invalidateQueries({ queryKey: getListPendingUsersQueryKey() });
           setRejectingId(null);
           setRejectReason("");
         },
-        onError: (err) => toast.error(err.message || "Failed to reject user")
+        onError: (err) => toast.error(err.message || t("common.error"))
       }
     );
   };
@@ -62,8 +64,8 @@ export function PendingEmployeesPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Pending Approvals</h2>
-          <p className="text-muted-foreground">Review access requests for the platform.</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t("employees.pending_title")}</h2>
+          <p className="text-muted-foreground">{t("employees.pending_subtitle")}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2, 3].map(i => (
@@ -77,16 +79,16 @@ export function PendingEmployeesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Pending Approvals</h2>
-        <p className="text-muted-foreground">Review access requests for the platform.</p>
+        <h2 className="text-3xl font-bold tracking-tight">{t("employees.pending_title")}</h2>
+        <p className="text-muted-foreground">{t("employees.pending_subtitle")}</p>
       </div>
 
       {users.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-20 text-center">
             <CheckCircle2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-medium">All Caught Up!</h3>
-            <p className="text-muted-foreground mt-1">There are no pending user approvals at this time.</p>
+            <h3 className="text-lg font-medium">{t("employees.no_pending")}</h3>
+            <p className="text-muted-foreground mt-1">{t("common.no_data")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -98,7 +100,7 @@ export function PendingEmployeesPage() {
                   <UserAvatar name={user.name} className="h-12 w-12" />
                   <div>
                     <h3 className="font-semibold text-lg leading-tight">{user.name}</h3>
-                    <p className="text-sm text-muted-foreground">New User Request</p>
+                    <p className="text-sm text-muted-foreground">{t("employees.pending_title")}</p>
                   </div>
                 </div>
                 
@@ -109,11 +111,11 @@ export function PendingEmployeesPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{user.phone || "Not provided"}</span>
+                    <span>{user.phone || t("employees.not_provided")}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>Requested {format(new Date(user.createdAt), "MMM d, yyyy")}</span>
+                    <span>{t("employees.requested", { date: format(new Date(user.createdAt), "MMM d, yyyy") })}</span>
                   </div>
                 </div>
               </CardContent>
@@ -123,14 +125,14 @@ export function PendingEmployeesPage() {
                   className="flex-1 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20"
                   onClick={() => setRejectingId(user.id)}
                 >
-                  <XCircle className="h-4 w-4 mr-2" /> Reject
+                  <XCircle className="h-4 w-4 mr-2" /> {t("employees.reject")}
                 </Button>
                 <Button 
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                   onClick={() => handleApprove(user.id)}
                   disabled={approveUser.isPending}
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" /> Approve
+                  <CheckCircle2 className="h-4 w-4 mr-2" /> {t("employees.approve")}
                 </Button>
               </CardFooter>
             </Card>
@@ -141,23 +143,23 @@ export function PendingEmployeesPage() {
       <Dialog open={!!rejectingId} onOpenChange={(open) => !open && setRejectingId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject User Request</DialogTitle>
+            <DialogTitle>{t("employees.reject_title")}</DialogTitle>
             <DialogDescription>
-              Please provide a reason for rejecting this user's access request.
+              {t("employees.rejection_reason")}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Textarea
-              placeholder="e.g. Not an employee of this company."
+              placeholder={t("employees.rejection_reason")}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               className="min-h-[100px]"
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectingId(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRejectingId(null)}>{t("common.cancel")}</Button>
             <Button variant="destructive" onClick={handleReject} disabled={!rejectReason.trim() || rejectUser.isPending}>
-              Reject User
+              {t("employees.confirm_reject")}
             </Button>
           </DialogFooter>
         </DialogContent>

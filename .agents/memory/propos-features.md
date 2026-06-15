@@ -37,6 +37,11 @@ description: Completed features, fixes, and patterns across web CRM and mobile a
 - POST to `/api/resale/:id/photos` with `{ url }` body
 - `PhotoGallery` component already displays multi-photo carousels with nav arrows
 
+## Full i18n Coverage (all CRM pages)
+- LeadDetailPage, LeadsKanbanPage, ProjectDetailPage, ClientDetailPage, PendingEmployeesPage all fully translated
+- LeadDetailPage covers: header, status, actions, activity log form, edit dialog, delete dialog, key dates sidebar
+- New keys added: leads.notes, leads.outcome, leads.next_action_label, leads.saving, leads.deadline, leads.edit_lead, leads.save_changes, leads.delete_lead_title, leads.delete_lead_desc, leads.salesperson, leads.source, leads.email, leads.full_name, leads.all_interactions, common.cancel
+
 ## apiFetch vs customFetch
 - `apiFetch` = raw fetch with `credentials: "include"` — use on web only
 - `customFetch` = applies baseUrl + Bearer token — use on mobile
