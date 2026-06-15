@@ -228,8 +228,8 @@ export function HomePage() {
       description: t("home.nav.my_leads_desc"),
       href: "/leads",
       colors: isDark
-        ? { from: "#2563B0", to: "#0F2D52", ring: "#2563B0", accent: "#D4B86A" }
-        : { from: "#2563B0", to: "#0F2D52", ring: "#2563B0", accent: "#D4B86A" },
+        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
+        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
       stats: [
         { label: t("common.active"), value: activeLeads.length },
         { label: t("home.stat.won"), value: wonLeads.length },
@@ -243,8 +243,8 @@ export function HomePage() {
       description: t("home.nav.resale_desc"),
       href: "/resale",
       colors: isDark
-        ? { from: "#D4B86A", to: "#A8893A", ring: "#C9A84C", accent: "#F8F9FC" }
-        : { from: "#D4B86A", to: "#A8893A", ring: "#C9A84C", accent: "#F8F9FC" },
+        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
+        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
       stats: [],
       delay: 0.18,
     },
@@ -254,8 +254,8 @@ export function HomePage() {
       description: t("home.nav.planner_desc"),
       href: "/planner",
       colors: isDark
-        ? { from: "#1A4A7A", to: "#0A1E38", ring: "#2563B0", accent: "#D4B86A" }
-        : { from: "#1A4A7A", to: "#0A1E38", ring: "#2563B0", accent: "#D4B86A" },
+        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
+        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
       stats: [
         { label: t("home.stat.today"), value: todayTasks.length },
         { label: t("home.stat.pending"), value: pendingTasks.length },
@@ -269,8 +269,8 @@ export function HomePage() {
       description: t("home.nav.profile_desc"),
       href: "/profile",
       colors: isDark
-        ? { from: "#1A4A7A", to: "#C9A84C", ring: "#C9A84C", accent: "#F8F9FC" }
-        : { from: "#1A4A7A", to: "#C9A84C", ring: "#C9A84C", accent: "#F8F9FC" },
+        ? { from: "#0A1E38", to: "#0F2D52", ring: "#C9A84C", accent: "#D4B86A" }
+        : { from: "#0F2D52", to: "#1A4A7A", ring: "#C9A84C", accent: "#D4B86A" },
       stats: [],
       delay: 0.34,
     },
