@@ -66,33 +66,33 @@ export function DashboardPage() {
   const kpis = [
     {
       title: "إجمالي العملاء", value: totalLeadsCount, icon: Users,
-      gradient: "linear-gradient(145deg, #10b981 0%, #065f46 100%)",
-      glow: "#10b981", suffix: "",
+      gradient: "linear-gradient(145deg, #2563B0 0%, #0F2D52 100%)",
+      glow: "#2563B0", suffix: "",
     },
     {
       title: "نشط", value: activeCount, icon: TrendingUp,
-      gradient: "linear-gradient(145deg, #34d399 0%, #059669 100%)",
-      glow: "#34d399", suffix: "",
+      gradient: "linear-gradient(145deg, #1A4A7A 0%, #0A1E38 100%)",
+      glow: "#1A4A7A", suffix: "",
     },
     {
       title: "تم الفوز", value: wonCount, icon: CheckCircle2,
-      gradient: "linear-gradient(145deg, #047857 0%, #022c22 100%)",
-      glow: "#10b981", suffix: "",
+      gradient: "linear-gradient(145deg, #0F2D52 0%, #060F1C 100%)",
+      glow: "#1A4A7A", suffix: "",
     },
     {
       title: "خسائر", value: lostCount, icon: XCircle,
-      gradient: "linear-gradient(145deg, #065f46 0%, #064e3b 100%)",
-      glow: "#6ee7b7", suffix: "",
+      gradient: "linear-gradient(145deg, #0A1E38 0%, #060F1C 100%)",
+      glow: "#C9A84C", suffix: "",
     },
     {
       title: "عدد العملاء", value: clientsCount, icon: UserPlus,
-      gradient: "linear-gradient(145deg, #059669 0%, #047857 100%)",
-      glow: "#059669", suffix: "",
+      gradient: "linear-gradient(145deg, #D4B86A 0%, #A8893A 100%)",
+      glow: "#C9A84C", suffix: "",
     },
     {
       title: "نسبة التحويل", value: conversionCount, icon: Percent,
-      gradient: "linear-gradient(145deg, #064e3b 0%, #022c22 100%)",
-      glow: "#34d399", suffix: "%",
+      gradient: "linear-gradient(145deg, #1A4A7A 0%, #C9A84C 100%)",
+      glow: "#C9A84C", suffix: "%",
     },
   ];
 
@@ -267,22 +267,22 @@ export function DashboardPage() {
           }}>
             {/* Header with gradient */}
             <div style={{
-              background: "linear-gradient(135deg, #022c22, #065f46)",
+              background: "linear-gradient(135deg, #0A1E38, #0F2D52)",
               padding: "20px 24px",
               position: "relative", overflow: "hidden",
             }}>
               <div style={{
                 position: "absolute", top: 0, left: 0, right: 0, height: 2,
-                background: "linear-gradient(90deg, transparent, #34d399 40%, transparent)",
+                background: "linear-gradient(90deg, transparent, #C9A84C 40%, transparent)",
               }} />
               <div style={{
                 position: "absolute", top: -30, right: -20,
                 width: 100, height: 100, borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%)",
               }} />
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(52,211,153,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Crown style={{ width: 17, height: 17, color: "#34d399" }} />
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(201,168,76,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Crown style={{ width: 17, height: 17, color: "#C9A84C" }} />
                 </div>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>أفضل المؤدين</div>
