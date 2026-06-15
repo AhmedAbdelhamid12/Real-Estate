@@ -382,6 +382,16 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.view_all": "View all",
     "home.leads_active": "active",
     "home.tasks_done": "done",
+    "home.hero.you_have": "You have",
+    "home.hero.tasks_pending": "tasks pending",
+    "home.hero.and": "&",
+    "home.hero.overdue_leads": "overdue leads today",
+    "home.win_rate": "Win Rate",
+    "home.leads_count": "leads",
+    "home.no_project": "No project",
+    "lead.priority.high": "High",
+    "lead.priority.medium": "Medium",
+    "lead.priority.low": "Low",
 
     // ── Common ───────────────────────────────────────────────────────────
     "common.save": "Save",
@@ -797,6 +807,16 @@ const translations: Record<Locale, Record<string, string>> = {
     "home.view_all": "عرض الكل",
     "home.leads_active": "نشط",
     "home.tasks_done": "مكتمل",
+    "home.hero.you_have": "لديك",
+    "home.hero.tasks_pending": "مهمة معلقة",
+    "home.hero.and": "و",
+    "home.hero.overdue_leads": "عميل منتهي الصلاحية اليوم",
+    "home.win_rate": "معدل الفوز",
+    "home.leads_count": "عملاء",
+    "home.no_project": "بلا مشروع",
+    "lead.priority.high": "عالي",
+    "lead.priority.medium": "متوسط",
+    "lead.priority.low": "منخفض",
 
     // ── Common ───────────────────────────────────────────────────────────
     "common.save": "حفظ",

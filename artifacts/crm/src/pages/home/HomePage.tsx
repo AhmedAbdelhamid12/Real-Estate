@@ -6,6 +6,7 @@ import { useListLeads, useListPlannerTasks } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { format } from "date-fns";
+import { ar as arLocale } from "date-fns/locale";
 import {
   TrendingUp, Target, Users, Calendar,
   CheckCircle2, Clock, AlertCircle, Flame,
@@ -177,7 +178,8 @@ function NavCard({ icon: Icon, label, description, href, colors, stats, delay }:
 
 export function HomePage() {
   const { currentUser } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isAr = locale === "ar";
 
   const [isDark, setIsDark] = useState(() =>
     document.documentElement.classList.contains("dark")
@@ -321,7 +323,7 @@ export function HomePage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ width: 28, height: 1, background: "#c8a84b", opacity: 0.8 }} />
               <span style={{ fontSize: 11, fontWeight: 600, color: "#c8a84b", letterSpacing: "0.16em", textTransform: "uppercase" }}>
-                {format(new Date(), "EEEE, MMMM d, yyyy")}
+                {format(new Date(), "EEEE, MMMM d, yyyy", isAr ? { locale: arLocale } : undefined)}
               </span>
             </div>
             <h1 style={{ fontSize: 32, fontWeight: 800, color: "white", margin: 0, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
@@ -329,7 +331,11 @@ export function HomePage() {
               <span style={{ color: "#e8d070" }}>{currentUser.name.split(" ")[0]}</span> 👋
             </h1>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 6 }}>
-              You have <span style={{ color: "white", fontWeight: 600 }}>{pendingTasks.length}</span> tasks pending &amp; <span style={{ color: overdueTasks.length > 0 ? "#f87171" : "white", fontWeight: 600 }}>{overdueTasks.length}</span> overdue leads today
+              {t("home.hero.you_have")}{" "}
+              <span style={{ color: "white", fontWeight: 600 }}>{pendingTasks.length}</span>{" "}
+              {t("home.hero.tasks_pending")}{" "}{t("home.hero.and")}{" "}
+              <span style={{ color: overdueTasks.length > 0 ? "#f87171" : "white", fontWeight: 600 }}>{overdueTasks.length}</span>{" "}
+              {t("home.hero.overdue_leads")}
             </p>
           </div>
 
@@ -341,9 +347,9 @@ export function HomePage() {
             backdropFilter: "blur(12px)",
             textAlign: "center",
           }}>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Win Rate</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>{t("home.win_rate")}</div>
             <div style={{ fontSize: 36, fontWeight: 800, color: winRate >= 50 ? "#4ade80" : "#fbbf24", lineHeight: 1 }}>{winRate}<span style={{ fontSize: 18 }}>%</span></div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{wonLeads.length} / {myLeads.length} leads</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{wonLeads.length} / {myLeads.length} {t("home.leads_count")}</div>
           </div>
         </div>
 
@@ -463,7 +469,7 @@ export function HomePage() {
                         >
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <p style={{ fontWeight: 600, fontSize: 13, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--foreground)" }}>{lead.name}</p>
-                            <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: 0 }}>{lead.projectName ?? "No project"}</p>
+                            <p style={{ fontSize: 11, color: "var(--muted-foreground)", margin: 0 }}>{lead.projectName ?? t("home.no_project")}</p>
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginInlineStart: 8 }}>
                             {lead.deadline && new Date(lead.deadline) < new Date() && (
@@ -583,7 +589,7 @@ export function HomePage() {
                         color: task.priority === "high" ? "#f87171" : task.priority === "medium" ? "#fbbf24" : "#94a3b8",
                         border: `1px solid ${task.priority === "high" ? "#ef444440" : task.priority === "medium" ? "#f59e0b40" : "#94a3b840"}`,
                       }}>
-                        {task.priority}
+                        {t(`lead.priority.${task.priority}`) || task.priority}
                       </span>
                     </motion.div>
                   ))
