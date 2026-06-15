@@ -612,7 +612,7 @@ const I18nContext = createContext<I18nContextType>({
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(() => {
-    return (localStorage.getItem("locale") as Locale) ?? "en";
+    return (localStorage.getItem("locale") as Locale) ?? "ar";
   });
 
   const dir: Direction = "rtl";
