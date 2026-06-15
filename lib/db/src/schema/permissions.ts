@@ -7,6 +7,7 @@ import {
   timestamp,
   index,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { usersTable, roleEnum } from "./users";
 
@@ -41,6 +42,7 @@ export const rolePermissionsTable = pgTable(
   (table) => [
     index("role_permissions_role_idx").on(table.role),
     index("role_permissions_key_idx").on(table.permissionKey),
+    unique("role_permissions_role_key_unique").on(table.role, table.permissionKey),
   ]
 );
 
