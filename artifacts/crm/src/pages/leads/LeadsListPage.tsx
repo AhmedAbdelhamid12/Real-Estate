@@ -159,7 +159,7 @@ export function LeadsListPage() {
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         style={{
           borderRadius: 20,
-          background: "linear-gradient(135deg, #0f172a 0%, #1a1040 50%, #0f172a 100%)",
+          background: "linear-gradient(135deg, #0A1E38 0%, #0F2D52 55%, #060F1C 100%)",
           padding: "24px 28px",
           position: "relative",
           overflow: "hidden",
