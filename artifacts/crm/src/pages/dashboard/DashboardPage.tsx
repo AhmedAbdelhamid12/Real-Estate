@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
-import { useGetDashboardStats, useGetPipelineBreakdown, useGetTopPerformers } from "@workspace/api-client-react";
+import { useGetDashboardStats, useGetTopPerformers } from "@workspace/api-client-react";
 import { UserAvatar } from "@/components/shared/UserAvatar";
-import { Users, UserPlus, CheckCircle2, XCircle, TrendingUp, Percent, Medal, Crown, Flame } from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis,
-  CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell,
-} from "recharts";
+import { Users, UserPlus, CheckCircle2, XCircle, TrendingUp, Percent, Crown, Flame } from "lucide-react";
 import { motion } from "framer-motion";
 import { useI18n } from "@/contexts/i18nContext";
 
@@ -26,23 +22,7 @@ function useCountUp(target: number | undefined, duration = 900): number {
   return count;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  new:         "#60A5FA",   // soft blue — navy-adjacent
-  called:      "#C9A84C",   // TIL gold
-  qualified:   "#2DD4BF",   // teal — complements navy
-  proposal:    "#D4B86A",   // gold light
-  negotiation: "#F59E0B",   // warm amber
-  won:         "#4ADE80",   // green — keep semantic meaning
-  lost:        "#F87171",   // red — keep semantic meaning
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  new: "جديد", called: "تم الاتصال", qualified: "مؤهل",
-  proposal: "عرض", negotiation: "تفاوض", won: "فاز", lost: "خسر",
-};
-
 const RANK_COLORS = ["#C9A84C", "#94a3b8", "#cd7f32"];
-const RANK_ICONS = [Crown, Medal, Medal];
 
 const CARD_BG = "linear-gradient(135deg, #0A1E38 0%, #0F2D52 55%, #060F1C 100%)";
 const CARD_SHADOW = "0 8px 32px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,168,76,0.08)";
@@ -170,118 +150,20 @@ export function DashboardPage() {
         ))}
       </div>
 
-      {/* ── PIPELINE + LEADERBOARD ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 20 }}>
-
-        {/* Pipeline Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.38, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div style={{
-            borderRadius: 20,
-            background: CARD_BG,
-            border: "1px solid rgba(201,168,76,0.12)",
-            overflow: "hidden",
-            height: "100%",
-            boxShadow: CARD_SHADOW,
-            position: "relative",
-          }}>
-            <GoldShimmer />
-            <GlowOrb top={-60} right={-40} size={220} opacity={0.10} />
-
-            {/* Header */}
-            <div style={{
-              padding: "20px 24px 16px",
-              borderBottom: "1px solid rgba(255,255,255,0.07)",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-            }}>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "white" }}>{t("reports.pipeline")}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>توزيع العملاء المحتملين حسب المرحلة</div>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                {["won", "lost"].map((s) => (
-                  <div key={s} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: STATUS_COLORS[s] }} />
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{STATUS_LABELS[s]}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Chart */}
-            <div style={{ padding: "16px 20px 20px", height: 320 }}>
-              {pipelineLoading ? (
-                <div style={{ height: "100%", background: "rgba(255,255,255,0.06)", borderRadius: 10 }} />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={pipeline} margin={{ top: 8, right: 8, left: -24, bottom: 0 }} barCategoryGap="32%">
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.07)" />
-                    <XAxis
-                      dataKey="status"
-                      tickFormatter={(val) => STATUS_LABELS[val] ?? val}
-                      tickLine={false} axisLine={false}
-                      tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 500 }}
-                    />
-                    <YAxis tickLine={false} axisLine={false} tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
-                    <RechartsTooltip
-                      cursor={{ fill: "rgba(255,255,255,0.05)", borderRadius: 4 }}
-                      contentStyle={{
-                        borderRadius: 10,
-                        border: "1px solid rgba(201,168,76,0.2)",
-                        background: "#0A1E38",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-                        fontSize: 12,
-                        color: "white",
-                      }}
-                      formatter={(val) => [val, "عدد العملاء"]}
-                      labelFormatter={(label) => STATUS_LABELS[label] ?? label}
-                    />
-                    <Bar dataKey="count" radius={[8, 8, 0, 0]} isAnimationActive animationDuration={900}>
-                      {(pipeline || []).map((entry, i) => (
-                        <Cell key={`cell-${i}`} fill={STATUS_COLORS[entry.status] ?? "#6366f1"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-
-            {/* Legend */}
-            {!pipelineLoading && pipeline && pipeline.length > 0 && (
-              <div style={{
-                padding: "12px 24px",
-                borderTop: "1px solid rgba(255,255,255,0.07)",
-                display: "flex", gap: 12, flexWrap: "wrap",
-              }}>
-                {pipeline.map((entry) => (
-                  <div key={entry.status} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: 3, background: STATUS_COLORS[entry.status] ?? "#6366f1" }} />
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{STATUS_LABELS[entry.status]} ({entry.count})</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Leaderboard */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.46, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div style={{
-            borderRadius: 20,
-            overflow: "hidden",
-            height: "100%",
-            background: CARD_BG,
-            border: "1px solid rgba(201,168,76,0.12)",
-            boxShadow: CARD_SHADOW,
-            position: "relative",
-          }}>
+      {/* ── LEADERBOARD ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.46, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div style={{
+          borderRadius: 20,
+          overflow: "hidden",
+          background: CARD_BG,
+          border: "1px solid rgba(201,168,76,0.12)",
+          boxShadow: CARD_SHADOW,
+          position: "relative",
+        }}>
             <GoldShimmer />
             <GlowOrb top={-40} right={-20} size={120} opacity={0.12} />
 
@@ -384,8 +266,7 @@ export function DashboardPage() {
               )}
             </div>
           </div>
-        </motion.div>
-      </div>
+      </motion.div>
     </div>
   );
 }
