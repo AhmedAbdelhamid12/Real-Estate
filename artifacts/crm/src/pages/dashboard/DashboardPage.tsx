@@ -27,13 +27,13 @@ function useCountUp(target: number | undefined, duration = 900): number {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new: "#818cf8",
-  called: "#fbbf24",
-  qualified: "#38bdf8",
-  proposal: "#c084fc",
-  negotiation: "#fb923c",
-  won: "#4ade80",
-  lost: "#f87171",
+  new:         "#60A5FA",   // soft blue — navy-adjacent
+  called:      "#C9A84C",   // TIL gold
+  qualified:   "#2DD4BF",   // teal — complements navy
+  proposal:    "#D4B86A",   // gold light
+  negotiation: "#F59E0B",   // warm amber
+  won:         "#4ADE80",   // green — keep semantic meaning
+  lost:        "#F87171",   // red — keep semantic meaning
 };
 
 const STATUS_LABELS: Record<string, string> = {
