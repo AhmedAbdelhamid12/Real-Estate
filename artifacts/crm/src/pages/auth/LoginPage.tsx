@@ -301,7 +301,7 @@ export function LoginPage() {
                     padding: "10px 32px 10px 0", color: p.inputText, fontSize: "15px", outline: "none", transition: "border-color 0.2s, color 0.3s",
                   }}
                 />
-                <button type="button" onClick={() => setShowPassword(v => !v)} style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: p.fgBody, display: "flex", alignItems: "center", padding: 0 }}>
+                <button type="button" onClick={() => setShowPassword(v => !v)} className="bg-background" style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: p.fgBody, display: "flex", alignItems: "center", padding: 0 }}>
                   {showPassword ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
                 </button>
               </div>
