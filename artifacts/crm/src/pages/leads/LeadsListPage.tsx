@@ -89,7 +89,7 @@ export function LeadsListPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
-  const [assignLeadId, setAssignLeadId] = useState<string | null>(null);
+  const [assigningLead, setAssigningLead] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -575,7 +575,7 @@ export function LeadsListPage() {
                       {isAr ? "عرض" : "View"}
                     </button>
                     <button
-                      onClick={() => setAssignLeadId(lead.id)}
+                      onClick={() => setAssigningLead(lead)}
                       style={{
                         flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
                         padding: "9px 0", cursor: "pointer",
@@ -616,11 +616,11 @@ export function LeadsListPage() {
         </div>
       )}
 
-      {assignLeadId && (
+      {assigningLead && (
         <AssignLeadModal
-          leadId={assignLeadId}
-          open={!!assignLeadId}
-          onOpenChange={(v) => { if (!v) setAssignLeadId(null); }}
+          lead={assigningLead}
+          open={!!assigningLead}
+          onOpenChange={(v) => { if (!v) setAssigningLead(null); }}
         />
       )}
       <BulkImportModal open={isBulkOpen} onOpenChange={setIsBulkOpen} />

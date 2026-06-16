@@ -89,6 +89,9 @@ function ProjectForm({
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.warning("الصورة أكبر من 2MB — قد تؤثر على سرعة التحميل. يُفضل ضغطها أولاً.");
+    }
     setImageUploading(true);
     try {
       const url = await uploadImageFile(file);
@@ -206,7 +209,7 @@ function ProjectForm({
                   className="hidden"
                   onChange={handleImageUpload}
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     type="button"
                     variant="outline"
@@ -219,19 +222,37 @@ function ProjectForm({
                     {imageUploading ? "جارٍ الرفع..." : "تصفح من الجهاز"}
                   </Button>
                   {imageUrlValue && (
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => field.onChange("")}>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => field.onChange("")}
+                    >
                       <XIcon className="w-3.5 h-3.5" />
+                      حذف الصورة
                     </Button>
                   )}
                 </div>
                 {imageUrlValue && (
-                  <div className="relative rounded-xl overflow-hidden h-32 bg-muted border">
+                  <div className="relative rounded-xl overflow-hidden h-32 bg-muted border group/img">
                     <img
                       src={imageUrlValue}
                       alt="معاينة"
                       className="w-full h-full object-cover"
+                      loading="lazy"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                     />
+                    <button
+                      type="button"
+                      onClick={() => field.onChange("")}
+                      className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/img:bg-black/50 transition-all opacity-0 group-hover/img:opacity-100 cursor-pointer border-0"
+                    >
+                      <div className="flex items-center gap-2 text-white font-semibold text-sm">
+                        <XIcon className="w-4 h-4" />
+                        حذف الصورة
+                      </div>
+                    </button>
                   </div>
                 )}
               </div>
@@ -396,6 +417,8 @@ export function ProjectsPage() {
                       <img
                         src={imageUrl}
                         alt={project.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
