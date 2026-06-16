@@ -1,72 +1,80 @@
-import { db, usersTable, rolePermissionsTable, permissionsTable, projectsTable, leadsTable, leadActivitiesTable, clientsTable, notificationsTable } from "../index.js";
-import { PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, PERMISSION_LABELS } from "@workspace/permissions";
+import {
+  db,
+  usersTable,
+  rolePermissionsTable,
+  permissionsTable,
+  projectsTable,
+  leadsTable,
+  leadActivitiesTable,
+  clientsTable,
+  notificationsTable,
+  resaleUnitsTable,
+  resalePhotosTable,
+} from "../index.js";
+import { DEFAULT_ROLE_PERMISSIONS, PERMISSION_LABELS } from "@workspace/permissions";
 import bcrypt from "bcryptjs";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
-}
-
-function randomFrom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function daysAgo(n: number): Date {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 }
 
-function daysFromNow(n: number): Date {
-  return new Date(Date.now() + n * 24 * 60 * 60 * 1000);
-}
-
 export async function seed() {
-  console.log("🌱 Seeding database...");
+  console.log("🌱 بدء تهيئة قاعدة البيانات...");
+
+  // ── 0. CLEAR ALL DATA ─────────────────────────────────────────────────────
+  console.log("\n🗑️  مسح البيانات القديمة...");
+  await db.delete(notificationsTable);
+  await db.delete(leadActivitiesTable);
+  await db.delete(clientsTable);
+  await db.delete(resalePhotosTable);
+  await db.delete(resaleUnitsTable);
+  await db.delete(leadsTable);
+  await db.delete(projectsTable);
+  await db.delete(rolePermissionsTable);
+  await db.delete(permissionsTable);
+  await db.delete(usersTable);
+  console.log("  ✅ تم مسح جميع البيانات");
 
   const defaultPassword = await hashPassword("Test1234!");
 
   // ── 1. USERS ─────────────────────────────────────────────────────────────
+  console.log("\n👥 إنشاء المستخدمين...");
   const ceoEmail = process.env["CEO_EMAIL"] ?? "ceo@propos.app";
   const ceoPassword = process.env["CEO_PASSWORD"] ?? "Change@Me2026!";
 
   const usersToCreate = [
-    { name: "Adam Hassan",     email: ceoEmail,                  passwordHash: await hashPassword(ceoPassword), role: "ceo" as const,         title: "Chief Executive Officer" },
-    { name: "Sara Al-Mansouri",email: "admin@propos.app",        passwordHash: defaultPassword,                 role: "admin" as const,       title: "Operations Manager" },
-    { name: "Khalid Farooq",   email: "director@propos.app",     passwordHash: defaultPassword,                 role: "director" as const,    title: "Sales Director" },
-    { name: "Lena Nasser",     email: "tl1@propos.app",          passwordHash: defaultPassword,                 role: "team_leader" as const, title: "Team Leader — North" },
-    { name: "Omar Ziad",       email: "tl2@propos.app",          passwordHash: defaultPassword,                 role: "team_leader" as const, title: "Team Leader — South" },
-    { name: "Maya Elias",      email: "sales1@propos.app",       passwordHash: defaultPassword,                 role: "sales" as const,       title: "Sales Agent" },
-    { name: "Rami Khoury",     email: "sales2@propos.app",       passwordHash: defaultPassword,                 role: "sales" as const,       title: "Sales Agent" },
-    { name: "Dina Samir",      email: "sales3@propos.app",       passwordHash: defaultPassword,                 role: "sales" as const,       title: "Sales Agent" },
-    { name: "Faris Abboud",    email: "sales4@propos.app",       passwordHash: defaultPassword,                 role: "sales" as const,       title: "Sales Agent" },
-    { name: "Nour Haddad",     email: "sales5@propos.app",       passwordHash: defaultPassword,                 role: "sales" as const,       title: "Sales Agent" },
+    { name: "أحمد السيد",    email: ceoEmail,             passwordHash: await hashPassword(ceoPassword), role: "ceo" as const,         title: "الرئيس التنفيذي" },
+    { name: "محمد حسن",      email: "admin@propos.app",   passwordHash: defaultPassword,                 role: "admin" as const,       title: "مدير العمليات" },
+    { name: "سارة عبدالله",  email: "director@propos.app",passwordHash: defaultPassword,                 role: "director" as const,    title: "مدير المبيعات" },
+    { name: "ليلى مصطفى",    email: "tl1@propos.app",     passwordHash: defaultPassword,                 role: "team_leader" as const, title: "قائدة فريق — القاهرة الجديدة" },
+    { name: "كريم إبراهيم",  email: "tl2@propos.app",     passwordHash: defaultPassword,                 role: "team_leader" as const, title: "قائد فريق — 6 أكتوبر والساحل" },
+    { name: "منى سعيد",      email: "sales1@propos.app",  passwordHash: defaultPassword,                 role: "sales" as const,       title: "مسؤولة مبيعات" },
+    { name: "عمر طارق",      email: "sales2@propos.app",  passwordHash: defaultPassword,                 role: "sales" as const,       title: "مسؤول مبيعات" },
+    { name: "رنا الصاوي",    email: "sales3@propos.app",  passwordHash: defaultPassword,                 role: "sales" as const,       title: "مسؤولة مبيعات" },
+    { name: "حسام علي",      email: "sales4@propos.app",  passwordHash: defaultPassword,                 role: "sales" as const,       title: "مسؤول مبيعات" },
+    { name: "نهال يوسف",     email: "sales5@propos.app",  passwordHash: defaultPassword,                 role: "sales" as const,       title: "مسؤولة مبيعات" },
   ];
 
-  const createdUsers: { id: string; email: string; role: string }[] = [];
-
+  const createdUsers: { id: string; email: string; role: string; name: string }[] = [];
   for (const u of usersToCreate) {
-    const [existing] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, u.email)).limit(1);
-    if (!existing) {
-      const [created] = await db.insert(usersTable).values({
-        ...u,
-        status: "active",
-        emailVerifiedAt: new Date(),
-      }).returning({ id: usersTable.id, email: usersTable.email, role: usersTable.role });
-      createdUsers.push(created);
-      console.log(`  ✅ User: ${u.name} (${u.role})`);
-    } else {
-      createdUsers.push({ id: existing.id, email: u.email, role: u.role });
-      console.log(`  ℹ️  User exists: ${u.email}`);
-    }
+    const [created] = await db.insert(usersTable).values({
+      ...u,
+      status: "active",
+      emailVerifiedAt: new Date(),
+    }).returning({ id: usersTable.id, email: usersTable.email, role: usersTable.role, name: usersTable.name });
+    createdUsers.push(created);
+    console.log(`  ✅ ${u.name} (${u.role})`);
   }
 
   // Assign team leaders to sales reps
-  const allUsers = await db.select().from(usersTable).where(
-    inArray(usersTable.email, usersToCreate.map(u => u.email))
-  );
-  const tl1 = allUsers.find(u => u.email === "tl1@propos.app");
-  const tl2 = allUsers.find(u => u.email === "tl2@propos.app");
-  const salesReps = allUsers.filter(u => u.role === "sales");
-
+  const tl1 = createdUsers.find(u => u.email === "tl1@propos.app");
+  const tl2 = createdUsers.find(u => u.email === "tl2@propos.app");
+  const salesReps = createdUsers.filter(u => u.role === "sales");
   if (tl1 && tl2 && salesReps.length > 0) {
     for (let i = 0; i < salesReps.length; i++) {
       const tl = i % 2 === 0 ? tl1 : tl2;
@@ -79,132 +87,151 @@ export async function seed() {
   for (const [key, { label, module, description }] of permEntries) {
     await db.insert(permissionsTable).values({ key, label, module, description }).onConflictDoNothing();
   }
-  console.log(`\n✅ ${permEntries.length} permissions seeded`);
-
   const roles = ["ceo", "admin", "director", "team_leader", "sales"] as const;
-  let rpCount = 0;
   for (const role of roles) {
     const defaults = DEFAULT_ROLE_PERMISSIONS[role] ?? {};
     for (const [key, isEnabled] of Object.entries(defaults)) {
       await db.insert(rolePermissionsTable).values({ role, permissionKey: key, isEnabled }).onConflictDoNothing();
-      rpCount++;
     }
   }
-  console.log(`✅ ${rpCount} role permissions seeded`);
+  console.log(`\n✅ تم تهيئة الصلاحيات`);
 
   // ── 3. PROJECTS ───────────────────────────────────────────────────────────
-  const ceoUser = allUsers.find(u => u.role === "ceo");
+  console.log("\n🏗️  إنشاء المشاريع العقارية...");
+  const ceoUser = createdUsers.find(u => u.role === "ceo");
 
   const projectsData = [
-    { name: "Palm Residences",      ownerName: "Al Nakheel Developers",  location: "Dubai Marina, Dubai",        description: "Luxury waterfront apartments with panoramic sea views.", avgPrice: "2850000", imageUrl: null },
-    { name: "Green Valley Villas",  ownerName: "Emaar Properties",       location: "Arabian Ranches, Dubai",     description: "Spacious family villas surrounded by lush greenery.", avgPrice: "4200000", imageUrl: null },
-    { name: "City Tower One",       ownerName: "Damac Holdings",         location: "Business Bay, Dubai",        description: "Premium commercial and residential mixed-use tower.", avgPrice: "1450000", imageUrl: null },
-    { name: "Sapphire Heights",     ownerName: "Meraas Developments",    location: "Jumeirah Village Circle",    description: "Modern mid-rise with smart home technology.", avgPrice: "980000",  imageUrl: null },
-    { name: "The Cove",             ownerName: "Dubai Properties",       location: "Dubai Creek Harbour",        description: "Waterfront townhouses and apartments by the creek.", avgPrice: "1750000", imageUrl: null },
+    {
+      name: "هايد بارك القاهرة الجديدة",
+      ownerName: "شركة هايد بارك للتطوير العقاري",
+      location: "القاهرة الجديدة، التجمع الخامس",
+      description: "كمبوند راقٍ يضم فيلات وشقق فاخرة بتصميمات عصرية، يقع على مساحة 6 مليون متر مربع بالقاهرة الجديدة. يتميز بمساحات خضراء شاسعة ونادٍ اجتماعي متكامل.",
+      avgPrice: "4500000",
+      imageUrl: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=900&q=80",
+    },
+    {
+      name: "مدينتي",
+      ownerName: "شركة العربي للمقاولات",
+      location: "القاهرة الجديدة، طريق السويس",
+      description: "مدينة متكاملة تضم أحياء سكنية متنوعة، مراكز تجارية، ومرافق ترفيهية على مساحة 33 مليون متر مربع. تُعدّ من أكبر المشاريع السكنية في الشرق الأوسط.",
+      avgPrice: "3200000",
+      imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80",
+    },
+    {
+      name: "بالم هيلز أكتوبر",
+      ownerName: "شركة بالم هيلز للتعمير",
+      location: "مدينة 6 أكتوبر، الجيزة",
+      description: "كمبوند متكامل بمدينة 6 أكتوبر يوفر وحدات سكنية فاخرة بين الطبيعة الخضراء وأحدث المرافق الترفيهية والخدمية. يضم ملاعب جولف ونادياً رياضياً.",
+      avgPrice: "3800000",
+      imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80",
+    },
+    {
+      name: "ماراسي الساحل الشمالي",
+      ownerName: "شركة إعمار مصر",
+      location: "الساحل الشمالي، سيدي عبدالرحمن",
+      description: "مشروع ساحلي فاخر على البحر الأبيض المتوسط، يضم فيلات وشاليهات ومرسى يخوت خاص. يُعدّ من أرقى الوجهات الصيفية على الساحل الشمالي المصري.",
+      avgPrice: "7500000",
+      imageUrl: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=900&q=80",
+    },
+    {
+      name: "زيد التجمع الخامس",
+      ownerName: "شركة أورا ديفيلوبرز",
+      location: "القاهرة الجديدة، التجمع الخامس",
+      description: "أبراج سكنية فاخرة بالتجمع الخامس تجمع بين الحياة العصرية والموقع المتميز قرب المراكز التجارية الكبرى. تصاميم معمارية فريدة من إعمار الدولية.",
+      avgPrice: "5200000",
+      imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80",
+    },
   ];
 
   const createdProjects: { id: string; name: string }[] = [];
   for (const p of projectsData) {
-    const [existing] = await db.select({ id: projectsTable.id }).from(projectsTable).where(eq(projectsTable.name, p.name)).limit(1);
-    if (!existing) {
-      const [created] = await db.insert(projectsTable).values({ ...p, createdBy: ceoUser?.id ?? null, isActive: true }).returning({ id: projectsTable.id, name: projectsTable.name });
-      createdProjects.push(created);
-      console.log(`  ✅ Project: ${p.name}`);
-    } else {
-      createdProjects.push(existing);
-      console.log(`  ℹ️  Project exists: ${p.name}`);
-    }
-  }
-
-  if (createdProjects.length === 0) {
-    console.log("No projects to seed leads against — exiting early.");
-    return;
+    const [created] = await db.insert(projectsTable).values({
+      ...p,
+      createdBy: ceoUser?.id ?? null,
+      isActive: true,
+    }).returning({ id: projectsTable.id, name: projectsTable.name });
+    createdProjects.push(created);
+    console.log(`  ✅ ${p.name}`);
   }
 
   // ── 4. LEADS ──────────────────────────────────────────────────────────────
+  console.log("\n📋 إنشاء العملاء المحتملين...");
   const leadsData = [
-    // NEW
-    { name: "James O'Brien",       phone: "+971501234001", email: "james.obrien@gmail.com",   source: "website" as const,   status: "new" as const,         notes: "Interested in 2BR apartments. Budget AED 1.2M–1.8M." },
-    { name: "Fatima Al Zaabi",     phone: "+971502345002", email: "fatima.zaabi@outlook.com", source: "social" as const,    status: "new" as const,         notes: "DM via Instagram. Looking for family villa." },
-    { name: "Chen Wei",            phone: "+971503456003", email: "chen.wei@yahoo.com",       source: "campaign" as const,  status: "new" as const,         notes: "Responded to Palm Residences ad. Investor buyer." },
-    { name: "Sophie Müller",       phone: "+971504567004", email: "sophie.muller@web.de",     source: "referral" as const,  status: "new" as const,         notes: "Referred by Rami Khoury. First-time buyer." },
+    // جديد
+    { name: "خالد محمود النجار",   phone: "01001234567", email: "khaled.najjar@gmail.com",   source: "website" as const,  status: "new" as const,         notes: "مهتم بشقة 3 غرف في هايد بارك. الميزانية من 4 إلى 6 مليون جنيه." },
+    { name: "ياسمين عبدالعزيز",    phone: "01112345678", email: "yasmin.aziz@outlook.com",   source: "social" as const,   status: "new" as const,         notes: "تواصلت عبر إنستجرام. تبحث عن شقة للسكن في القاهرة الجديدة." },
+    { name: "محمود رضا الشافعي",   phone: "01223456789", email: "mahmoud.shafei@yahoo.com",  source: "campaign" as const, status: "new" as const,         notes: "رد على إعلان ماراسي. مستثمر يبحث عن شاليه للإيجار الصيفي." },
+    { name: "نيرمين سالم حداد",    phone: "01534567890", email: "nermin.haddad@hotmail.com", source: "referral" as const, status: "new" as const,         notes: "رشّحها أحد عملائنا. تريد شقة استثمارية في التجمع الخامس." },
 
-    // CALLED
-    { name: "Ahmed Al Rashid",     phone: "+971505678005", email: "ahmed.rashid@hotmail.com", source: "manual" as const,    status: "called" as const,      notes: "Spoke for 15 min. Interested in City Tower One. Wants to visit showroom." },
-    { name: "Priya Nair",          phone: "+971506789006", email: "priya.nair@gmail.com",     source: "website" as const,   status: "called" as const,      notes: "Called twice. Considering both Sapphire Heights and The Cove." },
-    { name: "Marco Ricci",         phone: "+971507890007", email: "marco.ricci@libero.it",    source: "import" as const,    status: "called" as const,      notes: "Italian investor looking for ROI-focused unit. Budget AED 2M+." },
+    // تم الاتصال
+    { name: "أيمن عبدالفتاح",      phone: "01045678901", email: "ayman.abdfatah@gmail.com",  source: "manual" as const,   status: "called" as const,      notes: "تحدثنا 20 دقيقة. مهتم بمشروع مدينتي، يريد زيارة الموقع الأسبوع القادم." },
+    { name: "هبة رمضان مصطفى",     phone: "01156789012", email: "heba.ramadan@gmail.com",    source: "website" as const,  status: "called" as const,      notes: "اتصلنا مرتين. تدرس بين بالم هيلز أكتوبر وهايد بارك القاهرة الجديدة." },
+    { name: "وليد صلاح الدين",     phone: "01267890123", email: "walid.salahudin@outlook.com",source: "import" as const,  status: "called" as const,      notes: "مستثمر خليجي مقيم في القاهرة. يبحث عن وحدتين استثماريتين." },
 
-    // QUALIFIED
-    { name: "Aisha Bint Saeed",    phone: "+971508901008", email: "aisha.saeed@icloud.com",   source: "referral" as const,  status: "qualified" as const,   notes: "High-intent buyer. Pre-approved mortgage. Targeting Palm Residences." },
-    { name: "David Kim",           phone: "+971509012009", email: "david.kim@naver.com",      source: "social" as const,    status: "qualified" as const,   notes: "Korean expat. Looking for 3BR in family community. Budget AED 3.5M." },
-    { name: "Layla Hassan",        phone: "+971501123010", email: "layla.hassan@gmail.com",   source: "campaign" as const,  status: "qualified" as const,   notes: "Attended open day. Very interested in Green Valley Villas." },
+    // مؤهل
+    { name: "أميرة خيرت فوزي",     phone: "01378901234", email: "amira.fawzy@icloud.com",    source: "referral" as const, status: "qualified" as const,   notes: "عميلة جدية. حصلت على موافقة قرض بنكي. تستهدف هايد بارك التجمع الخامس." },
+    { name: "طارق عبدالرحيم بكر",  phone: "01589012345", email: "tarek.bakr@gmail.com",      source: "social" as const,   status: "qualified" as const,   notes: "يبحث عن فيلا في ماراسي الساحل الشمالي. الميزانية تصل إلى 12 مليون جنيه." },
+    { name: "شيرين حمدي الشيخ",    phone: "01090123456", email: "shereen.hamdy@gmail.com",   source: "campaign" as const, status: "qualified" as const,   notes: "حضرت يوم مفتوح في مدينتي. مهتمة جداً بالوحدات المطلة على النادي الاجتماعي." },
 
-    // PROPOSAL
-    { name: "Robert Andersen",     phone: "+971502234011", email: "r.andersen@gmail.com",     source: "website" as const,   status: "proposal" as const,    notes: "Proposal sent for Sapphire Heights Unit 12C. Awaiting feedback." },
-    { name: "Nadia Petrov",        phone: "+971503345012", email: "nadia.petrov@mail.ru",     source: "manual" as const,    status: "proposal" as const,    notes: "Russian investor. Portfolio buyer. Proposal includes 2 units." },
-    { name: "Hamza Al Turki",      phone: "+971504456013", email: "hamza.turki@saudi.net",    source: "referral" as const,  status: "proposal" as const,    notes: "Saudi national. Proposal for villa at Green Valley. Strong interest." },
+    // عرض سعر
+    { name: "كريم فتحي عوض",       phone: "01201234567", email: "karim.awad@gmail.com",      source: "website" as const,  status: "proposal" as const,    notes: "أُرسل له عرض سعر لشقة B-12 في زيد التجمع. ينتظر موافقة الأسرة على العرض." },
+    { name: "غادة عصام الدين",     phone: "01312345678", email: "ghada.essamdin@yahoo.com",  source: "manual" as const,   status: "proposal" as const,    notes: "مستثمرة من الإسكندرية. العرض يشمل شقتين في مدينتي بخطة تقسيط 7 سنوات." },
+    { name: "إسلام رجب الحسيني",   phone: "01423456789", email: "eslam.rajab@gmail.com",     source: "referral" as const, status: "proposal" as const,    notes: "سعودي مقيم بالقاهرة. عرض سعر لفيلا ببالم هيلز أكتوبر، اهتمام قوي." },
 
-    // NEGOTIATION
-    { name: "Elena Vasquez",       phone: "+971505567014", email: "elena.vasquez@outlook.es", source: "social" as const,    status: "negotiation" as const, notes: "Negotiating price on The Cove townhouse. Counter-offered AED 1.65M." },
-    { name: "Tariq Mahmood",       phone: "+971506678015", email: "tariq.mahmood@pk.net",     source: "campaign" as const,  status: "negotiation" as const, notes: "Pakistani expat. In negotiation for 2 investment units in City Tower." },
+    // تفاوض
+    { name: "مريم نبيل السرجاني",  phone: "01534560001", email: "mariam.nabil@outlook.com",  source: "social" as const,   status: "negotiation" as const, notes: "تتفاوض على سعر شاليه في ماراسي. الفارق في السعر 500 ألف جنيه." },
+    { name: "يوسف صبري الدسوقي",   phone: "01645678901", email: "youssef.dassouki@gmail.com",source: "campaign" as const, status: "negotiation" as const, notes: "يتفاوض على وحدتين في زيد التجمع. عرض السعر الأخير مقبول مبدئياً." },
 
-    // WON
-    { name: "Linda Thompson",      phone: "+971507789016", email: "linda.t@hotmail.co.uk",    source: "website" as const,   status: "won" as const,         notes: "Closed deal on Palm Residences Unit 8A. AED 2.95M. Smooth transaction.", outcome: "Signed SPA. Transfer scheduled Q3 2026." },
-    { name: "Yusuf Al Jaber",      phone: "+971508890017", email: "yusuf.jaber@gmail.com",    source: "referral" as const,  status: "won" as const,         notes: "Purchased Green Valley Villa #12. AED 4.1M. Cash buyer.", outcome: "SPA signed. Keys handed over." },
-    { name: "Mei Lin",             phone: "+971509901018", email: "mei.lin@163.com",          source: "social" as const,    status: "won" as const,         notes: "Investor. Bought 2 units in Sapphire Heights. AED 1.9M combined.", outcome: "Units registered. Rental management agreement signed." },
+    // مكتملة
+    { name: "لميس جمال الدين",      phone: "01756789012", email: "lamis.gamaldin@gmail.com",  source: "website" as const,  status: "won" as const, notes: "أتمّت شراء شقة في هايد بارك، وحدة 14-أ، مساحة 185 متر. 5.2 مليون جنيه.", outcome: "وُقّعت العقود وسُدّد المقدم. جاري استكمال إجراءات التسجيل." },
+    { name: "عبدالرحمن عزت حجازي", phone: "01867890123", email: "abdo.hagazy@gmail.com",     source: "referral" as const, status: "won" as const, notes: "اشترى فيلا في بالم هيلز أكتوبر. 8.7 مليون جنيه كاش. عميل راقٍ.", outcome: "تسلّم المفاتيح. راضٍ جداً عن الخدمة. أحال إلينا 3 عملاء جدد." },
+    { name: "داليا طه منصور",       phone: "01978901234", email: "dalia.mansour@gmail.com",   source: "social" as const,   status: "won" as const, notes: "اشترت شاليه في ماراسي الساحل الشمالي. 9.5 مليون جنيه.", outcome: "وُقّع العقد. استلام المفاتيح مقرر يونيو 2026." },
 
-    // LOST
-    { name: "Greg Foster",         phone: "+971501012019", email: "greg.foster@yahoo.com",    source: "import" as const,    status: "lost" as const,        notes: "Lost to competitor. Price was the main objection.", outcome: "Went with cheaper option in JVC." },
-    { name: "Hana Čermák",        phone: "+971502123020", email: "hana.cermak@seznam.cz",    source: "campaign" as const,  status: "lost" as const,        notes: "Relocated back to Prague. No longer buying in UAE.", outcome: "Personal circumstances changed." },
+    // خسارة
+    { name: "رامي سمير الغزالي",   phone: "01089012345", email: "ramy.ghazaly@yahoo.com",    source: "import" as const,   status: "lost" as const, notes: "خسرنا المنافسة مع مشروع آخر. المشكلة الأساسية كانت السعر.", outcome: "اختار مشروع بيفرلي هيلز 6 أكتوبر بسعر أقل بمليون جنيه." },
+    { name: "نانسي شوقي بهنساوي",  phone: "01190123456", email: "nancy.shawky@gmail.com",    source: "campaign" as const, status: "lost" as const, notes: "سافرت للخارج وأجّلت قرار الشراء لأجل غير مسمى.", outcome: "تأجيل القرار — انتقلت للعيش في كندا بصفة مؤقتة." },
   ];
 
   const salesEmails = ["sales1@propos.app","sales2@propos.app","sales3@propos.app","sales4@propos.app","sales5@propos.app"];
-  const salesUsers = allUsers.filter(u => salesEmails.includes(u.email));
+  const salesUsers = createdUsers.filter(u => salesEmails.includes(u.email));
 
   const createdLeads: { id: string; name: string; status: string; primarySalesId: string | null }[] = [];
-
   for (let i = 0; i < leadsData.length; i++) {
     const l = leadsData[i];
-    const [existing] = await db.select({ id: leadsTable.id }).from(leadsTable).where(eq(leadsTable.name, l.name)).limit(1);
-    if (!existing) {
-      const assignedSales = salesUsers[i % salesUsers.length];
-      const project = createdProjects[i % createdProjects.length];
-      const [created] = await db.insert(leadsTable).values({
-        name: l.name,
-        phone: l.phone,
-        email: l.email,
-        source: l.source,
-        status: l.status,
-        notes: l.notes,
-        outcome: (l as any).outcome ?? null,
-        projectId: project.id,
-        primarySalesId: assignedSales?.id ?? null,
-        createdBy: assignedSales?.id ?? ceoUser?.id ?? null,
-        lastActionAt: daysAgo(Math.floor(Math.random() * 14)),
-        createdAt: daysAgo(Math.floor(Math.random() * 60) + 5),
-      }).returning({ id: leadsTable.id, name: leadsTable.name, status: leadsTable.status, primarySalesId: leadsTable.primarySalesId });
-      createdLeads.push(created);
-    } else {
-      const lead = await db.select({ id: leadsTable.id, name: leadsTable.name, status: leadsTable.status, primarySalesId: leadsTable.primarySalesId }).from(leadsTable).where(eq(leadsTable.id, existing.id)).limit(1);
-      createdLeads.push(lead[0]);
-    }
+    const assignedSales = salesUsers[i % salesUsers.length];
+    const project = createdProjects[i % createdProjects.length];
+    const [created] = await db.insert(leadsTable).values({
+      name: l.name,
+      phone: l.phone,
+      email: l.email,
+      source: l.source,
+      status: l.status,
+      notes: l.notes,
+      outcome: (l as any).outcome ?? null,
+      projectId: project.id,
+      primarySalesId: assignedSales?.id ?? null,
+      createdBy: assignedSales?.id ?? ceoUser?.id ?? null,
+      lastActionAt: daysAgo(Math.floor(Math.random() * 14)),
+      createdAt: daysAgo(Math.floor(Math.random() * 60) + 5),
+    }).returning({ id: leadsTable.id, name: leadsTable.name, status: leadsTable.status, primarySalesId: leadsTable.primarySalesId });
+    createdLeads.push(created);
   }
-  console.log(`\n✅ ${createdLeads.length} leads seeded`);
+  console.log(`  ✅ ${createdLeads.length} عميل محتمل`);
 
   // ── 5. LEAD ACTIVITIES ────────────────────────────────────────────────────
   const activityTemplates = [
-    { type: "call" as const,    notes: "Initial discovery call. Client shared budget and preferences.", duration: "12 min" },
-    { type: "email" as const,   notes: "Sent project brochure and payment plan details." },
-    { type: "meeting" as const, notes: "Showroom visit. Toured 2 model units. Very positive reaction.", duration: "1h 20min" },
-    { type: "call" as const,    notes: "Follow-up call. Client reviewing proposal with family.", duration: "8 min" },
-    { type: "note" as const,    notes: "Client prefers high floor with sea view. Noted for unit selection." },
-    { type: "message" as const, notes: "WhatsApp: sent video walkthrough of the unit." },
+    { type: "call" as const,    notes: "مكالمة استكشافية أولى — شارك العميل ميزانيته وتفضيلاته للموقع والمساحة.", duration: "15 دقيقة" },
+    { type: "email" as const,   notes: "أُرسل بروشور المشروع وخطة السداد المفصّلة وملف مقارنة الوحدات." },
+    { type: "meeting" as const, notes: "زيارة الموقع ومعاينة وحدتين نموذجيتين. ردود فعل إيجابية جداً من العميل.", duration: "1 ساعة 30 دقيقة" },
+    { type: "call" as const,    notes: "مكالمة متابعة — العميل يراجع العرض مع أفراد الأسرة قبل اتخاذ القرار.", duration: "10 دقائق" },
+    { type: "note" as const,    notes: "العميل يفضّل الطوابق العالية مع إطلالة. تم تدوين الملاحظة لتحديث العروض." },
+    { type: "message" as const, notes: "واتساب: أُرسل فيديو جولة افتراضية ثلاثية الأبعاد بالوحدة المقترحة." },
   ];
 
   let actCount = 0;
   for (const lead of createdLeads) {
     if (!lead.primarySalesId) continue;
-    const numActivities = ["won","lost","negotiation","proposal"].includes(lead.status) ? 3 : lead.status === "called" || lead.status === "qualified" ? 2 : 1;
+    const numActivities = ["won","lost","negotiation","proposal"].includes(lead.status) ? 3 : ["called","qualified"].includes(lead.status) ? 2 : 1;
     for (let i = 0; i < numActivities; i++) {
       const tmpl = activityTemplates[i % activityTemplates.length];
       await db.insert(leadActivitiesTable).values({
@@ -218,41 +245,165 @@ export async function seed() {
       actCount++;
     }
   }
-  console.log(`✅ ${actCount} lead activities seeded`);
+  console.log(`  ✅ ${actCount} نشاط على العملاء المحتملين`);
 
   // ── 6. CLIENTS (from won leads) ───────────────────────────────────────────
+  console.log("\n🤝 إنشاء الصفقات المكتملة...");
   const wonLeads = createdLeads.filter(l => l.status === "won");
-  const dealValues = ["2950000", "4100000", "950000"];
-  let clientCount = 0;
+  const dealData = [
+    { value: "5200000", unit: "14-أ",   type: "apartment", area: "185", payment: "installments", down: "1300000",  installments: 48, installmentAmt: "81250",  contractDate: new Date("2026-03-15") },
+    { value: "8700000", unit: "فيلا-7", type: "villa",     area: "420", payment: "cash",         down: null,       installments: null, installmentAmt: null,    contractDate: new Date("2026-04-20") },
+    { value: "9500000", unit: "B-23",   type: "chalet",    area: "210", payment: "installments", down: "2375000",  installments: 60, installmentAmt: "118750", contractDate: new Date("2026-05-10") },
+  ];
 
   for (let i = 0; i < wonLeads.length; i++) {
     const lead = wonLeads[i];
     const leadRecord = await db.select().from(leadsTable).where(eq(leadsTable.id, lead.id)).limit(1);
     if (!leadRecord[0]) continue;
-
-    const [existing] = await db.select({ id: clientsTable.id }).from(clientsTable).where(eq(clientsTable.leadId, lead.id)).limit(1);
-    if (!existing) {
-      await db.insert(clientsTable).values({
-        leadId: lead.id,
-        name: leadRecord[0].name,
-        phone: leadRecord[0].phone,
-        email: leadRecord[0].email,
-        dealValue: dealValues[i % dealValues.length],
-        projectId: leadRecord[0].projectId,
-        assignedSalesId: lead.primarySalesId,
-        notes: leadRecord[0].outcome ?? "Successful conversion.",
-      });
-      clientCount++;
-    }
+    const d = dealData[i % dealData.length];
+    await db.insert(clientsTable).values({
+      leadId: lead.id,
+      name: leadRecord[0].name,
+      phone: leadRecord[0].phone,
+      email: leadRecord[0].email,
+      dealValue: d.value,
+      projectId: leadRecord[0].projectId,
+      assignedSalesId: lead.primarySalesId,
+      notes: leadRecord[0].outcome ?? "صفقة مكتملة بنجاح.",
+      unitNumber: d.unit,
+      unitType: d.type,
+      area: d.area,
+      paymentMethod: d.payment,
+      downPayment: d.down ?? null,
+      contractDate: d.contractDate,
+      numberOfInstallments: d.installments ?? null,
+      installmentAmount: d.installmentAmt ?? null,
+    });
+    console.log(`  ✅ صفقة: ${leadRecord[0].name}`);
   }
-  console.log(`✅ ${clientCount} clients seeded`);
 
-  // ── 7. NOTIFICATIONS ──────────────────────────────────────────────────────
+  // ── 7. RESALE UNITS ───────────────────────────────────────────────────────
+  console.log("\n🏠 إنشاء وحدات إعادة البيع...");
+  const hydepark  = createdProjects.find(p => p.name.includes("هايد بارك"));
+  const madinaty  = createdProjects.find(p => p.name.includes("مدينتي"));
+  const palmhills = createdProjects.find(p => p.name.includes("بالم هيلز"));
+  const marassi   = createdProjects.find(p => p.name.includes("ماراسي"));
+
+  const resaleData = [
+    {
+      projectId: hydepark?.id ?? null,
+      projectName: "هايد بارك القاهرة الجديدة",
+      unitType: "apartment",
+      area: "175",
+      price: "4800000",
+      floor: 5,
+      ownerName: "هشام عبدالله فريد",
+      ownerPhone: "01012345678",
+      ownerEmail: "hisham.farid@gmail.com",
+      ownerNotes: "مالك يريد البيع بسبب السفر للخارج. جاد في البيع ومرن في التفاوض.",
+      description: "شقة 3 غرف نوم + ريسبشن كبير، إطلالة على الحديقة الرئيسية. تشطيب سوبر لوكس يشمل المطبخ والأجهزة. حديثة الاستلام.",
+      isOwnerPhoneHidden: false,
+      isOwnerEmailHidden: true,
+      isActive: true,
+      assignedTo: salesUsers[0]?.id ?? null,
+      photos: [
+        "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=800&q=80",
+        "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&q=80",
+        "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=800&q=80",
+      ],
+    },
+    {
+      projectId: madinaty?.id ?? null,
+      projectName: "مدينتي",
+      unitType: "apartment",
+      area: "145",
+      price: "3100000",
+      floor: 3,
+      ownerName: "سمر رزق الله توفيق",
+      ownerPhone: "01123456789",
+      ownerEmail: "samar.rizk@outlook.com",
+      ownerNotes: "المالكة ورثت الشقة وتريد البيع. جاهزة للتسليم فوراً والسعر قابل للتفاوض.",
+      description: "شقة 3 غرف نوم، تشطيب كامل جاهز للسكن. إطلالة هادئة على الشارع الداخلي. موقع مميز قرب المدرسة الدولية ومركز التسوق.",
+      isOwnerPhoneHidden: false,
+      isOwnerEmailHidden: false,
+      isActive: true,
+      assignedTo: salesUsers[1]?.id ?? null,
+      photos: [
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+        "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=800&q=80",
+      ],
+    },
+    {
+      projectId: palmhills?.id ?? null,
+      projectName: "بالم هيلز أكتوبر",
+      unitType: "villa",
+      area: "380",
+      price: "8200000",
+      floor: 0,
+      ownerName: "محمد علاء الدين عثمان",
+      ownerPhone: "01234567890",
+      ownerEmail: "m.alaa.osman@gmail.com",
+      ownerNotes: "المالك مقيم في الخارج. التواصل مسائاً فقط. التفويض ممنوح للمحامي للتفاوض والتوقيع.",
+      description: "فيلا مستقلة 4 غرف نوم + غرفة خادمة، حديقة خاصة 120 متر، مسبح خاص. تشطيب فاخر بمواد مستوردة. السعر شامل التكييفات.",
+      isOwnerPhoneHidden: true,
+      isOwnerEmailHidden: true,
+      isActive: true,
+      assignedTo: null,
+      photos: [
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
+      ],
+    },
+    {
+      projectId: marassi?.id ?? null,
+      projectName: "ماراسي الساحل الشمالي",
+      unitType: "chalet",
+      area: "155",
+      price: "6500000",
+      floor: 1,
+      ownerName: "نادية رفعت الدسوقي",
+      ownerPhone: "01345678901",
+      ownerEmail: "nadia.rafat@yahoo.com",
+      ownerNotes: "تمتلك الشاليه منذ 2020 وتريد الترقي لوحدة أكبر في نفس المشروع. تقبل بيعاً سريعاً.",
+      description: "شاليه 3 غرف نوم مع تراس مطل مباشرة على البحر. الطابق الأول في فيلا بيتش — أفضل موقع في المشروع. مؤثّث بالكامل جاهز للتسليم.",
+      isOwnerPhoneHidden: false,
+      isOwnerEmailHidden: false,
+      isActive: true,
+      assignedTo: null,
+      photos: [
+        "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&q=80",
+        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+        "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=800&q=80",
+      ],
+    },
+  ];
+
+  for (const r of resaleData) {
+    const { photos, ...unitData } = r;
+    const [unit] = await db.insert(resaleUnitsTable).values({
+      ...unitData,
+      createdBy: ceoUser?.id ?? null,
+    }).returning({ id: resaleUnitsTable.id });
+
+    for (let i = 0; i < photos.length; i++) {
+      await db.insert(resalePhotosTable).values({
+        unitId: unit.id,
+        url: photos[i],
+        sortOrder: i,
+        uploadedBy: ceoUser?.id ?? null,
+      });
+    }
+    console.log(`  ✅ ${unitData.projectName} — ${unitData.unitType}`);
+  }
+
+  // ── 8. NOTIFICATIONS ──────────────────────────────────────────────────────
+  console.log("\n🔔 إنشاء الإشعارات...");
   const notifTemplates = [
-    { type: "lead_assigned",  titleEn: "New Lead Assigned",          bodyEn: "You have been assigned a new lead: {lead}." },
-    { type: "lead_won",       titleEn: "Deal Closed! 🎉",             bodyEn: "Lead {lead} has been marked as Won. Great work!" },
-    { type: "task_reminder",  titleEn: "Follow-up Reminder",          bodyEn: "Don't forget to follow up with {lead} today." },
-    { type: "system",         titleEn: "Welcome to PropOS",           bodyEn: "Your account is active. Start managing your leads now." },
+    { type: "lead_assigned", titleEn: "تم تعيين عميل جديد",     bodyEn: "تم تعيينك مسؤولاً عن العميل: {lead}." },
+    { type: "lead_won",      titleEn: "صفقة مكتملة 🎉",          bodyEn: "تم إغلاق صفقة {lead} بنجاح. أحسنت!" },
+    { type: "task_reminder", titleEn: "تذكير بمتابعة",           bodyEn: "لا تنسَ متابعة العميل {lead} اليوم." },
+    { type: "system",        titleEn: "مرحباً بك في PropOS CRM", bodyEn: "حسابك مفعّل. ابدأ بإدارة عملائك المحتملين الآن." },
   ];
 
   let notifCount = 0;
@@ -264,28 +415,28 @@ export async function seed() {
         userId: user.id,
         type: tmpl.type,
         titleEn: tmpl.titleEn,
-        bodyEn: tmpl.bodyEn.replace("{lead}", lead?.name ?? "client"),
+        bodyEn: tmpl.bodyEn.replace("{lead}", lead?.name ?? "العميل"),
         isRead: i === 2,
         createdAt: daysAgo(i),
       });
       notifCount++;
     }
   }
-  console.log(`✅ ${notifCount} notifications seeded`);
+  console.log(`  ✅ ${notifCount} إشعار`);
 
-  console.log("\n🎉 Seed complete!");
-  console.log("\n📋 Test Credentials (password: Test1234!)");
-  console.log("  CEO:         ceo@propos.app        /  Change@Me2026!");
-  console.log("  Admin:       admin@propos.app");
-  console.log("  Director:    director@propos.app");
-  console.log("  Team Lead 1: tl1@propos.app");
-  console.log("  Team Lead 2: tl2@propos.app");
-  console.log("  Sales Reps:  sales1–5@propos.app");
+  console.log("\n🎉 تمت تهيئة قاعدة البيانات بنجاح!");
+  console.log("\n📋 بيانات الدخول (كلمة المرور الافتراضية: Test1234!)");
+  console.log("  الرئيس التنفيذي:  ceo@propos.app        /  Change@Me2026!");
+  console.log("  مدير العمليات:    admin@propos.app");
+  console.log("  مدير المبيعات:    director@propos.app");
+  console.log("  قائدة فريق 1:     tl1@propos.app");
+  console.log("  قائد فريق 2:      tl2@propos.app");
+  console.log("  مبيعات 1-5:       sales1–5@propos.app");
 }
 
 seed()
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error("Seed failed:", err);
+    console.error("فشلت التهيئة:", err);
     process.exit(1);
   });
