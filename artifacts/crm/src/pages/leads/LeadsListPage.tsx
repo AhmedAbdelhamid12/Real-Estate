@@ -352,9 +352,9 @@ export function LeadsListPage() {
               padding: "4px 10px", borderRadius: 20,
               background: `${s.color}18`,
               border: `1px solid ${s.color}35`,
-              fontSize: 11, color: s.color, fontWeight: 600,
+              fontSize: 11, color: "white", fontWeight: 600,
             }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: s.color, boxShadow: `0 0 5px ${s.color}` }} />
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#c8a84b", boxShadow: "0 0 5px #c8a84b" }} />
               {s.label}
               <span style={{ marginInlineStart: 2, opacity: 0.7 }}>{statusCounts[s.value] ?? 0}</span>
             </div>
