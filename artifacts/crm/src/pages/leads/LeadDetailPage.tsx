@@ -10,9 +10,12 @@ import {
   useCreateLeadActivity,
   useListUsers,
   useListLeads,
+  useListProjects,
+  useCreateClient,
   getListLeadActivitiesQueryKey,
   getListLeadsQueryKey,
   getGetLeadsKanbanQueryKey,
+  getListClientsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -64,7 +67,7 @@ import { cn } from "@/lib/utils";
 import { 
   Phone, Mail, Calendar as CalendarIcon, MessageCircle, FileText, 
   ChevronDown, Trash2, Edit, MoreVertical, Clock, AlertTriangle, 
-  CheckCircle, Timer, ArrowLeft
+  CheckCircle, Timer, ArrowLeft, Trophy
 } from "lucide-react";
 
 const activitySchema = z.object({
@@ -73,6 +76,20 @@ const activitySchema = z.object({
   outcome: z.string().optional(),
   nextAction: z.string().optional(),
   durationMinutes: z.coerce.number().optional(),
+});
+
+const convertDealSchema = z.object({
+  dealValue: z.string().optional(),
+  unitNumber: z.string().optional(),
+  unitType: z.enum(["apartment", "villa", "duplex", "penthouse", "townhouse", "commercial"]).optional(),
+  area: z.string().optional(),
+  paymentMethod: z.enum(["cash", "installments", "mortgage"]).optional(),
+  downPayment: z.string().optional(),
+  contractDate: z.string().optional(),
+  numberOfInstallments: z.coerce.number().optional(),
+  installmentAmount: z.string().optional(),
+  projectId: z.string().optional(),
+  assignedSalesId: z.string().optional(),
 });
 
 const editLeadSchema = z.object({
@@ -134,6 +151,7 @@ export function LeadDetailPage() {
   const queryClient = useQueryClient();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isWonDialogOpen, setIsWonDialogOpen] = useState(false);
   const [, setLocation] = useLocation();
 
   const { data: leads = [], isLoading: isLeadsLoading } = useListLeads({ search: undefined });
@@ -141,16 +159,30 @@ export function LeadDetailPage() {
 
   const { data: activities = [], isLoading: isActivitiesLoading } = useListLeadActivities(id as string);
   const { data: users = [] } = useListUsers();
+  const { data: projects = [] } = useListProjects();
 
   const updateStatus = useUpdateLeadStatus();
   const updateLead = useUpdateLead();
   const assignLead = useAssignLead();
   const createActivity = useCreateLeadActivity();
   const deleteLead = useDeleteLead();
+  const createClient = useCreateClient();
 
   const form = useForm<z.infer<typeof activitySchema>>({
     resolver: zodResolver(activitySchema),
     defaultValues: { type: "note", notes: "", outcome: "", nextAction: "" },
+  });
+
+  const wonForm = useForm<z.infer<typeof convertDealSchema>>({
+    resolver: zodResolver(convertDealSchema),
+    defaultValues: {
+      dealValue: "",
+      unitNumber: "",
+      area: "",
+      downPayment: "",
+      contractDate: new Date().toISOString().slice(0, 10),
+      installmentAmount: "",
+    },
   });
 
   const editForm = useForm<z.infer<typeof editLeadSchema>>({
@@ -213,6 +245,20 @@ export function LeadDetailPage() {
 
   const handleStatusChange = (status: string) => {
     if (!id) return;
+    if (status === "won") {
+      wonForm.reset({
+        dealValue: (lead as any)?.dealValue ?? "",
+        unitNumber: "",
+        area: "",
+        downPayment: "",
+        contractDate: new Date().toISOString().slice(0, 10),
+        installmentAmount: "",
+        projectId: (lead as any)?.projectId ?? undefined,
+        assignedSalesId: (lead as any)?.primarySalesId ?? undefined,
+      });
+      setIsWonDialogOpen(true);
+      return;
+    }
     updateStatus.mutate(
       { leadId: id, data: { status: status as any } },
       {
@@ -221,6 +267,66 @@ export function LeadDetailPage() {
           queryClient.invalidateQueries({ queryKey: getGetLeadsKanbanQueryKey() });
           toast.success(t("leads.status_updated"));
         },
+      }
+    );
+  };
+
+  const handleConvertToDeal = (values: z.infer<typeof convertDealSchema>, skipConvert = false) => {
+    if (!id || !lead) return;
+    const doMarkWon = () => {
+      updateStatus.mutate(
+        { leadId: id, data: { status: "won" as any } },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getListLeadsQueryKey() });
+            queryClient.invalidateQueries({ queryKey: getGetLeadsKanbanQueryKey() });
+            setIsWonDialogOpen(false);
+            if (!skipConvert) {
+              toast.success(t("leads.deal_converted"));
+              setLocation("/clients");
+            } else {
+              toast.success(t("leads.status_updated"));
+            }
+          },
+        }
+      );
+    };
+
+    if (skipConvert) {
+      doMarkWon();
+      return;
+    }
+
+    const paymentMethod = values.paymentMethod;
+    const showInstallments = paymentMethod === "installments" || paymentMethod === "mortgage";
+
+    createClient.mutate(
+      {
+        data: {
+          name: lead.name,
+          phone: (lead as any).phone || undefined,
+          email: (lead as any).email || undefined,
+          leadId: id,
+          dealValue: values.dealValue || undefined,
+          unitNumber: values.unitNumber || undefined,
+          unitType: values.unitType || undefined,
+          area: values.area || undefined,
+          paymentMethod: values.paymentMethod || undefined,
+          downPayment: showInstallments ? (values.downPayment || undefined) : undefined,
+          contractDate: values.contractDate || undefined,
+          numberOfInstallments: showInstallments ? (values.numberOfInstallments || undefined) : undefined,
+          installmentAmount: showInstallments ? (values.installmentAmount || undefined) : undefined,
+          projectId: values.projectId || undefined,
+          assignedSalesId: values.assignedSalesId || undefined,
+          notes: (lead as any).notes || undefined,
+        } as any,
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListClientsQueryKey() });
+          doMarkWon();
+        },
+        onError: (err: Error) => toast.error(err.message),
       }
     );
   };
@@ -765,6 +871,257 @@ export function LeadDetailPage() {
                 </Button>
                 <Button type="submit" disabled={updateLead.isPending}>
                   {updateLead.isPending ? t("leads.saving") : t("leads.save_changes")}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Convert to Won / Complete Deal Dialog */}
+      <Dialog open={isWonDialogOpen} onOpenChange={setIsWonDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              {t("leads.won_dialog_title")}
+            </DialogTitle>
+            <DialogDescription>{t("leads.won_dialog_desc")}</DialogDescription>
+          </DialogHeader>
+
+          <Form {...wonForm}>
+            <form onSubmit={wonForm.handleSubmit((v) => handleConvertToDeal(v))} className="space-y-5">
+              {/* Deal Info */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                  {t("clients.deal_info")}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={wonForm.control}
+                    name="dealValue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("leads.deal_value_label")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder={t("leads.deal_value_placeholder")} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={wonForm.control}
+                    name="contractDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.contract_date")}</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={wonForm.control}
+                    name="projectId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.project")}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {(projects as any[]).map((p: any) => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={wonForm.control}
+                    name="assignedSalesId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.assigned_sales")}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {(users as any[]).map((u: any) => (
+                              <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Unit Info */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                  {t("clients.unit_info")}
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  <FormField
+                    control={wonForm.control}
+                    name="unitNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.unit_number")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="B-302" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={wonForm.control}
+                    name="unitType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.unit_type")}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="apartment">{t("clients.unit_type_apartment")}</SelectItem>
+                            <SelectItem value="villa">{t("clients.unit_type_villa")}</SelectItem>
+                            <SelectItem value="duplex">{t("clients.unit_type_duplex")}</SelectItem>
+                            <SelectItem value="penthouse">{t("clients.unit_type_penthouse")}</SelectItem>
+                            <SelectItem value="townhouse">{t("clients.unit_type_townhouse")}</SelectItem>
+                            <SelectItem value="commercial">{t("clients.unit_type_commercial")}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={wonForm.control}
+                    name="area"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("clients.area")}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="145" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Payment Info */}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+                  {t("clients.payment_info")}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={wonForm.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2 sm:col-span-1">
+                        <FormLabel>{t("clients.payment_method")}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="cash">{t("clients.payment_cash")}</SelectItem>
+                            <SelectItem value="installments">{t("clients.payment_installments")}</SelectItem>
+                            <SelectItem value="mortgage">{t("clients.payment_mortgage")}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {(wonForm.watch("paymentMethod") === "installments" || wonForm.watch("paymentMethod") === "mortgage") && (
+                    <>
+                      <FormField
+                        control={wonForm.control}
+                        name="downPayment"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("clients.down_payment")}</FormLabel>
+                            <FormControl>
+                              <Input placeholder="500,000" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={wonForm.control}
+                        name="numberOfInstallments"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("clients.num_installments")}</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="24" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={wonForm.control}
+                        name="installmentAmount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("clients.installment_amount")}</FormLabel>
+                            <FormControl>
+                              <Input placeholder="83,333" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 flex-wrap">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleConvertToDeal(wonForm.getValues(), true)}
+                  disabled={updateStatus.isPending || createClient.isPending}
+                >
+                  {t("leads.skip_and_mark_won")}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateStatus.isPending || createClient.isPending}
+                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                >
+                  <Trophy className={cn("h-4 w-4", isAr ? "ml-2" : "mr-2")} />
+                  {(updateStatus.isPending || createClient.isPending)
+                    ? t("leads.converting")
+                    : t("leads.convert_to_deal")}
                 </Button>
               </DialogFooter>
             </form>
