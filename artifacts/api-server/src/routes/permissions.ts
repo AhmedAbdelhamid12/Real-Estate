@@ -115,6 +115,32 @@ router.post("/permissions/user/:userId/override", requireAuth, withPermission("p
   res.json({ ok: true });
 });
 
+// POST /permissions/role/:role/reset — reset role to default permissions
+router.post("/permissions/role/:role/reset", requireAuth, withPermission("permissions.manage"), async (req, res): Promise<void> => {
+  const { role } = req.params as { role: string };
+  const currentUser = req.currentUser!;
+
+  const validRoles = ["admin", "director", "team_leader", "sales"];
+  if (!validRoles.includes(role)) {
+    res.status(400).json({ error: "Invalid role" });
+    return;
+  }
+
+  // Delete all custom overrides for this role
+  await db.delete(rolePermissionsTable).where(eq(rolePermissionsTable.role, role as any));
+  invalidateRoleCache(role);
+
+  await auditLog({
+    userId: currentUser.id,
+    action: "reset_role_permissions",
+    entityType: "role_permission",
+    after: { role, reset: true },
+    req,
+  });
+
+  res.json({ ok: true });
+});
+
 // GET /permissions/me — current user's permissions
 router.get("/permissions/me", requireAuth, async (req, res): Promise<void> => {
   const currentUser = req.currentUser!;

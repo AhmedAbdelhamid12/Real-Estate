@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useGetSalesReport, useGetLeadsReport, apiFetch } from "@workspace/api-client-react";
-import { format, subDays } from "date-fns";
+import { format, subDays, startOfYear } from "date-fns";
+import { ar } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,17 +13,35 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { UserAvatar } from "@/components/shared/UserAvatar";
-import { CalendarIcon, TrendingUp, Download, FileDown, Home, Building } from "lucide-react";
+import {
+  CalendarIcon, TrendingUp, Download, FileDown, Home, Building,
+  Target, Trophy, Users, BarChart3, ArrowUpRight, ArrowDownRight, Flame
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/contexts/i18nContext";
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  PieChart, Pie, Cell, LineChart, Line
+  PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+const CHART_COLORS = [
+  "hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))", "hsl(var(--chart-5))",
+];
+
+const STATUS_LABELS_AR: Record<string, string> = {
+  new: "جديد", called: "تم الاتصال", qualified: "مؤهل",
+  proposal: "عرض سعر", negotiation: "تفاوض", won: "فائز", lost: "خسارة",
+};
+const SOURCE_LABELS_AR: Record<string, string> = {
+  manual: "يدوي", import: "استيراد", campaign: "حملة", referral: "توصية",
+  website: "موقع إلكتروني", social: "تواصل اجتماعي",
+};
+
+const MEDALS = ["🥇", "🥈", "🥉"];
 
 function downloadCsv(rows: string[][], filename: string) {
   const csvContent = rows
@@ -31,17 +50,26 @@ function downloadCsv(rows: string[][], filename: string) {
   const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  link.href = url; link.download = filename;
+  document.body.appendChild(link); link.click();
+  document.body.removeChild(link); URL.revokeObjectURL(url);
 }
 
 function formatPrice(val: number) {
-  return new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(val);
+  return new Intl.NumberFormat("ar-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(val);
 }
+
+const tooltipStyle = {
+  borderRadius: "8px", border: "1px solid hsl(var(--border))",
+  background: "hsl(var(--background))", fontSize: 12,
+};
+
+const PRESETS = [
+  { label: "٧ أيام", days: 7 },
+  { label: "٣٠ يوم", days: 30 },
+  { label: "٩٠ يوم", days: 90 },
+  { label: "هذا العام", days: -1 },
+];
 
 export function ReportsPage() {
   const { t } = useI18n();
@@ -49,6 +77,7 @@ export function ReportsPage() {
     from: subDays(new Date(), 30),
     to: new Date(),
   });
+  const [activePreset, setActivePreset] = useState(1);
 
   const fromDate = date?.from ? format(date.from, "yyyy-MM-dd") : undefined;
   const toDate = date?.to ? format(date.to, "yyyy-MM-dd") : undefined;
@@ -62,143 +91,201 @@ export function ReportsPage() {
       const params = new URLSearchParams();
       if (fromDate) params.set("from", fromDate);
       if (toDate) params.set("to", toDate);
-      const res = await apiFetch(`/api/reports/resale?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to load resale report");
-      return res.json() as Promise<{
-        total: number;
-        activeCount: number;
-        inactiveCount: number;
-        totalValue: number;
-        byType: { type: string; count: number }[];
-        byProject: { project: string; count: number; totalValue: number }[];
-      }>;
+      const res = await apiFetch(`/api/reports/resale?${params}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ total: number; activeCount: number; inactiveCount: number; totalValue: number; byType: { type: string; count: number }[]; byProject: { project: string; count: number; totalValue: number }[] }>;
     },
   });
 
+  const { data: trendsData, isLoading: isTrendsLoading } = useQuery({
+    queryKey: ["reports", "trends", fromDate, toDate],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (fromDate) params.set("from", fromDate);
+      if (toDate) params.set("to", toDate);
+      const res = await apiFetch(`/api/reports/trends?${params}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ days: { date: string; total: number; won: number; lost: number; inProgress: number }[] }>;
+    },
+  });
+
+  const { data: projectsReport, isLoading: isProjectsLoading } = useQuery({
+    queryKey: ["reports", "projects", fromDate, toDate],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (fromDate) params.set("from", fromDate);
+      if (toDate) params.set("to", toDate);
+      const res = await apiFetch(`/api/reports/projects?${params}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ projects: { id: string; name: string; imageUrl?: string; total: number; won: number; lost: number; inProgress: number; convRate: number }[] }>;
+    },
+  });
+
+  function applyPreset(idx: number) {
+    setActivePreset(idx);
+    const p = PRESETS[idx];
+    if (p.days === -1) {
+      setDate({ from: startOfYear(new Date()), to: new Date() });
+    } else {
+      setDate({ from: subDays(new Date(), p.days), to: new Date() });
+    }
+  }
+
+  const sortedPerformers = useMemo(() =>
+    [...(salesReport?.byUser ?? [])].sort((a, b) =>
+      ((b.won ?? 0) / Math.max(b.total ?? 0, 1)) - ((a.won ?? 0) / Math.max(a.total ?? 0, 1))
+    ), [salesReport]);
+
+  const pipelineFunnel = useMemo(() => {
+    const order = ["new", "called", "qualified", "proposal", "negotiation", "won"];
+    return order.map(s => ({
+      name: STATUS_LABELS_AR[s] ?? s,
+      value: (leadsReport?.byStatus ?? []).find((x: any) => x.status === s)?.count ?? 0,
+    })).filter(x => x.value > 0);
+  }, [leadsReport]);
+
+  // Aggregate trend data: if range > 30 days, group by week
+  const trendDays = trendsData?.days ?? [];
+  const showWeekly = trendDays.length > 60;
+  const trendChart = useMemo(() => {
+    if (!showWeekly) return trendDays.map(d => ({
+      ...d,
+      label: format(new Date(d.date), "d MMM"),
+    }));
+    // Group by week
+    const weeks: Record<string, { label: string; total: number; won: number; lost: number }> = {};
+    for (const d of trendDays) {
+      const dt = new Date(d.date);
+      const weekStart = new Date(dt);
+      weekStart.setDate(dt.getDate() - dt.getDay());
+      const key = weekStart.toISOString().slice(0, 10);
+      if (!weeks[key]) weeks[key] = { label: format(weekStart, "d MMM"), total: 0, won: 0, lost: 0 };
+      weeks[key].total += d.total;
+      weeks[key].won += d.won;
+      weeks[key].lost += d.lost;
+    }
+    return Object.values(weeks);
+  }, [trendDays, showWeekly]);
+
   function exportSalesReport() {
     if (!salesReport?.byUser) return;
-    const rangeLabel = `${fromDate ?? "start"}_to_${toDate ?? "end"}`;
     const rows: string[][] = [
-      ["Team Member", "Total Leads", "Won", "Lost", "In Progress", "Conversion Rate (%)"],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...salesReport.byUser.map((p: any) => [
-        p.userName,
-        String(p.total ?? 0),
-        String(p.won ?? 0),
-        String(p.lost ?? 0),
-        String(p.inProgress ?? 0),
+      ["الموظف", "إجمالي", "فائز", "خسارة", "جاري", "معدل التحويل (%)"],
+      ...(salesReport.byUser as any[]).map((p: any) => [
+        p.userName, String(p.total ?? 0), String(p.won ?? 0), String(p.lost ?? 0), String(p.inProgress ?? 0),
         ((p.total ?? 0) > 0 ? (((p.won ?? 0) / (p.total ?? 1)) * 100).toFixed(1) : "0.0"),
       ]),
     ];
-    downloadCsv(rows, `sales-report-${rangeLabel}.csv`);
+    downloadCsv(rows, `sales-report-${fromDate}-to-${toDate}.csv`);
   }
 
   function exportFullReport() {
-    const rangeLabel = `${fromDate ?? "start"}_to_${toDate ?? "end"}`;
     const rows: string[][] = [
-      [`TIL Real Estate Group — Full Report (${fromDate} → ${toDate})`],
+      [`TIL Real Estate Group — تقرير شامل (${fromDate} → ${toDate})`],
       [],
-      ["=== SALES PERFORMANCE ==="],
-      ["Team Member", "Total", "Won", "Lost", "In Progress", "Conv. Rate (%)"],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ["=== أداء المبيعات ==="],
+      ["الموظف", "إجمالي", "فائز", "خسارة", "جاري", "معدل التحويل (%)"],
       ...(salesReport?.byUser ?? []).map((p: any) => [
-        p.userName,
-        String(p.total ?? 0),
-        String(p.won ?? 0),
-        String(p.lost ?? 0),
-        String(p.inProgress ?? 0),
+        p.userName, String(p.total ?? 0), String(p.won ?? 0), String(p.lost ?? 0), String(p.inProgress ?? 0),
         ((p.total ?? 0) > 0 ? (((p.won ?? 0) / (p.total ?? 1)) * 100).toFixed(1) : "0.0"),
       ]),
       [],
-      ["=== LEAD SOURCES ==="],
-      ["Source", "Count"],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...(leadsReport?.bySource ?? []).map((s: any) => [s.source, String(s.count)]),
+      ["=== مصادر العملاء ==="],
+      ["المصدر", "العدد"],
+      ...(leadsReport?.bySource ?? []).map((s: any) => [SOURCE_LABELS_AR[s.source] ?? s.source, String(s.count)]),
       [],
-      ["=== RESALE UNITS ==="],
-      ["Project", "Units", "Total Value (EGP)"],
+      ["=== وحدات إعادة البيع ==="],
+      ["المشروع", "الوحدات", "القيمة الإجمالية (ج.م)"],
       ...(resaleReport?.byProject ?? []).map((p) => [p.project, String(p.count), String(p.totalValue)]),
     ];
-    downloadCsv(rows, `full-report-${rangeLabel}.csv`);
+    downloadCsv(rows, `full-report-${fromDate}-to-${toDate}.csv`);
   }
-
-  const sortedPerformers = [...(salesReport?.byUser ?? [])]
-    .sort((a, b) => ((b.won ?? 0) / Math.max(b.total ?? 0, 1)) - ((a.won ?? 0) / Math.max(a.total ?? 0, 1)));
 
   const DateRangePicker = () => (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn("w-[260px] justify-start text-left font-normal", !date && "text-muted-foreground")}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+        <Button variant="outline" className={cn("justify-start text-start font-normal min-w-[200px]", !date && "text-muted-foreground")}>
+          <CalendarIcon className="me-2 h-4 w-4 shrink-0" />
           {date?.from ? (
-            date.to ? (
-              <>{format(date.from, "LLL dd, y")} – {format(date.to, "LLL dd, y")}</>
-            ) : format(date.from, "LLL dd, y")
-          ) : <span>Pick a date range</span>}
+            date.to ? <>{format(date.from, "d MMM")} – {format(date.to, "d MMM yyyy")}</> : format(date.from, "d MMM yyyy")
+          ) : <span>اختر فترة</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="end">
-        <Calendar
-          initialFocus
-          mode="range"
-          defaultMonth={date?.from}
-          selected={date}
-          onSelect={setDate}
-          numberOfMonths={2}
-        />
+        <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date}
+          onSelect={(v) => { setDate(v); setActivePreset(-1); }} numberOfMonths={2} />
       </PopoverContent>
     </Popover>
   );
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{t("reports.title")}</h2>
-          <p className="text-muted-foreground">{t("reports.sales")}</p>
+          <p className="text-muted-foreground text-sm">بيانات حية — آخر تحديث الآن</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Quick Presets */}
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
+            {PRESETS.map((p, idx) => (
+              <button
+                key={p.label}
+                onClick={() => applyPreset(idx)}
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                  activePreset === idx
+                    ? "bg-background shadow text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
           <DateRangePicker />
-          <Button variant="outline" onClick={exportFullReport} disabled={isSalesLoading || isLeadsLoading}>
-            <FileDown className="mr-2 h-4 w-4" />
-            Export All
+          <Button variant="outline" onClick={exportFullReport} disabled={isSalesLoading || isLeadsLoading} className="gap-2">
+            <FileDown className="h-4 w-4" /> تصدير
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="sales">
-        <TabsList className="mb-4">
-          <TabsTrigger value="sales">{t("reports.sales")}</TabsTrigger>
-          <TabsTrigger value="leads">{t("reports.leads")}</TabsTrigger>
-          <TabsTrigger value="resale">{t("reports.resale")}</TabsTrigger>
+        <TabsList className="mb-4 flex-wrap h-auto gap-1">
+          <TabsTrigger value="sales" className="gap-1.5"><Trophy className="h-3.5 w-3.5" /> أداء المبيعات</TabsTrigger>
+          <TabsTrigger value="trends" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> الاتجاهات</TabsTrigger>
+          <TabsTrigger value="leads" className="gap-1.5"><Users className="h-3.5 w-3.5" /> العملاء المحتملون</TabsTrigger>
+          <TabsTrigger value="projects" className="gap-1.5"><Building className="h-3.5 w-3.5" /> المشاريع</TabsTrigger>
+          <TabsTrigger value="resale" className="gap-1.5"><Home className="h-3.5 w-3.5" /> إعادة البيع</TabsTrigger>
         </TabsList>
 
         {/* ── SALES TAB ── */}
         <TabsContent value="sales" className="space-y-6">
-          {/* KPI summary row */}
+          {/* KPI row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Total Leads", value: salesReport?.totalLeads ?? 0, color: "text-blue-500", bg: "bg-blue-500/10" },
-              { label: "Won", value: salesReport?.totalWon ?? 0, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-              { label: "Lost", value: salesReport?.totalLost ?? 0, color: "text-red-500", bg: "bg-red-500/10" },
+              { label: "إجمالي العملاء", value: salesReport?.totalLeads ?? 0, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", suffix: "" },
+              { label: "صفقات رابحة", value: salesReport?.totalWon ?? 0, icon: Trophy, color: "text-emerald-500", bg: "bg-emerald-500/10", suffix: "" },
+              { label: "صفقات خاسرة", value: salesReport?.totalLost ?? 0, icon: Target, color: "text-red-500", bg: "bg-red-500/10", suffix: "" },
               {
-                label: "Conversion Rate",
+                label: "معدل التحويل",
                 value: (salesReport?.totalLeads ?? 0) > 0
                   ? `${(((salesReport?.totalWon ?? 0) / (salesReport?.totalLeads ?? 1)) * 100).toFixed(1)}%`
                   : "0%",
-                color: "text-violet-500", bg: "bg-violet-500/10"
+                icon: BarChart3, color: "text-violet-500", bg: "bg-violet-500/10", suffix: "",
               },
             ].map((kpi) => (
-              <Card key={kpi.label} className="border-0 shadow-md">
+              <Card key={kpi.label} className="border shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center shrink-0`}>
-                    <TrendingUp className={`w-5 h-5 ${kpi.color}`} />
+                    <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
                   </div>
                   <div>
-                    {isSalesLoading ? <Skeleton className="h-7 w-12 mb-0.5" /> : <p className="text-2xl font-bold">{kpi.value}</p>}
+                    {isSalesLoading
+                      ? <Skeleton className="h-7 w-12 mb-0.5" />
+                      : <p className="text-2xl font-bold">{kpi.value}{kpi.suffix}</p>
+                    }
                     <p className="text-xs text-muted-foreground">{kpi.label}</p>
                   </div>
                 </CardContent>
@@ -206,87 +293,97 @@ export function ReportsPage() {
             ))}
           </div>
 
+          {/* Bar chart */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
-                <CardTitle>Sales by Team Member</CardTitle>
-                <CardDescription>Won / Lost / In Progress breakdown</CardDescription>
+                <CardTitle>أداء الفريق</CardTitle>
+                <CardDescription>الصفقات الرابحة / الخاسرة / الجارية لكل مندوب</CardDescription>
               </div>
-              <Button variant="ghost" size="sm" onClick={exportSalesReport} disabled={isSalesLoading} className="h-8 px-2 text-muted-foreground">
-                <Download className="h-4 w-4" />
+              <Button variant="ghost" size="sm" onClick={exportSalesReport} disabled={isSalesLoading} className="h-8 px-2 gap-1.5 text-muted-foreground">
+                <Download className="h-4 w-4" /> CSV
               </Button>
             </CardHeader>
-            <CardContent className="h-[350px]">
+            <CardContent className="h-[320px]">
               {isSalesLoading ? <Skeleton className="h-full w-full" /> : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesReport?.byUser} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                  <BarChart data={salesReport?.byUser ?? []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis dataKey="userName" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--background))' }} />
-                    <Legend />
-                    <Bar dataKey="won" name="Won" stackId="a" fill="hsl(var(--chart-3))" radius={[0, 0, 4, 4]} />
-                    <Bar dataKey="lost" name="Lost" stackId="a" fill="hsl(var(--chart-5))" />
-                    <Bar dataKey="inProgress" name="In Progress" stackId="a" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                    <XAxis dataKey="userName" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => v === "won" ? "رابح" : v === "lost" ? "خاسر" : "جاري"} />
+                    <Bar dataKey="won" name="won" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="lost" name="lost" stackId="a" fill="#ef4444" />
+                    <Bar dataKey="inProgress" name="inProgress" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </CardContent>
           </Card>
 
-          {/* Top Performers Table */}
+          {/* Leaderboard */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
-                <CardTitle>Top Performers</CardTitle>
-                <CardDescription>Ranked by conversion rate</CardDescription>
+                <CardTitle>لوحة الشرف 🏆</CardTitle>
+                <CardDescription>مرتبون حسب معدل التحويل</CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={exportSalesReport} disabled={isSalesLoading || !salesReport?.byUser?.length}>
-                <Download className="mr-2 h-4 w-4" /> CSV
+              <Button variant="outline" size="sm" onClick={exportSalesReport} disabled={isSalesLoading || !salesReport?.byUser?.length} className="gap-1.5">
+                <Download className="h-3.5 w-3.5" /> تصدير
               </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Team Member</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Won</TableHead>
-                    <TableHead className="text-right">Lost</TableHead>
-                    <TableHead className="text-right">In Progress</TableHead>
-                    <TableHead className="text-right">Conv. Rate</TableHead>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead>المندوب</TableHead>
+                    <TableHead className="text-center">إجمالي</TableHead>
+                    <TableHead className="text-center">رابح</TableHead>
+                    <TableHead className="text-center">خاسر</TableHead>
+                    <TableHead className="text-center">جاري</TableHead>
+                    <TableHead className="text-end">معدل التحويل</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isSalesLoading ? (
-                    <TableRow><TableCell colSpan={7}><Skeleton className="h-10 w-full" /></TableCell></TableRow>
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <TableRow key={i}><TableCell colSpan={7}><Skeleton className="h-10 w-full" /></TableCell></TableRow>
+                    ))
                   ) : sortedPerformers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No data for selected period.</TableCell>
+                      <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                        لا توجد بيانات للفترة المختارة
+                      </TableCell>
                     </TableRow>
                   ) : sortedPerformers.map((perf, idx) => {
                     const rate = (perf.total ?? 0) > 0 ? (((perf.won ?? 0) / (perf.total ?? 1)) * 100).toFixed(1) : "0.0";
+                    const pct = Math.min(parseFloat(rate), 100);
                     return (
-                      <TableRow key={perf.userId}>
-                        <TableCell className="text-muted-foreground font-medium">#{idx + 1}</TableCell>
+                      <TableRow key={perf.userId} className={cn(idx === 0 ? "bg-amber-50/30 dark:bg-amber-900/10" : "")}>
+                        <TableCell className="font-bold text-base w-12">
+                          {MEDALS[idx] ?? <span className="text-muted-foreground text-sm font-medium">#{idx + 1}</span>}
+                        </TableCell>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
                             <UserAvatar name={perf.userName} />
-                            {perf.userName}
+                            <span>{perf.userName}</span>
+                            {idx === 0 && <Flame className="w-4 h-4 text-amber-500" title="الأفضل" />}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">{perf.total ?? 0}</TableCell>
-                        <TableCell className="text-right text-green-600 dark:text-green-500 font-medium">{perf.won ?? 0}</TableCell>
-                        <TableCell className="text-right text-red-600 dark:text-red-500">{perf.lost ?? 0}</TableCell>
-                        <TableCell className="text-right text-amber-600 dark:text-amber-500">{perf.inProgress ?? 0}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-center font-semibold">{perf.total ?? 0}</TableCell>
+                        <TableCell className="text-center text-emerald-600 dark:text-emerald-400 font-bold">{perf.won ?? 0}</TableCell>
+                        <TableCell className="text-center text-red-500 font-medium">{perf.lost ?? 0}</TableCell>
+                        <TableCell className="text-center text-amber-600">{perf.inProgress ?? 0}</TableCell>
+                        <TableCell className="text-end">
                           <div className="flex items-center justify-end gap-2">
-                            <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                              <div className="h-full bg-green-500 rounded-full" style={{ width: `${Math.min(parseFloat(rate), 100)}%` }} />
+                            <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden hidden sm:block">
+                              <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
                             </div>
-                            <span className="font-bold w-12 text-right">{rate}%</span>
-                            <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                            <span className={cn("font-bold text-sm tabular-nums", pct >= 50 ? "text-emerald-600" : pct >= 25 ? "text-amber-600" : "text-red-500")}>
+                              {rate}%
+                            </span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -298,35 +395,151 @@ export function ReportsPage() {
           </Card>
         </TabsContent>
 
+        {/* ── TRENDS TAB ── */}
+        <TabsContent value="trends" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>اتجاه العملاء المحتملين {showWeekly ? "(أسبوعي)" : "(يومي)"}</CardTitle>
+              <CardDescription>إجمالي العملاء الجدد خلال الفترة المختارة</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[360px]">
+              {isTrendsLoading ? <Skeleton className="h-full w-full" /> : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={trendChart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="gradTotal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradWon" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any, name: string) =>
+                      [v, name === "total" ? "إجمالي" : name === "won" ? "رابح" : name === "lost" ? "خاسر" : name]
+                    } />
+                    <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => v === "total" ? "إجمالي" : v === "won" ? "رابح" : "خاسر"} />
+                    <Area type="monotone" dataKey="total" name="total" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="url(#gradTotal)" dot={false} />
+                    <Area type="monotone" dataKey="won" name="won" stroke="#10b981" strokeWidth={2} fill="url(#gradWon)" dot={false} />
+                    <Area type="monotone" dataKey="lost" name="lost" stroke="#ef4444" strokeWidth={1.5} fill="none" strokeDasharray="4 2" dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Pipeline funnel */}
+          <Card>
+            <CardHeader>
+              <CardTitle>مسار التحويل (Funnel)</CardTitle>
+              <CardDescription>مراحل العملاء المحتملين من البداية حتى الإغلاق</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLeadsLoading ? <Skeleton className="h-48 w-full" /> : (
+                <div className="space-y-2">
+                  {pipelineFunnel.map((stage, idx) => {
+                    const maxVal = pipelineFunnel[0]?.value ?? 1;
+                    const pct = Math.round((stage.value / maxVal) * 100);
+                    const colors = ["bg-slate-500", "bg-blue-500", "bg-violet-500", "bg-amber-500", "bg-orange-500", "bg-emerald-500"];
+                    return (
+                      <div key={stage.name} className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium">{stage.name}</span>
+                          <span className="text-muted-foreground tabular-nums">{stage.value} ({pct}%)</span>
+                        </div>
+                        <div className="h-8 bg-muted rounded-lg overflow-hidden">
+                          <div
+                            className={cn("h-full rounded-lg flex items-center px-3 transition-all", colors[idx] ?? "bg-primary")}
+                            style={{ width: `${pct}%`, minWidth: stage.value > 0 ? "2rem" : 0 }}
+                          >
+                            {pct > 15 && <span className="text-white text-xs font-bold">{stage.value}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {pipelineFunnel.length === 0 && (
+                    <p className="text-center py-8 text-muted-foreground">لا توجد بيانات للفترة المختارة</p>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* ── LEADS TAB ── */}
         <TabsContent value="leads" className="space-y-6">
+          {/* KPI */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Card className="border shadow-sm">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  {isLeadsLoading ? <Skeleton className="h-7 w-12" /> : <p className="text-2xl font-bold">{leadsReport?.total ?? 0}</p>}
+                  <p className="text-xs text-muted-foreground">إجمالي العملاء</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border shadow-sm">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div>
+                  {isLeadsLoading ? <Skeleton className="h-7 w-12" /> : (
+                    <p className="text-2xl font-bold">{(leadsReport?.byStatus ?? []).find((x: any) => x.status === "won")?.count ?? 0}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">صفقات مغلقة</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border shadow-sm md:col-span-1 col-span-2">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-violet-500" />
+                </div>
+                <div>
+                  {isLeadsLoading ? <Skeleton className="h-7 w-12" /> : (
+                    <p className="text-2xl font-bold">
+                      {(leadsReport?.bySource ?? []).length > 0
+                        ? (SOURCE_LABELS_AR[(leadsReport.bySource as any[]).sort((a, b) => b.count - a.count)[0]?.source] ?? "—")
+                        : "—"}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">المصدر الأكثر</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Lead Sources</CardTitle>
-                <CardDescription>Distribution of lead origins</CardDescription>
+                <CardTitle>مصادر العملاء</CardTitle>
+                <CardDescription>من أين يأتي العملاء المحتملون</CardDescription>
               </CardHeader>
-              <CardContent className="h-[350px]">
+              <CardContent className="h-[320px]">
                 {isLeadsLoading ? <Skeleton className="h-full w-full" /> : (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={leadsReport?.bySource}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={80}
-                        outerRadius={120}
-                        paddingAngle={2}
-                        dataKey="count"
-                        nameKey="source"
+                        data={(leadsReport?.bySource ?? []).map((x: any) => ({ ...x, name: SOURCE_LABELS_AR[x.source] ?? x.source }))}
+                        cx="50%" cy="50%" innerRadius={75} outerRadius={115} paddingAngle={2}
+                        dataKey="count" nameKey="name"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         labelLine={false}
                       >
-                        {leadsReport?.bySource.map((_entry: unknown, index: number) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        {(leadsReport?.bySource ?? []).map((_: unknown, i: number) => (
+                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => [`${value} leads`, 'Count']} contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--background))' }} />
+                      <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v} عميل`, "العدد"]} />
                     </PieChart>
                   </ResponsiveContainer>
                 )}
@@ -335,18 +548,21 @@ export function ReportsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Lead Status Breakdown</CardTitle>
-                <CardDescription>Distribution by current status</CardDescription>
+                <CardTitle>توزيع حالات العملاء</CardTitle>
+                <CardDescription>نسبة كل مرحلة من المراحل</CardDescription>
               </CardHeader>
-              <CardContent className="h-[350px]">
+              <CardContent className="h-[320px]">
                 {isLeadsLoading ? <Skeleton className="h-full w-full" /> : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={leadsReport?.byStatus} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                    <BarChart
+                      data={(leadsReport?.byStatus ?? []).map((x: any) => ({ ...x, nameAr: STATUS_LABELS_AR[x.status] ?? x.status }))}
+                      layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-                      <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <YAxis type="category" dataKey="status" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} width={90} />
-                      <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--background))' }} />
-                      <Bar dataKey="count" name="Leads" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+                      <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="nameAr" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
+                      <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v} عميل`, "العدد"]} />
+                      <Bar dataKey="count" name="عدد العملاء" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -355,34 +571,38 @@ export function ReportsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Lead Summary</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>جدول تفصيلي</CardTitle></CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Count</TableHead>
-                    <TableHead className="text-right">Percentage</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="text-center">العدد</TableHead>
+                    <TableHead className="text-end">النسبة</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {(leadsReport?.byStatus ?? []).map((s: any) => (
                     <TableRow key={s.status}>
-                      <TableCell className="capitalize font-medium">{s.status}</TableCell>
-                      <TableCell className="text-right">{s.count}</TableCell>
-                      <TableCell className="text-right">
-                        {leadsReport?.total ? `${((s.count / leadsReport.total) * 100).toFixed(1)}%` : "0%"}
+                      <TableCell className="font-medium">{STATUS_LABELS_AR[s.status] ?? s.status}</TableCell>
+                      <TableCell className="text-center">{s.count}</TableCell>
+                      <TableCell className="text-end">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{ width: leadsReport?.total ? `${(s.count / leadsReport.total) * 100}%` : "0" }} />
+                          </div>
+                          <span className="text-sm font-medium tabular-nums">
+                            {leadsReport?.total ? `${((s.count / leadsReport.total) * 100).toFixed(1)}%` : "0%"}
+                          </span>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                   {leadsReport?.total && (
                     <TableRow className="font-bold border-t-2">
-                      <TableCell>Total</TableCell>
-                      <TableCell className="text-right">{leadsReport.total}</TableCell>
-                      <TableCell className="text-right">100%</TableCell>
+                      <TableCell>الإجمالي</TableCell>
+                      <TableCell className="text-center">{leadsReport.total}</TableCell>
+                      <TableCell className="text-end">100%</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -391,19 +611,103 @@ export function ReportsPage() {
           </Card>
         </TabsContent>
 
+        {/* ── PROJECTS TAB ── */}
+        <TabsContent value="projects" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>أداء المشاريع</CardTitle>
+              <CardDescription>العملاء المحتملون ومعدلات التحويل حسب المشروع</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[320px]">
+              {isProjectsLoading ? <Skeleton className="h-full w-full" /> : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={(projectsReport?.projects ?? []).filter(p => p.total > 0).slice(0, 8)}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any, name: string) =>
+                      [v, name === "won" ? "رابح" : name === "lost" ? "خاسر" : name === "inProgress" ? "جاري" : name]
+                    } />
+                    <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => v === "won" ? "رابح" : v === "lost" ? "خاسر" : "جاري"} />
+                    <Bar dataKey="won" name="won" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="lost" name="lost" stackId="a" fill="#ef4444" />
+                    <Bar dataKey="inProgress" name="inProgress" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>تفاصيل المشاريع</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isProjectsLoading ? <Skeleton className="h-48 w-full" /> : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>#</TableHead>
+                      <TableHead>المشروع</TableHead>
+                      <TableHead className="text-center">إجمالي</TableHead>
+                      <TableHead className="text-center">رابح</TableHead>
+                      <TableHead className="text-center">خاسر</TableHead>
+                      <TableHead className="text-end">معدل التحويل</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(projectsReport?.projects ?? []).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">لا توجد بيانات</TableCell>
+                      </TableRow>
+                    ) : (projectsReport?.projects ?? []).map((p, idx) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="text-muted-foreground text-sm">#{idx + 1}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {p.imageUrl
+                              ? <img src={p.imageUrl} alt={p.name} className="w-7 h-7 rounded object-cover shrink-0" />
+                              : <div className="w-7 h-7 rounded bg-muted flex items-center justify-center shrink-0"><Building className="w-3.5 h-3.5 text-muted-foreground" /></div>
+                            }
+                            {p.name}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center font-semibold">{p.total}</TableCell>
+                        <TableCell className="text-center text-emerald-600 font-bold">{p.won}</TableCell>
+                        <TableCell className="text-center text-red-500">{p.lost}</TableCell>
+                        <TableCell className="text-end">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${p.convRate}%` }} />
+                            </div>
+                            <span className="font-bold text-sm tabular-nums">{p.convRate}%</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* ── RESALE TAB ── */}
         <TabsContent value="resale" className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Total Units", value: resaleReport?.total ?? 0, color: "text-blue-500", bg: "bg-blue-500/10" },
-              { label: "Available", value: resaleReport?.activeCount ?? 0, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-              { label: "Inactive", value: resaleReport?.inactiveCount ?? 0, color: "text-amber-500", bg: "bg-amber-500/10" },
-              { label: "Portfolio Value", value: resaleReport?.totalValue ? formatPrice(resaleReport.totalValue) : "EGP 0", color: "text-violet-500", bg: "bg-violet-500/10" },
+              { label: "إجمالي الوحدات", value: resaleReport?.total ?? 0, icon: Home, color: "text-blue-500", bg: "bg-blue-500/10" },
+              { label: "وحدات متاحة", value: resaleReport?.activeCount ?? 0, icon: ArrowUpRight, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              { label: "وحدات غير نشطة", value: resaleReport?.inactiveCount ?? 0, icon: ArrowDownRight, color: "text-amber-500", bg: "bg-amber-500/10" },
+              { label: "قيمة المحفظة", value: resaleReport?.totalValue ? formatPrice(resaleReport.totalValue) : "ج.م ٠", icon: Target, color: "text-violet-500", bg: "bg-violet-500/10" },
             ].map((kpi) => (
-              <Card key={kpi.label} className="border-0 shadow-md">
+              <Card key={kpi.label} className="border shadow-sm">
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center shrink-0`}>
-                    <Home className={`w-5 h-5 ${kpi.color}`} />
+                    <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
                   </div>
                   <div>
                     {isResaleLoading ? <Skeleton className="h-7 w-16 mb-0.5" /> : <p className="text-lg font-bold">{kpi.value}</p>}
@@ -417,30 +721,25 @@ export function ReportsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Units by Type</CardTitle>
-                <CardDescription>Breakdown of property types</CardDescription>
+                <CardTitle>الوحدات حسب النوع</CardTitle>
+                <CardDescription>توزيع أنواع العقارات</CardDescription>
               </CardHeader>
-              <CardContent className="h-[300px]">
+              <CardContent className="h-[280px]">
                 {isResaleLoading ? <Skeleton className="h-full w-full" /> : (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={resaleReport?.byType}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={70}
-                        outerRadius={110}
-                        paddingAngle={3}
-                        dataKey="count"
-                        nameKey="type"
+                        data={resaleReport?.byType ?? []}
+                        cx="50%" cy="50%" innerRadius={65} outerRadius={105} paddingAngle={3}
+                        dataKey="count" nameKey="type"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         labelLine={false}
                       >
-                        {(resaleReport?.byType ?? []).map((_entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        {(resaleReport?.byType ?? []).map((_: unknown, i: number) => (
+                          <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--background))' }} />
+                      <Tooltip contentStyle={tooltipStyle} />
                     </PieChart>
                   </ResponsiveContainer>
                 )}
@@ -449,18 +748,18 @@ export function ReportsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Top Projects by Units</CardTitle>
-                <CardDescription>Projects with most resale listings</CardDescription>
+                <CardTitle>أبرز المشاريع (إعادة البيع)</CardTitle>
+                <CardDescription>المشاريع الأكثر وحدات</CardDescription>
               </CardHeader>
-              <CardContent className="h-[300px]">
+              <CardContent className="h-[280px]">
                 {isResaleLoading ? <Skeleton className="h-full w-full" /> : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={resaleReport?.byProject?.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 30, left: 10, bottom: 0 }}>
+                    <BarChart data={resaleReport?.byProject?.slice(0, 6) ?? []} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-                      <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis type="category" dataKey="project" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} width={120} />
-                      <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--background))' }} />
-                      <Bar dataKey="count" name="Units" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+                      <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="project" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} width={110} />
+                      <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v} وحدة`, "العدد"]} />
+                      <Bar dataKey="count" name="الوحدات" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -468,39 +767,37 @@ export function ReportsPage() {
             </Card>
           </div>
 
-          {/* Project Details Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Resale by Project</CardTitle>
-              <CardDescription>Unit count and estimated portfolio value per project</CardDescription>
+              <CardTitle>إعادة البيع حسب المشروع</CardTitle>
+              <CardDescription>عدد الوحدات والقيمة الإجمالية</CardDescription>
             </CardHeader>
             <CardContent>
               {isResaleLoading ? <Skeleton className="h-48 w-full" /> : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>#</TableHead>
-                      <TableHead>Project</TableHead>
-                      <TableHead className="text-right">Units</TableHead>
-                      <TableHead className="text-right">Portfolio Value</TableHead>
+                      <TableHead className="w-10">#</TableHead>
+                      <TableHead>المشروع</TableHead>
+                      <TableHead className="text-center">الوحدات</TableHead>
+                      <TableHead className="text-end">قيمة المحفظة</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {(resaleReport?.byProject ?? []).length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No resale data for selected period.</TableCell>
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">لا توجد وحدات إعادة بيع للفترة المختارة</TableCell>
                       </TableRow>
                     ) : (resaleReport?.byProject ?? []).map((p, idx) => (
                       <TableRow key={p.project}>
                         <TableCell className="text-muted-foreground">#{idx + 1}</TableCell>
                         <TableCell className="font-medium flex items-center gap-2">
-                          <Building className="w-4 h-4 text-muted-foreground" />
-                          {p.project}
+                          <Building className="w-4 h-4 text-muted-foreground shrink-0" />{p.project}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-center">
                           <Badge variant="secondary">{p.count}</Badge>
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className="text-end font-medium">
                           {p.totalValue > 0 ? formatPrice(p.totalValue) : "—"}
                         </TableCell>
                       </TableRow>

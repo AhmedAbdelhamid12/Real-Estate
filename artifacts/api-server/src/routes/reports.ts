@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, leadsTable, usersTable, resaleUnitsTable } from "@workspace/db";
+import { db, leadsTable, usersTable, resaleUnitsTable, projectsTable } from "@workspace/db";
 import { eq, and, gte, lte, count, sql } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 
@@ -136,6 +136,88 @@ router.get("/reports/resale", requireAuth, async (req, res): Promise<void> => {
       totalValue: data.totalValue,
     })).sort((a, b) => b.count - a.count).slice(0, 10),
   });
+});
+
+// GET /reports/trends — daily lead creation over time
+router.get("/reports/trends", requireAuth, async (req, res): Promise<void> => {
+  const { from, to } = req.query as Record<string, string>;
+
+  const fromDate = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const toDate = to ? new Date(to + "T23:59:59Z") : new Date();
+
+  const rows = await db.execute(sql`
+    SELECT
+      TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS date,
+      COUNT(*)::int AS total,
+      COUNT(CASE WHEN status = 'won' THEN 1 END)::int AS won,
+      COUNT(CASE WHEN status = 'lost' THEN 1 END)::int AS lost,
+      COUNT(CASE WHEN status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
+    FROM leads
+    WHERE created_at >= ${fromDate} AND created_at <= ${toDate}
+    GROUP BY TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')
+    ORDER BY date ASC
+  `);
+
+  // Fill in missing dates with zero values
+  const resultMap: Record<string, { date: string; total: number; won: number; lost: number; inProgress: number }> = {};
+  for (const row of rows.rows as any[]) {
+    resultMap[row.date] = {
+      date: row.date,
+      total: Number(row.total),
+      won: Number(row.won),
+      lost: Number(row.lost),
+      inProgress: Number(row.in_progress),
+    };
+  }
+
+  // Generate full date range
+  const days: typeof resultMap[string][] = [];
+  const cur = new Date(fromDate);
+  while (cur <= toDate) {
+    const key = cur.toISOString().slice(0, 10);
+    days.push(resultMap[key] ?? { date: key, total: 0, won: 0, lost: 0, inProgress: 0 });
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  res.json({ days });
+});
+
+// GET /reports/projects — leads performance per project
+router.get("/reports/projects", requireAuth, async (req, res): Promise<void> => {
+  const { from, to } = req.query as Record<string, string>;
+
+  const fromDate = from ? new Date(from) : new Date(0);
+  const toDate = to ? new Date(to + "T23:59:59Z") : new Date();
+
+  const rows = await db.execute(sql`
+    SELECT
+      p.id,
+      p.name,
+      p.image_url AS "imageUrl",
+      COUNT(l.id)::int AS total,
+      COUNT(CASE WHEN l.status = 'won' THEN 1 END)::int AS won,
+      COUNT(CASE WHEN l.status = 'lost' THEN 1 END)::int AS lost,
+      COUNT(CASE WHEN l.status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
+    FROM projects p
+    LEFT JOIN leads l ON l.project_id = p.id
+      AND l.created_at >= ${fromDate}
+      AND l.created_at <= ${toDate}
+    GROUP BY p.id, p.name, p.image_url
+    ORDER BY total DESC
+  `);
+
+  const projects = (rows.rows as any[]).map((r) => ({
+    id: r.id,
+    name: r.name,
+    imageUrl: r.imageUrl,
+    total: Number(r.total),
+    won: Number(r.won),
+    lost: Number(r.lost),
+    inProgress: Number(r.in_progress),
+    convRate: r.total > 0 ? Math.round((r.won / r.total) * 100) : 0,
+  }));
+
+  res.json({ projects });
 });
 
 export default router;
