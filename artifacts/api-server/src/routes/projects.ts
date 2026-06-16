@@ -78,7 +78,7 @@ router.patch("/projects/:projectId", requireAuth, async (req, res): Promise<void
   const updateData: Record<string, unknown> = {};
   const fields = ["name", "ownerName", "location", "description", "avgPrice", "imageUrl", "isActive"];
   for (const f of fields) {
-    if (f in body) updateData[camelToSnake(f)] = body[f];
+    if (f in body) updateData[f] = body[f] === null ? null : body[f];
   }
 
   const [updated] = await db

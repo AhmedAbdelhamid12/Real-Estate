@@ -219,7 +219,7 @@ function ProjectForm({
                     className="gap-2"
                   >
                     {imageUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                    {imageUploading ? "جارٍ الرفع..." : "تصفح من الجهاز"}
+                    {imageUploading ? "جارٍ الرفع..." : imageUrlValue ? "تغيير الصورة" : "رفع صورة"}
                   </Button>
                   {imageUrlValue && (
                     <Button

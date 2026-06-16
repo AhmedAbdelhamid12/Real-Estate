@@ -67,10 +67,11 @@ interface ResaleUnit {
 }
 
 /* ── Photo Gallery ─────────────────────────────────────────── */
-function PhotoGallery({ photos, unitName, noPhotosLabel }: {
+function PhotoGallery({ photos, unitName, noPhotosLabel, onDeletePhoto }: {
   photos: { id: string; url: string }[];
   unitName: string;
   noPhotosLabel: string;
+  onDeletePhoto?: (photoId: string) => void;
 }) {
   const [current, setCurrent] = useState(0);
   if (!photos || photos.length === 0) {
@@ -92,6 +93,22 @@ function PhotoGallery({ photos, unitName, noPhotosLabel }: {
           onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/400x250/f4f4f5/a1a1aa?text=No+Image"; }}
         />
       ))}
+
+      {/* Delete current photo button (admin only) */}
+      {onDeletePhoto && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const photoId = photos[current]?.id;
+            if (photoId) onDeletePhoto(photoId);
+          }}
+          className="absolute top-2.5 left-2.5 bg-black/60 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 z-10"
+          title="حذف هذه الصورة"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
+
       {photos.length > 1 && (
         <>
           <button
@@ -393,6 +410,17 @@ export function ResalePage() {
           toast.success(t("resale.unit_deleted"));
         }
       });
+    }
+  };
+
+  const handleDeletePhoto = async (unitId: string, photoId: string) => {
+    try {
+      const res = await apiFetch(`/api/resale/${unitId}/photos/${photoId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed");
+      queryClient.invalidateQueries({ queryKey: getListResaleUnitsQueryKey() });
+      toast.success("تم حذف الصورة");
+    } catch {
+      toast.error("فشل حذف الصورة");
     }
   };
 
@@ -708,6 +736,7 @@ export function ResalePage() {
                 photos={unit.photos ?? []}
                 unitName={unit.projectName}
                 noPhotosLabel={t("resale.no_photos")}
+                onDeletePhoto={isAdmin ? (photoId) => handleDeletePhoto(unit.id, photoId) : undefined}
               />
 
               <div className="p-4 flex-1 flex flex-col gap-2">
