@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUpdateUser, getGetMeQueryKey } from "@workspace/api-client-react";
+import { useUpdateUser, getGetMeQueryKey, getListUsersQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -114,6 +114,7 @@ export function ProfilePage() {
         onSuccess: () => {
           toast.success("تم تحديث الملف الشخصي بنجاح");
           queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getListUsersQueryKey() });
           refetch();
           setSaved(true);
           setTimeout(() => setSaved(false), 2500);
