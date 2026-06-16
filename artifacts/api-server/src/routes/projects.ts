@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, projectsTable, leadsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, projectsTable, leadsTable, clientsTable } from "@workspace/db";
+import { eq, isNotNull } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 import { sql } from "drizzle-orm";
 
@@ -98,6 +98,11 @@ router.patch("/projects/:projectId", requireAuth, async (req, res): Promise<void
 // DELETE /projects/:projectId
 router.delete("/projects/:projectId", requireAuth, async (req, res): Promise<void> => {
   const { projectId } = req.params as { projectId: string };
+
+  // Detach leads and clients before deleting to avoid FK constraint errors
+  await db.update(leadsTable).set({ projectId: null }).where(eq(leadsTable.projectId, projectId));
+  await db.update(clientsTable).set({ projectId: null }).where(eq(clientsTable.projectId, projectId));
+
   await db.delete(projectsTable).where(eq(projectsTable.id, projectId));
   res.sendStatus(204);
 });
