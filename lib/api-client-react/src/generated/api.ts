@@ -57,6 +57,7 @@ import type {
   ProjectUpdate,
   RegisterInput,
   RejectInput,
+  ResaleAssignInput,
   ResaleUnit,
   ResaleUnitInput,
   ResaleUnitUpdate,
@@ -3050,6 +3051,78 @@ export const useDeleteResaleUnit = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteResaleUnitMutationOptions(options));
+    }
+
+export const getAssignResaleUnitUrl = (unitId: string,) => {
+
+
+
+
+  return `/api/resale/${unitId}/assign`
+}
+
+/**
+ * @summary Assign resale unit to an employee
+ */
+export const assignResaleUnit = async (unitId: string,
+    resaleAssignInput: ResaleAssignInput, options?: RequestInit): Promise<ResaleUnit> => {
+
+  return customFetch<ResaleUnit>(getAssignResaleUnitUrl(unitId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      resaleAssignInput,)
+  }
+);}
+
+
+
+
+export const getAssignResaleUnitMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignResaleUnit>>, TError,{unitId: string;data: BodyType<ResaleAssignInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignResaleUnit>>, TError,{unitId: string;data: BodyType<ResaleAssignInput>}, TContext> => {
+
+const mutationKey = ['assignResaleUnit'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignResaleUnit>>, {unitId: string;data: BodyType<ResaleAssignInput>}> = (props) => {
+          const {unitId,data} = props ?? {};
+
+          return  assignResaleUnit(unitId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignResaleUnitMutationResult = NonNullable<Awaited<ReturnType<typeof assignResaleUnit>>>
+    export type AssignResaleUnitMutationBody = BodyType<ResaleAssignInput>
+    export type AssignResaleUnitMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Assign resale unit to an employee
+ */
+export const useAssignResaleUnit = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignResaleUnit>>, TError,{unitId: string;data: BodyType<ResaleAssignInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignResaleUnit>>,
+        TError,
+        {unitId: string;data: BodyType<ResaleAssignInput>},
+        TContext
+      > => {
+      return useMutation(getAssignResaleUnitMutationOptions(options));
     }
 
 export const getListClientsUrl = (params?: ListClientsParams,) => {

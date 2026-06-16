@@ -238,6 +238,14 @@ const translations: Record<Locale, Record<string, string>> = {
     "resale.unit_deleted": "Unit deleted",
     "resale.add_photos_dialog": "Add Photos — {{current}}/{{max}}",
     "resale.marketplace": "Resale Marketplace",
+    "resale.assign": "Assign",
+    "resale.assign_unit": "Assign Unit",
+    "resale.assign_dialog_title": "Assign Unit to Employee",
+    "resale.assigned_to": "Assigned To",
+    "resale.unassigned": "Unassigned",
+    "resale.assign_success": "Unit assigned successfully",
+    "resale.unassign_success": "Unit unassigned",
+    "resale.select_employee": "Select employee...",
 
     // ── Leads extra ───────────────────────────────────────────────────────
     "leads.kanban_subtitle": "Drag and drop leads to update their status.",
@@ -696,6 +704,14 @@ const translations: Record<Locale, Record<string, string>> = {
     "resale.unit_deleted": "تم حذف الوحدة",
     "resale.add_photos_dialog": "إضافة صور — {{current}}/{{max}}",
     "resale.marketplace": "سوق الإعادة العقارية",
+    "resale.assign": "تعيين",
+    "resale.assign_unit": "تعيين وحدة",
+    "resale.assign_dialog_title": "تعيين الوحدة لموظف",
+    "resale.assigned_to": "معيّن لـ",
+    "resale.unassigned": "غير معيّن",
+    "resale.assign_success": "تم تعيين الوحدة بنجاح",
+    "resale.unassign_success": "تم إلغاء التعيين",
+    "resale.select_employee": "اختر موظف...",
 
     // ── Leads extra ───────────────────────────────────────────────────────
     "leads.kanban_subtitle": "اسحب وأفلت العملاء المحتملين لتحديث حالتهم.",

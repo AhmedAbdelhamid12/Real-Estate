@@ -1,16 +1,25 @@
 import { Router } from "express";
-import { db, resaleUnitsTable, resalePhotosTable } from "@workspace/db";
+import { db, resaleUnitsTable, resalePhotosTable, usersTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
+const ADMIN_ROLES = ["ceo", "admin", "director", "manager"];
+
 // GET /resale
 router.get("/resale", requireAuth, async (req, res): Promise<void> => {
   const { projectId, unitType, status } = req.query as Record<string, string>;
+  const currentUser = req.currentUser!;
+  const isAdmin = ADMIN_ROLES.includes(currentUser.role);
 
   let units = await db.select().from(resaleUnitsTable);
   const photos = await db.select().from(resalePhotosTable);
+
+  // Non-admin users only see units assigned to them
+  if (!isAdmin) {
+    units = units.filter((u) => u.assignedTo === currentUser.id);
+  }
 
   if (projectId) units = units.filter((u) => u.projectId === projectId);
   if (unitType) units = units.filter((u) => u.unitType === unitType);
@@ -23,8 +32,19 @@ router.get("/resale", requireAuth, async (req, res): Promise<void> => {
     photosMap[p.unitId].push(p);
   }
 
+  // Fetch assigned user names
+  const assignedIds = [...new Set(units.map((u) => u.assignedTo).filter(Boolean) as string[])];
+  const assignedUsers: Record<string, string> = {};
+  if (assignedIds.length > 0) {
+    const allUsers = await db.select({ id: usersTable.id, name: usersTable.name }).from(usersTable);
+    for (const u of allUsers) {
+      if (assignedIds.includes(u.id)) assignedUsers[u.id] = u.name;
+    }
+  }
+
   const result = units.map((u) => ({
     ...u,
+    assignedToName: u.assignedTo ? (assignedUsers[u.assignedTo] ?? null) : null,
     photos: (photosMap[u.id] ?? []).sort((a, b) => a.sortOrder - b.sortOrder),
   }));
 
@@ -74,12 +94,14 @@ router.post("/resale", requireAuth, async (req, res): Promise<void> => {
   }
 
   const photos = await db.select().from(resalePhotosTable).where(eq(resalePhotosTable.unitId, unit.id));
-  res.status(201).json({ ...unit, photos });
+  res.status(201).json({ ...unit, assignedToName: null, photos });
 });
 
 // GET /resale/:unitId
 router.get("/resale/:unitId", requireAuth, async (req, res): Promise<void> => {
   const { unitId } = req.params as { unitId: string };
+  const currentUser = req.currentUser!;
+  const isAdmin = ADMIN_ROLES.includes(currentUser.role);
 
   const [unit] = await db
     .select()
@@ -92,12 +114,28 @@ router.get("/resale/:unitId", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
+  // Non-admin can only access their assigned unit
+  if (!isAdmin && unit.assignedTo !== currentUser.id) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+
   const photos = await db
     .select()
     .from(resalePhotosTable)
     .where(eq(resalePhotosTable.unitId, unitId));
 
-  res.json({ ...unit, photos: photos.sort((a, b) => a.sortOrder - b.sortOrder) });
+  let assignedToName: string | null = null;
+  if (unit.assignedTo) {
+    const [assignedUser] = await db
+      .select({ name: usersTable.name })
+      .from(usersTable)
+      .where(eq(usersTable.id, unit.assignedTo))
+      .limit(1);
+    assignedToName = assignedUser?.name ?? null;
+  }
+
+  res.json({ ...unit, assignedToName, photos: photos.sort((a, b) => a.sortOrder - b.sortOrder) });
 });
 
 // PATCH /resale/:unitId
@@ -105,26 +143,15 @@ router.patch("/resale/:unitId", requireAuth, async (req, res): Promise<void> => 
   const { unitId } = req.params as { unitId: string };
   const body = req.body as Record<string, unknown>;
 
-  const allowedFields: Record<string, string> = {
-    projectId: "project_id",
-    projectName: "project_name",
-    area: "area",
-    price: "price",
-    floor: "floor",
-    unitType: "unit_type",
-    description: "description",
-    ownerName: "owner_name",
-    ownerPhone: "owner_phone",
-    ownerEmail: "owner_email",
-    ownerNotes: "owner_notes",
-    isOwnerPhoneHidden: "is_owner_phone_hidden",
-    isOwnerEmailHidden: "is_owner_email_hidden",
-    isActive: "is_active",
-  };
+  const allowedFields = [
+    "projectId", "projectName", "area", "price", "floor", "unitType",
+    "description", "ownerName", "ownerPhone", "ownerEmail", "ownerNotes",
+    "isOwnerPhoneHidden", "isOwnerEmailHidden", "isActive",
+  ];
 
   const updateData: Record<string, unknown> = {};
-  for (const [camel, _snake] of Object.entries(allowedFields)) {
-    if (camel in body) updateData[camel] = body[camel];
+  for (const field of allowedFields) {
+    if (field in body) updateData[field] = body[field];
   }
 
   const [updated] = await db
@@ -143,7 +170,59 @@ router.patch("/resale/:unitId", requireAuth, async (req, res): Promise<void> => 
     .from(resalePhotosTable)
     .where(eq(resalePhotosTable.unitId, unitId));
 
-  res.json({ ...updated, photos: photos.sort((a, b) => a.sortOrder - b.sortOrder) });
+  let assignedToName: string | null = null;
+  if (updated.assignedTo) {
+    const [assignedUser] = await db
+      .select({ name: usersTable.name })
+      .from(usersTable)
+      .where(eq(usersTable.id, updated.assignedTo))
+      .limit(1);
+    assignedToName = assignedUser?.name ?? null;
+  }
+
+  res.json({ ...updated, assignedToName, photos: photos.sort((a, b) => a.sortOrder - b.sortOrder) });
+});
+
+// POST /resale/:unitId/assign
+router.post("/resale/:unitId/assign", requireAuth, async (req, res): Promise<void> => {
+  const { unitId } = req.params as { unitId: string };
+  const currentUser = req.currentUser!;
+  const isAdmin = ADMIN_ROLES.includes(currentUser.role);
+
+  if (!isAdmin) {
+    res.status(403).json({ error: "Only admins can assign units" });
+    return;
+  }
+
+  const { assignedTo } = req.body as { assignedTo: string | null };
+
+  const [updated] = await db
+    .update(resaleUnitsTable)
+    .set({ assignedTo: assignedTo ?? null })
+    .where(eq(resaleUnitsTable.id, unitId))
+    .returning();
+
+  if (!updated) {
+    res.status(404).json({ error: "Unit not found" });
+    return;
+  }
+
+  const photos = await db
+    .select()
+    .from(resalePhotosTable)
+    .where(eq(resalePhotosTable.unitId, unitId));
+
+  let assignedToName: string | null = null;
+  if (updated.assignedTo) {
+    const [assignedUser] = await db
+      .select({ name: usersTable.name })
+      .from(usersTable)
+      .where(eq(usersTable.id, updated.assignedTo))
+      .limit(1);
+    assignedToName = assignedUser?.name ?? null;
+  }
+
+  res.json({ ...updated, assignedToName, photos: photos.sort((a, b) => a.sortOrder - b.sortOrder) });
 });
 
 // DELETE /resale/:unitId

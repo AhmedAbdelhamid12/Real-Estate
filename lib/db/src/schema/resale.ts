@@ -32,6 +32,7 @@ export const resaleUnitsTable = pgTable(
     isOwnerPhoneHidden: boolean("is_owner_phone_hidden").default(false).notNull(),
     isOwnerEmailHidden: boolean("is_owner_email_hidden").default(false).notNull(),
     isActive: boolean("is_active").default(true).notNull(),
+    assignedTo: uuid("assigned_to").references(() => usersTable.id),
     createdBy: uuid("created_by").references(() => usersTable.id),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })

@@ -801,6 +801,31 @@ paths:
         "204":
           description: Deleted
 
+  /resale/{unitId}/assign:
+    post:
+      operationId: assignResaleUnit
+      tags: [resale]
+      summary: Assign resale unit to an employee
+      parameters:
+        - name: unitId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResaleAssignInput"
+      responses:
+        "200":
+          description: Assigned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResaleUnit"
+
   # ── CLIENTS ──────────────────────────────────────────────────────────────────
 
   /clients:
@@ -1552,6 +1577,10 @@ components:
           type: ["string", "null"]
         isActive:
           type: boolean
+        assignedTo:
+          type: ["string", "null"]
+        assignedToName:
+          type: ["string", "null"]
         createdAt:
           type: string
 
@@ -1604,8 +1633,12 @@ components:
           type: ["string", "null"]
         ownerEmail:
           type: ["string", "null"]
-        isActive:
-          type: boolean
+
+    ResaleAssignInput:
+      type: object
+      properties:
+        assignedTo:
+          type: ["string", "null"]
 
     # ── CLIENT ────────────────────────────────────────────────────────────────
 

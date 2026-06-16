@@ -26,5 +26,4 @@ export interface ResaleUnitUpdate {
   ownerPhone?: string | null;
   /** @nullable */
   ownerEmail?: string | null;
-  isActive?: boolean;
 }

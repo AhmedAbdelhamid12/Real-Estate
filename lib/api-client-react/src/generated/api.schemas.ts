@@ -457,6 +457,10 @@ export interface ResaleUnit {
   /** @nullable */
   ownerEmail?: string | null;
   isActive: boolean;
+  /** @nullable */
+  assignedTo?: string | null;
+  /** @nullable */
+  assignedToName?: string | null;
   createdAt: string;
 }
 
@@ -503,7 +507,11 @@ export interface ResaleUnitUpdate {
   ownerPhone?: string | null;
   /** @nullable */
   ownerEmail?: string | null;
-  isActive?: boolean;
+}
+
+export interface ResaleAssignInput {
+  /** @nullable */
+  assignedTo?: string | null;
 }
 
 export interface Client {

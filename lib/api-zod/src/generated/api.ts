@@ -687,6 +687,8 @@ export const ListResaleUnitsResponseItem = zod.object({
   "ownerPhone": zod.string().nullish(),
   "ownerEmail": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "assignedTo": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListResaleUnitsResponse = zod.array(ListResaleUnitsResponseItem)
@@ -732,6 +734,8 @@ export const GetResaleUnitResponse = zod.object({
   "ownerPhone": zod.string().nullish(),
   "ownerEmail": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "assignedTo": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -753,8 +757,7 @@ export const UpdateResaleUnitBody = zod.object({
   "description": zod.string().nullish(),
   "ownerName": zod.string().nullish(),
   "ownerPhone": zod.string().nullish(),
-  "ownerEmail": zod.string().nullish(),
-  "isActive": zod.boolean().optional()
+  "ownerEmail": zod.string().nullish()
 })
 
 export const UpdateResaleUnitResponse = zod.object({
@@ -770,6 +773,8 @@ export const UpdateResaleUnitResponse = zod.object({
   "ownerPhone": zod.string().nullish(),
   "ownerEmail": zod.string().nullish(),
   "isActive": zod.boolean(),
+  "assignedTo": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -779,6 +784,36 @@ export const UpdateResaleUnitResponse = zod.object({
  */
 export const DeleteResaleUnitParams = zod.object({
   "unitId": zod.coerce.string()
+})
+
+
+/**
+ * @summary Assign resale unit to an employee
+ */
+export const AssignResaleUnitParams = zod.object({
+  "unitId": zod.coerce.string()
+})
+
+export const AssignResaleUnitBody = zod.object({
+  "assignedTo": zod.string().nullish()
+})
+
+export const AssignResaleUnitResponse = zod.object({
+  "id": zod.string(),
+  "projectId": zod.string().nullish(),
+  "projectName": zod.string(),
+  "area": zod.string().nullish(),
+  "price": zod.string().nullish(),
+  "floor": zod.number().nullish(),
+  "unitType": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "ownerName": zod.string().nullish(),
+  "ownerPhone": zod.string().nullish(),
+  "ownerEmail": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "assignedTo": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "createdAt": zod.string()
 })
 
 

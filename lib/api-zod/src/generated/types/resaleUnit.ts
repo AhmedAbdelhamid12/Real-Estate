@@ -28,5 +28,9 @@ export interface ResaleUnit {
   /** @nullable */
   ownerEmail?: string | null;
   isActive: boolean;
+  /** @nullable */
+  assignedTo?: string | null;
+  /** @nullable */
+  assignedToName?: string | null;
   createdAt: string;
 }

@@ -57,6 +57,7 @@ export * from './projectUpdate';
 export * from './registerInput';
 export * from './registerInputRole';
 export * from './rejectInput';
+export * from './resaleAssignInput';
 export * from './resaleUnit';
 export * from './resaleUnitInput';
 export * from './resaleUnitUpdate';

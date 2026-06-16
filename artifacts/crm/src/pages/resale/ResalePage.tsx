@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { apiFetch, useListResaleUnits, useCreateResaleUnit, useDeleteResaleUnit, getListResaleUnitsQueryKey } from "@workspace/api-client-react";
+import { apiFetch, useListResaleUnits, useCreateResaleUnit, useDeleteResaleUnit, useAssignResaleUnit, useListUsers, getListResaleUnitsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Plus, Search, Trash2, Home, User, Phone, Mail, Eye, EyeOff,
   MapPin, Maximize2, ChevronLeft, ChevronRight, Image as ImageIcon, X,
-  Edit, LayoutGrid, List, Upload,
+  Edit, LayoutGrid, List, Upload, UserCheck, UserX,
 } from "lucide-react";
 
 const MAX_PHOTOS = 5;
@@ -62,6 +62,8 @@ interface ResaleUnit {
   isOwnerPhoneHidden: boolean;
   isOwnerEmailHidden: boolean;
   isActive: boolean;
+  assignedTo?: string | null;
+  assignedToName?: string | null;
   createdAt: string;
   photos?: { id: string; url: string; caption?: string | null; sortOrder: number }[];
 }
@@ -325,6 +327,86 @@ const CARD_VARIANTS = {
   }),
 };
 
+/* ── Assign Unit Dialog ─────────────────────────────────────── */
+function AssignDialog({ unit, onClose }: { unit: ResaleUnit; onClose: () => void }) {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+  const assignUnit = useAssignResaleUnit();
+  const { data: users = [] } = useListUsers() as { data: { id: string; name: string; role: string; email: string }[] };
+
+  const employees = users.filter((u) => !["ceo", "admin", "director"].includes(u.role));
+  const [selectedId, setSelectedId] = useState<string>(unit.assignedTo ?? "");
+
+  const handleAssign = () => {
+    assignUnit.mutate(
+      { unitId: unit.id, data: { assignedTo: selectedId || null } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListResaleUnitsQueryKey() });
+          toast.success(selectedId ? t("resale.assign_success") : t("resale.unassign_success"));
+          onClose();
+        },
+        onError: () => toast.error(t("common.error")),
+      }
+    );
+  };
+
+  return (
+    <DialogContent className="sm:max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{t("resale.assign_dialog_title")}</DialogTitle>
+        <p className="text-sm text-muted-foreground">{unit.projectName}</p>
+      </DialogHeader>
+
+      <div className="space-y-3 py-1">
+        {/* Unassign option */}
+        <button
+          onClick={() => setSelectedId("")}
+          className={`w-full flex items-center gap-3 p-3 rounded-lg border text-start transition-all ${
+            selectedId === ""
+              ? "border-primary bg-primary/5 text-primary"
+              : "border-border hover:bg-muted/50"
+          }`}
+        >
+          <UserX className="w-4 h-4 shrink-0 text-muted-foreground" />
+          <span className="text-sm font-medium">{t("resale.unassigned")}</span>
+        </button>
+
+        {/* Employees list */}
+        <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+          {employees.map((emp) => (
+            <button
+              key={emp.id}
+              onClick={() => setSelectedId(emp.id)}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg border text-start transition-all ${
+                selectedId === emp.id
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-border hover:bg-muted/50"
+              }`}
+            >
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="text-xs font-bold text-primary">{emp.name.charAt(0).toUpperCase()}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">{emp.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
+              </div>
+              {selectedId === emp.id && <UserCheck className="w-4 h-4 shrink-0 ms-auto text-primary" />}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
+        <Button onClick={handleAssign} disabled={assignUnit.isPending}>
+          {assignUnit.isPending ? "..." : t("resale.assign")}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
 /* ── Main Page ─────────────────────────────────────────────── */
 export function ResalePage() {
   const { t } = useI18n();
@@ -337,6 +419,7 @@ export function ResalePage() {
   const [editingUnit, setEditingUnit] = useState<ResaleUnit | null>(null);
   const [editForm, setEditForm] = useState<Partial<ResaleFormValues>>({});
   const [editSaving, setEditSaving] = useState(false);
+  const [assigningUnit, setAssigningUnit] = useState<ResaleUnit | null>(null);
 
   const { currentUser } = useAuth();
   const isAdmin = currentUser && ["ceo", "admin", "director"].includes(currentUser.role);
@@ -811,6 +894,14 @@ export function ResalePage() {
                   )}
                 </div>
 
+                {/* Assigned badge (visible to all) */}
+                {unit.assignedToName && (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 rounded-md px-2 py-1 mt-1">
+                    <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate font-medium">{unit.assignedToName}</span>
+                  </div>
+                )}
+
                 {/* Admin actions */}
                 {isAdmin && (
                   <div className="flex items-center justify-between mt-auto pt-2 border-t">
@@ -820,6 +911,13 @@ export function ResalePage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <AddPhotoDialog unitId={unit.id} onAdded={() => {}} currentCount={unit.photos?.length ?? 0} />
+                      <Button
+                        variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted"
+                        onClick={() => setAssigningUnit(unit)}
+                        title={t("resale.assign")}
+                      >
+                        <UserCheck className="h-3.5 w-3.5" />
+                      </Button>
                       <Button
                         variant="ghost" size="icon" className="h-7 w-7 hover:bg-muted"
                         onClick={() => openEdit(unit)}
@@ -887,9 +985,21 @@ export function ResalePage() {
                 {unit.ownerPhone && unit.isOwnerPhoneHidden && <p className="text-muted-foreground tracking-widest">••••••</p>}
               </div>
 
+              {/* Assigned badge in list view */}
+              {unit.assignedToName && (
+                <div className="hidden sm:flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span className="max-w-[80px] truncate">{unit.assignedToName}</span>
+                </div>
+              )}
+
               {isAdmin && (
                 <div className="flex items-center gap-1 shrink-0">
                   <AddPhotoDialog unitId={unit.id} onAdded={() => {}} currentCount={unit.photos?.length ?? 0} />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted"
+                    onClick={() => setAssigningUnit(unit)} title={t("resale.assign")}>
+                    <UserCheck className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted"
                     onClick={() => openEdit(unit)} title="تعديل">
                     <Edit className="h-4 w-4" />
@@ -904,6 +1014,11 @@ export function ResalePage() {
           ))}
         </div>
       )}
+
+      {/* Assign Unit Dialog */}
+      <Dialog open={!!assigningUnit} onOpenChange={(v) => { if (!v) setAssigningUnit(null); }}>
+        {assigningUnit && <AssignDialog unit={assigningUnit} onClose={() => setAssigningUnit(null)} />}
+      </Dialog>
 
       {/* Edit Unit Dialog */}
       <Dialog open={!!editingUnit} onOpenChange={(v) => { if (!v) setEditingUnit(null); }}>
