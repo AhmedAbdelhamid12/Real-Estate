@@ -42,7 +42,7 @@ router.post("/upload", requireAuth, (req, res, next) => {
       const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webp`;
       const outputPath = path.join(uploadsDir, filename);
 
-      await sharp(req.file.buffer)
+      await sharp(req.file.buffer, { limitInputPixels: false })
         .resize({ width: 1200, height: 900, fit: "inside", withoutEnlargement: true })
         .webp({ quality: 82 })
         .toFile(outputPath);
