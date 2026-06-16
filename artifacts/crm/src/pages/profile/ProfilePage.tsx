@@ -26,7 +26,7 @@ const profileSchema = z.object({
   phone: z.string().optional(),
   title: z.string().optional(),
   bio: z.string().optional(),
-  avatarUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  avatarUrl: z.string().optional().or(z.literal("")),
   instagramUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   facebookUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   whatsappNumber: z.string().optional(),
