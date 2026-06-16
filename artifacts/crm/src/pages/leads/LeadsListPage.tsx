@@ -407,11 +407,11 @@ export function LeadsListPage() {
                 style={{
                   padding: "6px 12px", borderRadius: 8, cursor: "pointer",
                   fontSize: 12, fontWeight: 600, transition: "all 0.15s",
-                  background: active ? (s.color ? `${s.color}20` : "var(--primary)") : "transparent",
+                  background: active ? (s.color ? `${s.color}20` : "white") : "transparent",
                   border: active
-                    ? `1px solid ${s.color ?? "var(--primary)"}50`
+                    ? `1px solid ${s.color ? `${s.color}50` : "rgba(0,0,0,0.15)"}`
                     : "1px solid var(--border)",
-                  color: active ? (s.color ?? "var(--primary)") : "var(--muted-foreground)",
+                  color: active ? (s.color ?? "#0f172a") : "var(--muted-foreground)",
                 }}
               >
                 {s.label}
