@@ -800,6 +800,14 @@ export const ListClientsResponseItem = zod.object({
   "assignedSalesId": zod.string().nullish(),
   "assignedSalesName": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "unitNumber": zod.string().nullish(),
+  "unitType": zod.string().nullish(),
+  "area": zod.string().nullish(),
+  "paymentMethod": zod.string().nullish(),
+  "downPayment": zod.string().nullish(),
+  "contractDate": zod.string().nullish(),
+  "numberOfInstallments": zod.number().nullish(),
+  "installmentAmount": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const ListClientsResponse = zod.array(ListClientsResponseItem)
@@ -818,7 +826,15 @@ export const CreateClientBody = zod.object({
   "dealValue": zod.string().nullish(),
   "projectId": zod.string().nullish(),
   "assignedSalesId": zod.string().nullish(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "unitNumber": zod.string().nullish(),
+  "unitType": zod.string().nullish(),
+  "area": zod.string().nullish(),
+  "paymentMethod": zod.string().nullish(),
+  "downPayment": zod.string().nullish(),
+  "contractDate": zod.string().nullish(),
+  "numberOfInstallments": zod.number().nullish(),
+  "installmentAmount": zod.string().nullish()
 })
 
 
@@ -840,6 +856,14 @@ export const GetClientResponse = zod.object({
   "assignedSalesId": zod.string().nullish(),
   "assignedSalesName": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "unitNumber": zod.string().nullish(),
+  "unitType": zod.string().nullish(),
+  "area": zod.string().nullish(),
+  "paymentMethod": zod.string().nullish(),
+  "downPayment": zod.string().nullish(),
+  "contractDate": zod.string().nullish(),
+  "numberOfInstallments": zod.number().nullish(),
+  "installmentAmount": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -858,7 +882,15 @@ export const UpdateClientBody = zod.object({
   "dealValue": zod.string().nullish(),
   "projectId": zod.string().nullish(),
   "assignedSalesId": zod.string().nullish(),
-  "notes": zod.string().nullish()
+  "notes": zod.string().nullish(),
+  "unitNumber": zod.string().nullish(),
+  "unitType": zod.string().nullish(),
+  "area": zod.string().nullish(),
+  "paymentMethod": zod.string().nullish(),
+  "downPayment": zod.string().nullish(),
+  "contractDate": zod.string().nullish(),
+  "numberOfInstallments": zod.number().nullish(),
+  "installmentAmount": zod.string().nullish()
 })
 
 export const UpdateClientResponse = zod.object({
@@ -872,6 +904,14 @@ export const UpdateClientResponse = zod.object({
   "assignedSalesId": zod.string().nullish(),
   "assignedSalesName": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "unitNumber": zod.string().nullish(),
+  "unitType": zod.string().nullish(),
+  "area": zod.string().nullish(),
+  "paymentMethod": zod.string().nullish(),
+  "downPayment": zod.string().nullish(),
+  "contractDate": zod.string().nullish(),
+  "numberOfInstallments": zod.number().nullish(),
+  "installmentAmount": zod.string().nullish(),
   "createdAt": zod.string()
 })
 

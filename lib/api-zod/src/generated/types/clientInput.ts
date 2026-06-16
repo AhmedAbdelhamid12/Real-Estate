@@ -21,4 +21,20 @@ export interface ClientInput {
   assignedSalesId?: string | null;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  unitNumber?: string | null;
+  /** @nullable */
+  unitType?: string | null;
+  /** @nullable */
+  area?: string | null;
+  /** @nullable */
+  paymentMethod?: string | null;
+  /** @nullable */
+  downPayment?: string | null;
+  /** @nullable */
+  contractDate?: string | null;
+  /** @nullable */
+  numberOfInstallments?: number | null;
+  /** @nullable */
+  installmentAmount?: string | null;
 }

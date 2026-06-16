@@ -5,6 +5,12 @@ import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
+const DEAL_FIELDS = [
+  "name", "phone", "email", "dealValue", "projectId", "assignedSalesId", "notes",
+  "unitNumber", "unitType", "area", "paymentMethod", "downPayment",
+  "contractDate", "numberOfInstallments", "installmentAmount",
+];
+
 // GET /clients
 router.get("/clients", requireAuth, async (req, res): Promise<void> => {
   const { search } = req.query as { search?: string };
@@ -51,12 +57,20 @@ router.post("/clients", requireAuth, async (req, res): Promise<void> => {
     .insert(clientsTable)
     .values({
       name: body.name as string,
-      phone: body.phone as string ?? null,
-      email: body.email as string ?? null,
-      dealValue: body.dealValue as string ?? null,
-      projectId: body.projectId as string ?? null,
-      assignedSalesId: body.assignedSalesId as string ?? null,
-      notes: body.notes as string ?? null,
+      phone: (body.phone as string) ?? null,
+      email: (body.email as string) ?? null,
+      dealValue: (body.dealValue as string) ?? null,
+      projectId: (body.projectId as string) ?? null,
+      assignedSalesId: (body.assignedSalesId as string) ?? null,
+      notes: (body.notes as string) ?? null,
+      unitNumber: (body.unitNumber as string) ?? null,
+      unitType: (body.unitType as string) ?? null,
+      area: (body.area as string) ?? null,
+      paymentMethod: (body.paymentMethod as string) ?? null,
+      downPayment: (body.downPayment as string) ?? null,
+      contractDate: body.contractDate ? new Date(body.contractDate as string) : null,
+      numberOfInstallments: body.numberOfInstallments ? Number(body.numberOfInstallments) : null,
+      installmentAmount: (body.installmentAmount as string) ?? null,
     })
     .returning();
 
@@ -93,9 +107,16 @@ router.patch("/clients/:clientId", requireAuth, async (req, res): Promise<void> 
   const body = req.body as Record<string, unknown>;
 
   const updateData: Record<string, unknown> = {};
-  const fields = ["name", "phone", "email", "dealValue", "projectId", "assignedSalesId", "notes"];
-  for (const f of fields) {
-    if (f in body) updateData[camelToSnake(f)] = body[f];
+  for (const f of DEAL_FIELDS) {
+    if (f in body) {
+      if (f === "contractDate") {
+        updateData[camelToSnake(f)] = body[f] ? new Date(body[f] as string) : null;
+      } else if (f === "numberOfInstallments") {
+        updateData[camelToSnake(f)] = body[f] ? Number(body[f]) : null;
+      } else {
+        updateData[camelToSnake(f)] = body[f];
+      }
+    }
   }
 
   const [updated] = await db

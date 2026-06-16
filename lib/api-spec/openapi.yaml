@@ -1633,6 +1633,22 @@ components:
           type: ["string", "null"]
         notes:
           type: ["string", "null"]
+        unitNumber:
+          type: ["string", "null"]
+        unitType:
+          type: ["string", "null"]
+        area:
+          type: ["string", "null"]
+        paymentMethod:
+          type: ["string", "null"]
+        downPayment:
+          type: ["string", "null"]
+        contractDate:
+          type: ["string", "null"]
+        numberOfInstallments:
+          type: ["integer", "null"]
+        installmentAmount:
+          type: ["string", "null"]
         createdAt:
           type: string
 
@@ -1655,6 +1671,22 @@ components:
           type: ["string", "null"]
         notes:
           type: ["string", "null"]
+        unitNumber:
+          type: ["string", "null"]
+        unitType:
+          type: ["string", "null"]
+        area:
+          type: ["string", "null"]
+        paymentMethod:
+          type: ["string", "null"]
+        downPayment:
+          type: ["string", "null"]
+        contractDate:
+          type: ["string", "null"]
+        numberOfInstallments:
+          type: ["integer", "null"]
+        installmentAmount:
+          type: ["string", "null"]
 
     ClientUpdate:
       type: object
@@ -1672,6 +1704,22 @@ components:
         assignedSalesId:
           type: ["string", "null"]
         notes:
+          type: ["string", "null"]
+        unitNumber:
+          type: ["string", "null"]
+        unitType:
+          type: ["string", "null"]
+        area:
+          type: ["string", "null"]
+        paymentMethod:
+          type: ["string", "null"]
+        downPayment:
+          type: ["string", "null"]
+        contractDate:
+          type: ["string", "null"]
+        numberOfInstallments:
+          type: ["integer", "null"]
+        installmentAmount:
           type: ["string", "null"]
 
     # ── PLANNER ────────────────────────────────────────────────────────────────

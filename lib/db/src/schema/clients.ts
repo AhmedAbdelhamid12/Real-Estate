@@ -5,6 +5,7 @@ import {
   text,
   timestamp,
   numeric,
+  integer,
   index,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -25,6 +26,14 @@ export const clientsTable = pgTable(
     projectId: uuid("project_id").references(() => projectsTable.id),
     assignedSalesId: uuid("assigned_sales_id").references(() => usersTable.id),
     notes: text("notes"),
+    unitNumber: varchar("unit_number", { length: 50 }),
+    unitType: varchar("unit_type", { length: 50 }),
+    area: numeric("area", { precision: 10, scale: 2 }),
+    paymentMethod: varchar("payment_method", { length: 50 }),
+    downPayment: numeric("down_payment", { precision: 15, scale: 2 }),
+    contractDate: timestamp("contract_date", { withTimezone: true }),
+    numberOfInstallments: integer("number_of_installments"),
+    installmentAmount: numeric("installment_amount", { precision: 15, scale: 2 }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
