@@ -13,7 +13,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import {
   CalendarIcon, TrendingUp, Download, FileDown, Home, Building,
@@ -27,9 +26,35 @@ import {
   PieChart, Pie, Cell, AreaChart, Area,
 } from "recharts";
 
+// ── TIL Brand Palette ──────────────────────────────────────────────────
+const TIL = {
+  gold:       "#C9A84C",
+  goldLight:  "#E8D5A3",
+  navy:       "#0A1E38",
+  navyLight:  "#1E4976",
+  blue:       "#4A8FD4",
+  green:      "#22C59A",
+  red:        "#E05555",
+  amber:      "#D4900A",
+};
+
+// Pie/multi-series chart colors — TIL-branded
 const CHART_COLORS = [
-  "hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))", "hsl(var(--chart-5))",
+  TIL.gold,
+  TIL.blue,
+  TIL.green,
+  TIL.red,
+  TIL.navyLight,
+];
+
+// Pipeline funnel — progresses from navy → gold → green
+const FUNNEL_COLORS = [
+  TIL.navyLight,
+  "#2B5C8A",
+  "#3B78B0",
+  TIL.gold,
+  "#D4900A",
+  TIL.green,
 ];
 
 const STATUS_LABELS_AR: Record<string, string> = {
@@ -59,10 +84,18 @@ function formatPrice(val: number) {
   return new Intl.NumberFormat("ar-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(val);
 }
 
-const tooltipStyle = {
-  borderRadius: "8px", border: "1px solid hsl(var(--border))",
-  background: "hsl(var(--background))", fontSize: 12,
+const tooltipStyle: React.CSSProperties = {
+  borderRadius: "10px",
+  border: "1px solid hsl(var(--border))",
+  background: "hsl(var(--card))",
+  color: "hsl(var(--card-foreground))",
+  fontSize: 12,
+  boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+  padding: "8px 12px",
 };
+
+// Subtle TIL-gold tinted cursor — replaces the ugly dark default
+const chartCursor = { fill: TIL.gold, opacity: 0.07, radius: 6 };
 
 const PRESETS = [
   { label: "٧ أيام", days: 7 },
@@ -144,7 +177,6 @@ export function ReportsPage() {
     })).filter(x => x.value > 0);
   }, [leadsReport]);
 
-  // Aggregate trend data: if range > 30 days, group by week
   const trendDays = trendsData?.days ?? [];
   const showWeekly = trendDays.length > 60;
   const trendChart = useMemo(() => {
@@ -152,7 +184,6 @@ export function ReportsPage() {
       ...d,
       label: format(new Date(d.date), "d MMM"),
     }));
-    // Group by week
     const weeks: Record<string, { label: string; total: number; won: number; lost: number }> = {};
     for (const d of trendDays) {
       const dt = new Date(d.date);
@@ -227,7 +258,6 @@ export function ReportsPage() {
           <p className="text-muted-foreground text-sm">بيانات حية — آخر تحديث الآن</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* Quick Presets */}
           <div className="flex gap-1 bg-muted rounded-lg p-1">
             {PRESETS.map((p, idx) => (
               <button
@@ -236,7 +266,7 @@ export function ReportsPage() {
                 className={cn(
                   "px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
                   activePreset === idx
-                    ? "bg-background shadow text-foreground"
+                    ? "bg-background shadow-sm text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -265,15 +295,35 @@ export function ReportsPage() {
           {/* KPI row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "إجمالي العملاء", value: salesReport?.totalLeads ?? 0, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", suffix: "" },
-              { label: "صفقات رابحة", value: salesReport?.totalWon ?? 0, icon: Trophy, color: "text-emerald-500", bg: "bg-emerald-500/10", suffix: "" },
-              { label: "صفقات خاسرة", value: salesReport?.totalLost ?? 0, icon: Target, color: "text-red-500", bg: "bg-red-500/10", suffix: "" },
+              {
+                label: "إجمالي العملاء",
+                value: salesReport?.totalLeads ?? 0,
+                icon: Users,
+                color: "text-[#4A8FD4]",
+                bg: "bg-[#4A8FD4]/10",
+              },
+              {
+                label: "صفقات رابحة",
+                value: salesReport?.totalWon ?? 0,
+                icon: Trophy,
+                color: "text-[#22C59A]",
+                bg: "bg-[#22C59A]/10",
+              },
+              {
+                label: "صفقات خاسرة",
+                value: salesReport?.totalLost ?? 0,
+                icon: Target,
+                color: "text-[#E05555]",
+                bg: "bg-[#E05555]/10",
+              },
               {
                 label: "معدل التحويل",
                 value: (salesReport?.totalLeads ?? 0) > 0
                   ? `${(((salesReport?.totalWon ?? 0) / (salesReport?.totalLeads ?? 1)) * 100).toFixed(1)}%`
                   : "0%",
-                icon: BarChart3, color: "text-violet-500", bg: "bg-violet-500/10", suffix: "",
+                icon: BarChart3,
+                color: "text-[#C9A84C]",
+                bg: "bg-[#C9A84C]/10",
               },
             ].map((kpi) => (
               <Card key={kpi.label} className="border shadow-sm hover:shadow-md transition-shadow">
@@ -284,7 +334,7 @@ export function ReportsPage() {
                   <div>
                     {isSalesLoading
                       ? <Skeleton className="h-7 w-12 mb-0.5" />
-                      : <p className="text-2xl font-bold">{kpi.value}{kpi.suffix}</p>
+                      : <p className="text-2xl font-bold">{kpi.value}</p>
                     }
                     <p className="text-xs text-muted-foreground">{kpi.label}</p>
                   </div>
@@ -311,11 +361,11 @@ export function ReportsPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="userName" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip contentStyle={tooltipStyle} cursor={chartCursor} />
                     <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => v === "won" ? "رابح" : v === "lost" ? "خاسر" : "جاري"} />
-                    <Bar dataKey="won" name="won" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} />
-                    <Bar dataKey="lost" name="lost" stackId="a" fill="#ef4444" />
-                    <Bar dataKey="inProgress" name="inProgress" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="won" name="won" stackId="a" fill={TIL.green} radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="lost" name="lost" stackId="a" fill={TIL.red} />
+                    <Bar dataKey="inProgress" name="inProgress" stackId="a" fill={TIL.gold} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -361,7 +411,7 @@ export function ReportsPage() {
                     const rate = (perf.total ?? 0) > 0 ? (((perf.won ?? 0) / (perf.total ?? 1)) * 100).toFixed(1) : "0.0";
                     const pct = Math.min(parseFloat(rate), 100);
                     return (
-                      <TableRow key={perf.userId} className={cn(idx === 0 ? "bg-amber-50/30 dark:bg-amber-900/10" : "")}>
+                      <TableRow key={perf.userId} className={cn(idx === 0 ? "bg-[#C9A84C]/5 dark:bg-[#C9A84C]/5" : "")}>
                         <TableCell className="font-bold text-base w-12">
                           {MEDALS[idx] ?? <span className="text-muted-foreground text-sm font-medium">#{idx + 1}</span>}
                         </TableCell>
@@ -369,19 +419,28 @@ export function ReportsPage() {
                           <div className="flex items-center gap-3">
                             <UserAvatar name={perf.userName} />
                             <span>{perf.userName}</span>
-                            {idx === 0 && <Flame className="w-4 h-4 text-amber-500" title="الأفضل" />}
+                            {idx === 0 && <Flame className="w-4 h-4 text-[#C9A84C]" title="الأفضل" />}
                           </div>
                         </TableCell>
                         <TableCell className="text-center font-semibold">{perf.total ?? 0}</TableCell>
-                        <TableCell className="text-center text-emerald-600 dark:text-emerald-400 font-bold">{perf.won ?? 0}</TableCell>
-                        <TableCell className="text-center text-red-500 font-medium">{perf.lost ?? 0}</TableCell>
-                        <TableCell className="text-center text-amber-600">{perf.inProgress ?? 0}</TableCell>
+                        <TableCell className="text-center font-bold" style={{ color: TIL.green }}>{perf.won ?? 0}</TableCell>
+                        <TableCell className="text-center font-medium" style={{ color: TIL.red }}>{perf.lost ?? 0}</TableCell>
+                        <TableCell className="text-center font-medium" style={{ color: TIL.amber }}>{perf.inProgress ?? 0}</TableCell>
                         <TableCell className="text-end">
                           <div className="flex items-center justify-end gap-2">
                             <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden hidden sm:block">
-                              <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{
+                                  width: `${pct}%`,
+                                  background: pct >= 50 ? TIL.green : pct >= 25 ? TIL.gold : TIL.red,
+                                }}
+                              />
                             </div>
-                            <span className={cn("font-bold text-sm tabular-nums", pct >= 50 ? "text-emerald-600" : pct >= 25 ? "text-amber-600" : "text-red-500")}>
+                            <span
+                              className="font-bold text-sm tabular-nums"
+                              style={{ color: pct >= 50 ? TIL.green : pct >= 25 ? TIL.gold : TIL.red }}
+                            >
                               {rate}%
                             </span>
                           </div>
@@ -408,24 +467,28 @@ export function ReportsPage() {
                   <AreaChart data={trendChart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="gradTotal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                        <stop offset="5%" stopColor={TIL.blue} stopOpacity={0.25} />
+                        <stop offset="95%" stopColor={TIL.blue} stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="gradWon" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                        <stop offset="5%" stopColor={TIL.green} stopOpacity={0.25} />
+                        <stop offset="95%" stopColor={TIL.green} stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                     <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any, name: string) =>
-                      [v, name === "total" ? "إجمالي" : name === "won" ? "رابح" : name === "lost" ? "خاسر" : name]
-                    } />
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      cursor={{ stroke: TIL.gold, strokeWidth: 1.5, strokeDasharray: "4 2" }}
+                      formatter={(v: any, name: string) =>
+                        [v, name === "total" ? "إجمالي" : name === "won" ? "رابح" : name === "lost" ? "خاسر" : name]
+                      }
+                    />
                     <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => v === "total" ? "إجمالي" : v === "won" ? "رابح" : "خاسر"} />
-                    <Area type="monotone" dataKey="total" name="total" stroke="hsl(var(--chart-1))" strokeWidth={2} fill="url(#gradTotal)" dot={false} />
-                    <Area type="monotone" dataKey="won" name="won" stroke="#10b981" strokeWidth={2} fill="url(#gradWon)" dot={false} />
-                    <Area type="monotone" dataKey="lost" name="lost" stroke="#ef4444" strokeWidth={1.5} fill="none" strokeDasharray="4 2" dot={false} />
+                    <Area type="monotone" dataKey="total" name="total" stroke={TIL.blue} strokeWidth={2} fill="url(#gradTotal)" dot={false} />
+                    <Area type="monotone" dataKey="won" name="won" stroke={TIL.green} strokeWidth={2} fill="url(#gradWon)" dot={false} />
+                    <Area type="monotone" dataKey="lost" name="lost" stroke={TIL.red} strokeWidth={1.5} fill="none" strokeDasharray="4 2" dot={false} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -440,23 +503,23 @@ export function ReportsPage() {
             </CardHeader>
             <CardContent>
               {isLeadsLoading ? <Skeleton className="h-48 w-full" /> : (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {pipelineFunnel.map((stage, idx) => {
                     const maxVal = pipelineFunnel[0]?.value ?? 1;
                     const pct = Math.round((stage.value / maxVal) * 100);
-                    const colors = ["bg-slate-500", "bg-blue-500", "bg-violet-500", "bg-amber-500", "bg-orange-500", "bg-emerald-500"];
+                    const color = FUNNEL_COLORS[idx] ?? TIL.gold;
                     return (
                       <div key={stage.name} className="space-y-1">
                         <div className="flex justify-between text-sm">
                           <span className="font-medium">{stage.name}</span>
                           <span className="text-muted-foreground tabular-nums">{stage.value} ({pct}%)</span>
                         </div>
-                        <div className="h-8 bg-muted rounded-lg overflow-hidden">
+                        <div className="h-8 bg-muted/60 rounded-lg overflow-hidden">
                           <div
-                            className={cn("h-full rounded-lg flex items-center px-3 transition-all", colors[idx] ?? "bg-primary")}
-                            style={{ width: `${pct}%`, minWidth: stage.value > 0 ? "2rem" : 0 }}
+                            className="h-full rounded-lg flex items-center px-3 transition-all duration-500"
+                            style={{ width: `${pct}%`, minWidth: stage.value > 0 ? "2rem" : 0, backgroundColor: color }}
                           >
-                            {pct > 15 && <span className="text-white text-xs font-bold">{stage.value}</span>}
+                            {pct > 15 && <span className="text-white text-xs font-bold drop-shadow">{stage.value}</span>}
                           </div>
                         </div>
                       </div>
@@ -473,12 +536,11 @@ export function ReportsPage() {
 
         {/* ── LEADS TAB ── */}
         <TabsContent value="leads" className="space-y-6">
-          {/* KPI */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Card className="border shadow-sm">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-blue-500" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${TIL.blue}18` }}>
+                  <Users className="w-5 h-5" style={{ color: TIL.blue }} />
                 </div>
                 <div>
                   {isLeadsLoading ? <Skeleton className="h-7 w-12" /> : <p className="text-2xl font-bold">{leadsReport?.total ?? 0}</p>}
@@ -488,8 +550,8 @@ export function ReportsPage() {
             </Card>
             <Card className="border shadow-sm">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-emerald-500" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${TIL.green}18` }}>
+                  <Trophy className="w-5 h-5" style={{ color: TIL.green }} />
                 </div>
                 <div>
                   {isLeadsLoading ? <Skeleton className="h-7 w-12" /> : (
@@ -501,8 +563,8 @@ export function ReportsPage() {
             </Card>
             <Card className="border shadow-sm md:col-span-1 col-span-2">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-violet-500" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${TIL.gold}18` }}>
+                  <BarChart3 className="w-5 h-5" style={{ color: TIL.gold }} />
                 </div>
                 <div>
                   {isLeadsLoading ? <Skeleton className="h-7 w-12" /> : (
@@ -530,7 +592,7 @@ export function ReportsPage() {
                     <PieChart>
                       <Pie
                         data={(leadsReport?.bySource ?? []).map((x: any) => ({ ...x, name: SOURCE_LABELS_AR[x.source] ?? x.source }))}
-                        cx="50%" cy="50%" innerRadius={75} outerRadius={115} paddingAngle={2}
+                        cx="50%" cy="50%" innerRadius={75} outerRadius={115} paddingAngle={3}
                         dataKey="count" nameKey="name"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         labelLine={false}
@@ -561,8 +623,8 @@ export function ReportsPage() {
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                       <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
                       <YAxis type="category" dataKey="nameAr" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
-                      <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v} عميل`, "العدد"]} />
-                      <Bar dataKey="count" name="عدد العملاء" fill="hsl(var(--chart-1))" radius={[0, 4, 4, 0]} />
+                      <Tooltip contentStyle={tooltipStyle} cursor={chartCursor} formatter={(v: any) => [`${v} عميل`, "العدد"]} />
+                      <Bar dataKey="count" name="عدد العملاء" fill={TIL.navyLight} radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -589,7 +651,13 @@ export function ReportsPage() {
                       <TableCell className="text-end">
                         <div className="flex items-center justify-end gap-2">
                           <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full" style={{ width: leadsReport?.total ? `${(s.count / leadsReport.total) * 100}%` : "0" }} />
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: leadsReport?.total ? `${(s.count / leadsReport.total) * 100}%` : "0",
+                                backgroundColor: TIL.gold,
+                              }}
+                            />
                           </div>
                           <span className="text-sm font-medium tabular-nums">
                             {leadsReport?.total ? `${((s.count / leadsReport.total) * 100).toFixed(1)}%` : "0%"}
@@ -628,13 +696,13 @@ export function ReportsPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                     <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any, name: string) =>
+                    <Tooltip contentStyle={tooltipStyle} cursor={chartCursor} formatter={(v: any, name: string) =>
                       [v, name === "won" ? "رابح" : name === "lost" ? "خاسر" : name === "inProgress" ? "جاري" : name]
                     } />
                     <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => v === "won" ? "رابح" : v === "lost" ? "خاسر" : "جاري"} />
-                    <Bar dataKey="won" name="won" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} />
-                    <Bar dataKey="lost" name="lost" stackId="a" fill="#ef4444" />
-                    <Bar dataKey="inProgress" name="inProgress" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="won" name="won" stackId="a" fill={TIL.green} radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="lost" name="lost" stackId="a" fill={TIL.red} />
+                    <Bar dataKey="inProgress" name="inProgress" stackId="a" fill={TIL.gold} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -676,12 +744,12 @@ export function ReportsPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-center font-semibold">{p.total}</TableCell>
-                        <TableCell className="text-center text-emerald-600 font-bold">{p.won}</TableCell>
-                        <TableCell className="text-center text-red-500">{p.lost}</TableCell>
+                        <TableCell className="text-center font-bold" style={{ color: TIL.green }}>{p.won}</TableCell>
+                        <TableCell className="text-center font-medium" style={{ color: TIL.red }}>{p.lost}</TableCell>
                         <TableCell className="text-end">
                           <div className="flex items-center justify-end gap-2">
                             <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${p.convRate}%` }} />
+                              <div className="h-full rounded-full" style={{ width: `${p.convRate}%`, backgroundColor: TIL.green }} />
                             </div>
                             <span className="font-bold text-sm tabular-nums">{p.convRate}%</span>
                           </div>
@@ -699,15 +767,15 @@ export function ReportsPage() {
         <TabsContent value="resale" className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "إجمالي الوحدات", value: resaleReport?.total ?? 0, icon: Home, color: "text-blue-500", bg: "bg-blue-500/10" },
-              { label: "وحدات متاحة", value: resaleReport?.activeCount ?? 0, icon: ArrowUpRight, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-              { label: "وحدات غير نشطة", value: resaleReport?.inactiveCount ?? 0, icon: ArrowDownRight, color: "text-amber-500", bg: "bg-amber-500/10" },
-              { label: "قيمة المحفظة", value: resaleReport?.totalValue ? formatPrice(resaleReport.totalValue) : "ج.م ٠", icon: Target, color: "text-violet-500", bg: "bg-violet-500/10" },
+              { label: "إجمالي الوحدات",    value: resaleReport?.total ?? 0,  icon: Home,          color: TIL.blue },
+              { label: "وحدات متاحة",       value: resaleReport?.activeCount ?? 0, icon: ArrowUpRight, color: TIL.green },
+              { label: "وحدات غير نشطة",   value: resaleReport?.inactiveCount ?? 0, icon: ArrowDownRight, color: TIL.amber },
+              { label: "قيمة المحفظة",     value: resaleReport?.totalValue ? formatPrice(resaleReport.totalValue) : "ج.م ٠", icon: Target, color: TIL.gold },
             ].map((kpi) => (
               <Card key={kpi.label} className="border shadow-sm">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center shrink-0`}>
-                    <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${kpi.color}18` }}>
+                    <kpi.icon className="w-5 h-5" style={{ color: kpi.color }} />
                   </div>
                   <div>
                     {isResaleLoading ? <Skeleton className="h-7 w-16 mb-0.5" /> : <p className="text-lg font-bold">{kpi.value}</p>}
@@ -758,8 +826,8 @@ export function ReportsPage() {
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                       <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
                       <YAxis type="category" dataKey="project" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} width={110} />
-                      <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v} وحدة`, "العدد"]} />
-                      <Bar dataKey="count" name="الوحدات" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+                      <Tooltip contentStyle={tooltipStyle} cursor={chartCursor} formatter={(v: any) => [`${v} وحدة`, "العدد"]} />
+                      <Bar dataKey="count" name="الوحدات" fill={TIL.gold} radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -791,8 +859,10 @@ export function ReportsPage() {
                     ) : (resaleReport?.byProject ?? []).map((p, idx) => (
                       <TableRow key={p.project}>
                         <TableCell className="text-muted-foreground">#{idx + 1}</TableCell>
-                        <TableCell className="font-medium flex items-center gap-2">
-                          <Building className="w-4 h-4 text-muted-foreground shrink-0" />{p.project}
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <Building className="w-4 h-4 text-muted-foreground shrink-0" />{p.project}
+                          </div>
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge variant="secondary">{p.count}</Badge>
