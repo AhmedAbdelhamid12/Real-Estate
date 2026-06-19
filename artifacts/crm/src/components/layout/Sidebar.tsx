@@ -26,16 +26,16 @@ export function Sidebar() {
   const { currentUser } = useAuth();
   const { t } = useI18n();
   const [location] = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try { return localStorage.getItem("sidebar-collapsed") === "true"; } catch { return false; }
+  });
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const activeEl = navRef.current?.querySelector("[data-active='true']") as HTMLElement | null;
-    if (activeEl) {
-      activeEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }
-  }, [location]);
+  const toggleCollapsed = (val: boolean) => {
+    setIsCollapsed(val);
+    try { localStorage.setItem("sidebar-collapsed", String(val)); } catch { /* ignore */ }
+  };
 
   if (!currentUser) return null;
 
@@ -126,7 +126,7 @@ export function Sidebar() {
           size="icon"
           className="hidden md:flex hover:bg-sidebar-accent"
           style={{ color: "hsl(0 0% 70%)" }}
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={() => toggleCollapsed(!isCollapsed)}
         >
           <Menu className="h-4 w-4" />
         </Button>
@@ -149,6 +149,7 @@ export function Sidebar() {
                     key={item.href}
                     href={item.href}
                     data-active={isActive ? "true" : undefined}
+                    onClick={() => setIsMobileOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-150",
                       isActive
