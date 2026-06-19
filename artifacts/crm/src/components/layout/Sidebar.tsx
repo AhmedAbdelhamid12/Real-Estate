@@ -133,7 +133,7 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <div ref={navRef} className="flex-1 overflow-y-auto px-3 py-4 overscroll-contain">
+      <div ref={navRef} className="flex-1 overflow-y-auto px-3 py-4 overscroll-contain no-scrollbar">
         {navItems.map((section, i) => (
           <div key={i} className="mb-6">
             {!isCollapsed && (

@@ -89,4 +89,11 @@
   .til-card-glow {
     box-shadow: 0 0 0 1px rgba(200,168,75,0.12), 0 4px 24px rgba(0,0,0,0.4);
   }
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
