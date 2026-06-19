@@ -29,11 +29,11 @@ router.get("/reports/sales", requireAuth, async (req, res): Promise<void> => {
 
   const statsMap: Record<string, { won: number; lost: number; inProgress: number }> = {};
   for (const l of leads) {
-    if (!l.salesId) continue;
-    if (!statsMap[l.salesId]) statsMap[l.salesId] = { won: 0, lost: 0, inProgress: 0 };
-    if (l.status === "won") statsMap[l.salesId].won++;
-    else if (l.status === "lost") statsMap[l.salesId].lost++;
-    else statsMap[l.salesId].inProgress++;
+    const sid = l.salesId ?? "__unassigned__";
+    if (!statsMap[sid]) statsMap[sid] = { won: 0, lost: 0, inProgress: 0 };
+    if (l.status === "won") statsMap[sid].won++;
+    else if (l.status === "lost") statsMap[sid].lost++;
+    else statsMap[sid].inProgress++;
   }
 
   const byUser = users
@@ -59,14 +59,15 @@ router.get("/reports/sales", requireAuth, async (req, res): Promise<void> => {
 
 // GET /reports/leads
 router.get("/reports/leads", requireAuth, async (req, res): Promise<void> => {
-  const { from, to } = req.query as Record<string, string>;
+  const { from, to, userId } = req.query as Record<string, string>;
 
   let leads = await db
-    .select({ status: leadsTable.status, source: leadsTable.source, createdAt: leadsTable.createdAt })
+    .select({ status: leadsTable.status, source: leadsTable.source, createdAt: leadsTable.createdAt, salesId: leadsTable.primarySalesId })
     .from(leadsTable);
 
   if (from) leads = leads.filter((l) => l.createdAt >= new Date(from));
   if (to) leads = leads.filter((l) => l.createdAt <= new Date(to + "T23:59:59Z"));
+  if (userId) leads = leads.filter((l) => l.salesId === userId);
 
   const sourceCounts: Record<string, number> = {};
   const statusCounts: Record<string, number> = {};
@@ -140,25 +141,43 @@ router.get("/reports/resale", requireAuth, async (req, res): Promise<void> => {
 
 // GET /reports/trends — daily lead creation over time
 router.get("/reports/trends", requireAuth, async (req, res): Promise<void> => {
-  const { from, to } = req.query as Record<string, string>;
+  const { from, to, userId } = req.query as Record<string, string>;
 
   const fromDate = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const toDate = to ? new Date(to + "T23:59:59Z") : new Date();
 
-  const rows = await db.execute(sql`
-    SELECT
-      TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS date,
-      COUNT(*)::int AS total,
-      COUNT(CASE WHEN status = 'won' THEN 1 END)::int AS won,
-      COUNT(CASE WHEN status = 'lost' THEN 1 END)::int AS lost,
-      COUNT(CASE WHEN status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
-    FROM leads
-    WHERE created_at >= ${fromDate} AND created_at <= ${toDate}
-    GROUP BY TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')
-    ORDER BY date ASC
-  `);
+  let query: string;
+  if (userId) {
+    query = `
+      SELECT
+        TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS date,
+        COUNT(*)::int AS total,
+        COUNT(CASE WHEN status = 'won' THEN 1 END)::int AS won,
+        COUNT(CASE WHEN status = 'lost' THEN 1 END)::int AS lost,
+        COUNT(CASE WHEN status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
+      FROM leads
+      WHERE created_at >= '${fromDate.toISOString()}' AND created_at <= '${toDate.toISOString()}'
+        AND primary_sales_id = '${userId}'
+      GROUP BY TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')
+      ORDER BY date ASC
+    `;
+  } else {
+    query = `
+      SELECT
+        TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS date,
+        COUNT(*)::int AS total,
+        COUNT(CASE WHEN status = 'won' THEN 1 END)::int AS won,
+        COUNT(CASE WHEN status = 'lost' THEN 1 END)::int AS lost,
+        COUNT(CASE WHEN status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
+      FROM leads
+      WHERE created_at >= '${fromDate.toISOString()}' AND created_at <= '${toDate.toISOString()}'
+      GROUP BY TO_CHAR(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')
+      ORDER BY date ASC
+    `;
+  }
 
-  // Fill in missing dates with zero values
+  const rows = await db.execute(sql.raw(query));
+
   const resultMap: Record<string, { date: string; total: number; won: number; lost: number; inProgress: number }> = {};
   for (const row of rows.rows as any[]) {
     resultMap[row.date] = {
@@ -170,7 +189,6 @@ router.get("/reports/trends", requireAuth, async (req, res): Promise<void> => {
     };
   }
 
-  // Generate full date range
   const days: typeof resultMap[string][] = [];
   const cur = new Date(fromDate);
   while (cur <= toDate) {
@@ -184,27 +202,50 @@ router.get("/reports/trends", requireAuth, async (req, res): Promise<void> => {
 
 // GET /reports/projects — leads performance per project
 router.get("/reports/projects", requireAuth, async (req, res): Promise<void> => {
-  const { from, to } = req.query as Record<string, string>;
+  const { from, to, userId } = req.query as Record<string, string>;
 
   const fromDate = from ? new Date(from) : new Date(0);
   const toDate = to ? new Date(to + "T23:59:59Z") : new Date();
 
-  const rows = await db.execute(sql`
-    SELECT
-      p.id,
-      p.name,
-      p.image_url AS "imageUrl",
-      COUNT(l.id)::int AS total,
-      COUNT(CASE WHEN l.status = 'won' THEN 1 END)::int AS won,
-      COUNT(CASE WHEN l.status = 'lost' THEN 1 END)::int AS lost,
-      COUNT(CASE WHEN l.status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
-    FROM projects p
-    LEFT JOIN leads l ON l.project_id = p.id
-      AND l.created_at >= ${fromDate}
-      AND l.created_at <= ${toDate}
-    GROUP BY p.id, p.name, p.image_url
-    ORDER BY total DESC
-  `);
+  let query: string;
+  if (userId) {
+    query = `
+      SELECT
+        p.id,
+        p.name,
+        p.image_url AS "imageUrl",
+        COUNT(l.id)::int AS total,
+        COUNT(CASE WHEN l.status = 'won' THEN 1 END)::int AS won,
+        COUNT(CASE WHEN l.status = 'lost' THEN 1 END)::int AS lost,
+        COUNT(CASE WHEN l.status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
+      FROM projects p
+      LEFT JOIN leads l ON l.project_id = p.id
+        AND l.created_at >= '${fromDate.toISOString()}'
+        AND l.created_at <= '${toDate.toISOString()}'
+        AND l.primary_sales_id = '${userId}'
+      GROUP BY p.id, p.name, p.image_url
+      ORDER BY total DESC
+    `;
+  } else {
+    query = `
+      SELECT
+        p.id,
+        p.name,
+        p.image_url AS "imageUrl",
+        COUNT(l.id)::int AS total,
+        COUNT(CASE WHEN l.status = 'won' THEN 1 END)::int AS won,
+        COUNT(CASE WHEN l.status = 'lost' THEN 1 END)::int AS lost,
+        COUNT(CASE WHEN l.status NOT IN ('won','lost') THEN 1 END)::int AS in_progress
+      FROM projects p
+      LEFT JOIN leads l ON l.project_id = p.id
+        AND l.created_at >= '${fromDate.toISOString()}'
+        AND l.created_at <= '${toDate.toISOString()}'
+      GROUP BY p.id, p.name, p.image_url
+      ORDER BY total DESC
+    `;
+  }
+
+  const rows = await db.execute(sql.raw(query));
 
   const projects = (rows.rows as any[]).map((r) => ({
     id: r.id,

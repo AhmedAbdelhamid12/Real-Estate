@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useGetSalesReport, useGetLeadsReport, apiFetch } from "@workspace/api-client-react";
+import { useGetSalesReport, useGetLeadsReport, useListUsers, apiFetch } from "@workspace/api-client-react";
 import { format, subDays, startOfYear } from "date-fns";
 import { ar } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
