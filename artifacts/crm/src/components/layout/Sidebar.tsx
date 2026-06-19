@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 import { RoleBadge } from "@/components/shared/RoleBadge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Users,
   Building2,
@@ -20,7 +19,7 @@ import {
   Home,
   Shield,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useI18n } from "@/contexts/i18nContext";
 
 export function Sidebar() {
@@ -29,6 +28,14 @@ export function Sidebar() {
   const [location] = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const activeEl = navRef.current?.querySelector("[data-active='true']") as HTMLElement | null;
+    if (activeEl) {
+      activeEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+  }, [location]);
 
   if (!currentUser) return null;
 
@@ -126,7 +133,7 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <ScrollArea className="flex-1 px-3 py-4">
+      <div ref={navRef} className="flex-1 overflow-y-auto px-3 py-4 overscroll-contain">
         {navItems.map((section, i) => (
           <div key={i} className="mb-6">
             {!isCollapsed && (
@@ -141,6 +148,7 @@ export function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    data-active={isActive ? "true" : undefined}
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-150",
                       isActive
@@ -165,7 +173,7 @@ export function Sidebar() {
             </div>
           </div>
         ))}
-      </ScrollArea>
+      </div>
 
       {/* User profile */}
       <div className="p-4 border-t border-sidebar-border">
